@@ -1,0 +1,32 @@
+- id: sleeve_grip
+  name: Sleeve Grip
+  grip_type: sleeve
+  gi_required: true
+  control_target: arm
+  dominant_hand: either
+  tags:
+    - gi
+    - sleeve
+    - arm_control
+
+- id: wrist_control
+  name: Wrist Control
+  grip_type: wrist
+  gi_required: false
+  control_target: arm
+  dominant_hand: either
+  tags:
+    - no_gi
+    - wrist
+    - arm_control
+
+- id: underhook
+  name: Underhook
+  grip_type: body_control
+  gi_required: false
+  control_target: upper_body
+  dominant_hand: either
+  tags:
+    - underhook
+    - upper_body
+    - positional_control

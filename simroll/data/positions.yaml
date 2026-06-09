@@ -1,0 +1,35 @@
+- id: closed_guard_bottom
+  name: Closed Guard Bottom
+  category: guard
+  player_role: bottom
+  gi_allowed: true
+  no_gi_allowed: true
+  tags:
+    - guard
+    - bottom
+    - closed_guard
+  description: Bottom player controls the opponent with legs closed around the waist.
+
+- id: mount_top
+  name: Mount Top
+  category: dominant
+  player_role: top
+  gi_allowed: true
+  no_gi_allowed: true
+  tags:
+    - mount
+    - top
+    - dominant
+  description: Top player controls the opponent while straddling their torso.
+
+- id: side_control_top
+  name: Side Control Top
+  category: dominant
+  player_role: top
+  gi_allowed: true
+  no_gi_allowed: true
+  tags:
+    - side_control
+    - top
+    - dominant
+  description: Top player controls the opponent from across their torso.

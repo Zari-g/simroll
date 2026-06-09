@@ -1,0 +1,51 @@
+- id: flower_sweep
+  name: Flower Sweep
+  from_position: closed_guard_bottom
+  to_position: mount_top
+  transition_type: sweep
+  required_grips:
+    - sleeve_grip
+  created_grips: []
+  removed_grips:
+    - sleeve_grip
+  gi_allowed: true
+  no_gi_allowed: false
+  difficulty: beginner
+  tags:
+    - sweep
+    - closed_guard
+  notes: Uses sleeve control to reverse the top player into mount.
+
+- id: hip_bump_sweep
+  name: Hip Bump Sweep
+  from_position: closed_guard_bottom
+  to_position: mount_top
+  transition_type: sweep
+  required_grips:
+    - wrist_control
+  created_grips: []
+  removed_grips:
+    - wrist_control
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: beginner
+  tags:
+    - sweep
+    - closed_guard
+  notes: Drives through the opponent after controlling the posting arm.
+
+- id: elbow_escape
+  name: Elbow Escape
+  from_position: mount_top
+  to_position: closed_guard_bottom
+  transition_type: escape
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: beginner
+  tags:
+    - escape
+    - mount
+  notes: Recovers guard by creating space and trapping a leg.
