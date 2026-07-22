@@ -1,11 +1,12 @@
 """Directed graph representation of grappling positions and transitions."""
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from types import MappingProxyType
 
 import networkx as nx
 
 from simroll.data import load_grips, load_positions, load_transitions
+from simroll.engine.rules import GrapplingMode, is_transition_available
 from simroll.models import Position, Transition
 
 
@@ -81,6 +82,26 @@ class GrapplingGraph:
             for _, _, transition in self._graph.out_edges(
                 position_id, data="transition"
             )
+        ]
+
+    def get_available_transitions(
+        self,
+        position_id: str,
+        mode: GrapplingMode,
+        active_grips: Collection[str],
+    ) -> list[Transition]:
+        """Return outgoing transitions allowed by the mode and active grips."""
+
+        transitions = self.get_transitions_from(position_id)
+        if mode not in ("gi", "no_gi"):
+            raise ValueError(
+                f"Unsupported grappling mode {mode!r}; expected 'gi' or 'no_gi'."
+            )
+
+        return [
+            transition
+            for transition in transitions
+            if is_transition_available(transition, mode, active_grips)
         ]
 
     def get_reachable_positions(self, position_id: str) -> list[Position]:
