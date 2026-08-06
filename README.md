@@ -53,5 +53,8 @@ assert state.position_id == "closed_guard_bottom"
 - PyYAML
 - pytest
 
+The full test suite runs automatically on pushes and pull requests through
+GitHub Actions.
+
 FastAPI and React / TypeScript remain possible future layers; they are not part
 of the current engine.

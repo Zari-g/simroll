@@ -2,6 +2,7 @@ import pytest
 
 from simroll.data import load_positions, load_transitions
 from simroll.engine import GrapplingGraph
+from simroll.models import Grip, Position, Transition
 
 
 @pytest.fixture
@@ -121,3 +122,96 @@ def test_valid_position_without_outgoing_transitions_returns_empty_list(
     graph: GrapplingGraph,
 ) -> None:
     assert graph.get_transitions_from("side_control_top") == []
+
+
+def test_graph_accepts_valid_grip_definitions() -> None:
+    positions = _custom_positions()
+    grips = {
+        "wrist_control": _custom_grip("wrist_control"),
+        "underhook": _custom_grip("underhook"),
+    }
+    transition = _custom_transition(
+        required_grips=["wrist_control"],
+        created_grips=["underhook"],
+        removed_grips=["wrist_control"],
+    )
+
+    graph = GrapplingGraph(positions, {transition.id: transition}, grips)
+
+    assert set(graph.grips) == {"wrist_control", "underhook"}
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    ["required_grips", "created_grips", "removed_grips"],
+)
+def test_graph_rejects_unknown_transition_grip_reference(
+    field_name: str,
+) -> None:
+    transition_data = {field_name: ["missing_grip"]}
+    transition = _custom_transition(**transition_data)
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Transition 'custom_transition' references unknown grip "
+            f"'missing_grip' in {field_name}"
+        ),
+    ):
+        GrapplingGraph(
+            _custom_positions(),
+            {transition.id: transition},
+            {},
+        )
+
+
+def test_graph_accepts_empty_grip_definitions_without_grip_references() -> None:
+    transition = _custom_transition()
+
+    graph = GrapplingGraph(
+        _custom_positions(),
+        {transition.id: transition},
+        {},
+    )
+
+    assert not graph.grips
+
+
+def _custom_positions() -> dict[str, Position]:
+    return {
+        position_id: Position(
+            id=position_id,
+            name=position_id.replace("_", " ").title(),
+            category="test",
+            player_role="test",
+            gi_allowed=True,
+            no_gi_allowed=True,
+            description="Custom test position.",
+        )
+        for position_id in ("start_position", "end_position")
+    }
+
+
+def _custom_grip(grip_id: str) -> Grip:
+    return Grip(
+        id=grip_id,
+        name=grip_id.replace("_", " ").title(),
+        grip_type="control",
+        gi_required=False,
+        control_target="opponent",
+        dominant_hand="either",
+    )
+
+
+def _custom_transition(**grip_fields: list[str]) -> Transition:
+    return Transition(
+        id="custom_transition",
+        name="Custom Transition",
+        from_position="start_position",
+        to_position="end_position",
+        transition_type="test",
+        gi_allowed=True,
+        no_gi_allowed=True,
+        difficulty="beginner",
+        **grip_fields,
+    )

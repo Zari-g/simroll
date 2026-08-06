@@ -27,12 +27,11 @@ class GrapplingGraph:
         self,
         positions: dict[str, Position],
         transitions: dict[str, Transition],
-        grips: dict[str, Grip] | None = None,
+        grips: dict[str, Grip],
     ) -> None:
         self._positions = dict(positions)
         self._transitions = dict(transitions)
-        self._grips = dict(grips or {})
-        self._validate_grip_references = grips is not None
+        self._grips = dict(grips)
         self._positions_view = MappingProxyType(self._positions)
         self._transitions_view = MappingProxyType(self._transitions)
         self._grips_view = MappingProxyType(self._grips)
@@ -132,8 +131,17 @@ class GrapplingGraph:
     def validate_state(self, state: GrapplingState) -> None:
         """Validate a grappling state against this graph's definitions."""
 
-        self.get_position(state.position_id)
+        position = self.get_position(state.position_id)
         mode = validate_grappling_mode(state.mode)
+
+        if mode == "gi" and not position.gi_allowed:
+            raise ValueError(
+                f"Position '{position.id}' is not allowed in gi mode."
+            )
+        if mode == "no_gi" and not position.no_gi_allowed:
+            raise ValueError(
+                f"Position '{position.id}' is not allowed in no_gi mode."
+            )
 
         for grip_id in sorted(state.active_grips):
             grip = self.get_grip(grip_id)
@@ -203,18 +211,17 @@ class GrapplingGraph:
                     f"'{position_id}'."
                 )
 
-        if self._validate_grip_references:
-            for field_name in (
-                "required_grips",
-                "created_grips",
-                "removed_grips",
-            ):
-                for grip_id in getattr(transition, field_name):
-                    if grip_id not in self._grips:
-                        raise ValueError(
-                            f"Transition '{transition.id}' references unknown "
-                            f"grip '{grip_id}' in {field_name}."
-                        )
+        for field_name in (
+            "required_grips",
+            "created_grips",
+            "removed_grips",
+        ):
+            for grip_id in getattr(transition, field_name):
+                if grip_id not in self._grips:
+                    raise ValueError(
+                        f"Transition '{transition.id}' references unknown "
+                        f"grip '{grip_id}' in {field_name}."
+                    )
 
         self._graph.add_edge(
             transition.from_position,
