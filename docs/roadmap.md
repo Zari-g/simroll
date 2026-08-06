@@ -23,7 +23,7 @@ Features:
 - Basic validation structure
 
 Status:
-Planned
+Complete
 
 ---
 
@@ -39,7 +39,7 @@ Features:
 - Relationship validation
 
 Status:
-Planned
+Complete
 
 ---
 
@@ -55,7 +55,7 @@ Features:
 - Transition constraints
 
 Status:
-Planned
+Complete
 
 ---
 
@@ -71,7 +71,7 @@ Features:
 - Filtering by transition type
 
 Status:
-Planned
+Next
 
 ---
 
