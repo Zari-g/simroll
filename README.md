@@ -16,9 +16,9 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-3 are complete. SimRoll currently provides validated Pydantic
-models and YAML data, a directed graph engine, gi/no-gi transition filtering,
-and immutable grappling-state updates. Iteration 4 pathfinding is next.
+Iterations 1-4 are complete. SimRoll currently provides validated Pydantic
+models and YAML data, a directed graph engine, immutable grappling-state
+updates, and state-aware pathfinding. Iteration 5 API work is next.
 
 ## Grappling State
 
@@ -43,6 +43,43 @@ next_state = graph.apply_transition(state, "hip_bump_sweep")
 assert next_state.position_id == "mount_top"
 assert next_state.active_grips == frozenset({"underhook"})
 assert state.position_id == "closed_guard_bottom"
+```
+
+## State-Aware Pathfinding
+
+`GrapplingPathfinder` searches over complete states: position, grappling mode,
+and active grips. This allows a path to revisit a position after creating or
+removing a grip, while still respecting gi/no-gi and transition requirements.
+
+```python
+from simroll.engine import GrapplingGraph, GrapplingPathfinder
+from simroll.models import GrapplingState
+
+graph = GrapplingGraph.from_default_data()
+pathfinder = GrapplingPathfinder(graph)
+
+start = GrapplingState(
+    position_id="closed_guard_bottom",
+    mode="gi",
+    active_grips=["wrist_control"],
+)
+
+path = pathfinder.find_shortest_path(start, "mount_top")
+
+assert path is not None
+assert path.transition_ids == ("hip_bump_sweep",)
+assert path.final_state.position_id == "mount_top"
+```
+
+Searches can be limited by transition difficulty and type:
+
+```python
+filtered_path = pathfinder.find_shortest_path(
+    start,
+    "mount_top",
+    difficulties={"beginner"},
+    transition_types={"sweep"},
+)
 ```
 
 ## Tech Stack
