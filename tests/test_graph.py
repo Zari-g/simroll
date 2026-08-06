@@ -12,6 +12,7 @@ def graph() -> GrapplingGraph:
 def test_default_graph_loads_successfully(graph: GrapplingGraph) -> None:
     assert graph.positions
     assert graph.transitions
+    assert graph.grips
 
 
 def test_every_loaded_position_becomes_a_node(graph: GrapplingGraph) -> None:
@@ -48,6 +49,20 @@ def test_get_transition_returns_correct_transition(graph: GrapplingGraph) -> Non
 
     assert transition.id == "flower_sweep"
     assert transition.name == "Flower Sweep"
+
+
+def test_get_grip_returns_correct_grip(graph: GrapplingGraph) -> None:
+    grip = graph.get_grip("underhook")
+
+    assert grip.id == "underhook"
+    assert grip.gi_required is False
+
+
+def test_grips_mapping_is_read_only(graph: GrapplingGraph) -> None:
+    underhook = graph.get_grip("underhook")
+
+    with pytest.raises(TypeError):
+        graph.grips["copied_underhook"] = underhook  # type: ignore[index]
 
 
 def test_closed_guard_bottom_returns_expected_transitions(
@@ -95,6 +110,11 @@ def test_unknown_transition_id_raises_clear_key_error(
 ) -> None:
     with pytest.raises(KeyError, match="Unknown transition ID 'missing_transition'"):
         graph.get_transition("missing_transition")
+
+
+def test_unknown_grip_id_raises_clear_key_error(graph: GrapplingGraph) -> None:
+    with pytest.raises(KeyError, match="Unknown grip ID 'missing_grip'"):
+        graph.get_grip("missing_grip")
 
 
 def test_valid_position_without_outgoing_transitions_returns_empty_list(
