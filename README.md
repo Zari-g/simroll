@@ -18,7 +18,7 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 Iterations 1-4 are complete. SimRoll currently provides validated Pydantic
 models and YAML data, a directed graph engine, immutable grappling-state
-updates, and state-aware pathfinding. Iteration 5 API work is next.
+updates, state-aware pathfinding, and the first Iteration 5 API endpoints.
 
 ## Grappling State
 
@@ -82,16 +82,40 @@ filtered_path = pathfinder.find_shortest_path(
 )
 ```
 
+## API
+
+Run the FastAPI application locally from the project root:
+
+```bash
+python -m uvicorn simroll.api.app:app --reload
+```
+
+Interactive API documentation is available at `/docs`. Iteration 5A exposes
+these read-only endpoints:
+
+```text
+GET /
+GET /health
+GET /positions
+GET /positions/{position_id}
+GET /positions/{position_id}/transitions
+GET /transitions
+GET /transitions/{transition_id}
+```
+
+Pathfinding endpoints are reserved for Iteration 5B.
+
 ## Tech Stack
 
 - Python
 - NetworkX
 - Pydantic
 - PyYAML
+- FastAPI
 - pytest
 
 The full test suite runs automatically on pushes and pull requests through
 GitHub Actions.
 
-FastAPI and React / TypeScript remain possible future layers; they are not part
-of the current engine.
+FastAPI is kept as a thin HTTP layer over the framework-independent engine.
+React / TypeScript remain possible future layers.

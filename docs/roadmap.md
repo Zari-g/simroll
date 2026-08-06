@@ -81,13 +81,13 @@ Goal:
 Expose the grappling engine through an API.
 
 Features:
-- FastAPI setup
-- Position endpoints
-- Transition endpoints
-- Pathfinding endpoints
+- FastAPI setup - Complete
+- Position endpoints - Complete
+- Transition endpoints - Complete
+- Pathfinding endpoints - Pending
 
 Status:
-Next
+In Progress
 
 ---
 
