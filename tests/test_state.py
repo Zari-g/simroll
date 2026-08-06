@@ -1,7 +1,7 @@
 import pytest
 
 from simroll.engine import GrapplingGraph
-from simroll.models import GrapplingState
+from simroll.models import GrapplingState, Position, Transition
 
 
 @pytest.fixture
@@ -168,3 +168,92 @@ def test_apply_transition_with_no_grip_changes_preserves_grips(
     assert result.active_grips == frozenset({"underhook"})
     assert state.position_id == "mount_top"
     assert state.active_grips == frozenset({"underhook"})
+
+
+@pytest.fixture
+def position_mode_graph() -> GrapplingGraph:
+    positions = {
+        "both_modes": _position("both_modes"),
+        "gi_only": _position("gi_only", no_gi_allowed=False),
+        "no_gi_only": _position("no_gi_only", gi_allowed=False),
+    }
+    transition = Transition(
+        id="move_to_gi_only",
+        name="Move to Gi-only Position",
+        from_position="both_modes",
+        to_position="gi_only",
+        transition_type="test",
+        gi_allowed=True,
+        no_gi_allowed=True,
+        difficulty="beginner",
+    )
+    return GrapplingGraph(positions, {transition.id: transition}, {})
+
+
+def test_validate_state_rejects_gi_only_position_in_no_gi(
+    position_mode_graph: GrapplingGraph,
+) -> None:
+    state = GrapplingState(position_id="gi_only", mode="no_gi")
+
+    with pytest.raises(
+        ValueError,
+        match="Position 'gi_only' is not allowed in no_gi mode",
+    ):
+        position_mode_graph.validate_state(state)
+
+
+def test_validate_state_rejects_no_gi_only_position_in_gi(
+    position_mode_graph: GrapplingGraph,
+) -> None:
+    state = GrapplingState(position_id="no_gi_only", mode="gi")
+
+    with pytest.raises(
+        ValueError,
+        match="Position 'no_gi_only' is not allowed in gi mode",
+    ):
+        position_mode_graph.validate_state(state)
+
+
+def test_validate_state_accepts_valid_position_in_gi(
+    position_mode_graph: GrapplingGraph,
+) -> None:
+    state = GrapplingState(position_id="gi_only", mode="gi")
+
+    position_mode_graph.validate_state(state)
+
+
+def test_validate_state_accepts_valid_position_in_no_gi(
+    position_mode_graph: GrapplingGraph,
+) -> None:
+    state = GrapplingState(position_id="no_gi_only", mode="no_gi")
+
+    position_mode_graph.validate_state(state)
+
+
+def test_apply_transition_rejects_destination_unavailable_in_current_mode(
+    position_mode_graph: GrapplingGraph,
+) -> None:
+    state = GrapplingState(position_id="both_modes", mode="no_gi")
+
+    with pytest.raises(
+        ValueError,
+        match="Position 'gi_only' is not allowed in no_gi mode",
+    ):
+        position_mode_graph.apply_transition(state, "move_to_gi_only")
+
+
+def _position(
+    position_id: str,
+    *,
+    gi_allowed: bool = True,
+    no_gi_allowed: bool = True,
+) -> Position:
+    return Position(
+        id=position_id,
+        name=position_id.replace("_", " ").title(),
+        category="test",
+        player_role="test",
+        gi_allowed=gi_allowed,
+        no_gi_allowed=no_gi_allowed,
+        description="Custom test position.",
+    )
