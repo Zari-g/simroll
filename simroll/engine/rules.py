@@ -1,11 +1,20 @@
 """Rules for determining whether grappling transitions are available."""
 
 from collections.abc import Collection
-from typing import Literal
 
-from simroll.models import Transition
+from simroll.models import GrapplingMode, Transition
+from simroll.models.state import validate_grappling_mode
 
-GrapplingMode = Literal["gi", "no_gi"]
+
+def is_transition_allowed_in_mode(
+    transition: Transition, mode: GrapplingMode
+) -> bool:
+    """Return whether a transition supports the requested grappling mode."""
+
+    validated_mode = validate_grappling_mode(mode)
+    if validated_mode == "gi":
+        return transition.gi_allowed
+    return transition.no_gi_allowed
 
 
 def is_transition_available(
@@ -15,15 +24,6 @@ def is_transition_available(
 ) -> bool:
     """Return whether a transition is allowed by the mode and active grips."""
 
-    if mode == "gi":
-        mode_allowed = transition.gi_allowed
-    elif mode == "no_gi":
-        mode_allowed = transition.no_gi_allowed
-    else:
-        raise ValueError(
-            f"Unsupported grappling mode {mode!r}; expected 'gi' or 'no_gi'."
-        )
-
-    return mode_allowed and all(
+    return is_transition_allowed_in_mode(transition, mode) and all(
         grip_id in active_grips for grip_id in transition.required_grips
     )

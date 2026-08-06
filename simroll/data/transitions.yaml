@@ -23,7 +23,8 @@
   transition_type: sweep
   required_grips:
     - wrist_control
-  created_grips: []
+  created_grips:
+    - underhook
   removed_grips:
     - wrist_control
   gi_allowed: true
@@ -32,7 +33,7 @@
   tags:
     - sweep
     - closed_guard
-  notes: Drives through the opponent after controlling the posting arm.
+  notes: Traps the posting wrist and establishes an underhook while sweeping.
 
 - id: elbow_escape
   name: Elbow Escape
