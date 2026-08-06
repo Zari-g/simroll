@@ -71,7 +71,7 @@ Features:
 - Filtering by transition type
 
 Status:
-Next
+Complete
 
 ---
 
@@ -87,7 +87,7 @@ Features:
 - Pathfinding endpoints
 
 Status:
-Planned
+Next
 
 ---
 
