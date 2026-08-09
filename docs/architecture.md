@@ -2,7 +2,7 @@
 
 ## 1. Architecture Goal
 
-SimRoll will start as a Python-based grappling engine and later expand into a website and mobile app.
+SimRoll is a Python-based grappling engine with a FastAPI interface and may later expand into a website and mobile app.
 
 The goal is to keep the project modular so the core simulation logic can be reused across different interfaces.
 
@@ -18,28 +18,27 @@ Future interfaces:
 
 * web app
 * mobile app
-* API
 * visual graph explorer
 
 ---
 
 ## 2. High-Level Architecture
 
-SimRoll will be organized into layers:
+SimRoll is organized into layers:
 
 ```text
 User Interface
     ↓
-API Layer
+FastAPI Layer
     ↓
 Simulation Engine
     ↓
 Domain Models
     ↓
-Data Layer
+YAML Data
 ```
 
-For the first version, only the lower layers will be built.
+The FastAPI layer and lower layers are implemented. The user interface remains future work.
 
 ---
 
@@ -47,7 +46,7 @@ For the first version, only the lower layers will be built.
 
 The data layer stores positions, transitions, grips, and technique information.
 
-At the beginning, this data will be stored in simple files such as YAML or JSON.
+The current starter data is stored in YAML files and loaded into validated domain models.
 
 Example data:
 
@@ -70,12 +69,12 @@ Core models:
 * Position
 * Transition
 * Grip
-* Player State
-* Roll State
+* GrapplingState
+* GrapplingPath
 
 These models describe what the system understands about Brazilian Jiu-Jitsu.
 
-For example, a transition connects one position to another and may require specific grips.
+For example, a transition connects one position to another and may require specific grips. `GrapplingState` represents an immutable position, mode, and active-grip snapshot, while `GrapplingPath` represents a valid sequence of those states. Future roll simulation can build on these models without adding simulation behavior to them.
 
 ---
 
@@ -85,33 +84,30 @@ The simulation engine contains the main logic of SimRoll.
 
 Responsibilities:
 
-* load positions and transitions
-* build the grappling graph
-* find available transitions from a position
-* check gi/no-gi rules
-* check grip requirements
-* find paths between positions
-* simulate roll sequences
+* use `GrapplingGraph` to load data and represent positions and transitions
+* apply transition rules for gi/no-gi modes and grip requirements
+* validate grappling states
+* execute transitions as immutable state updates
+* use `GrapplingPathfinder` for shortest and multiple path searches
 
-This is the heart of the project.
+This is the heart of the project. Roll-sequence simulation remains future work.
 
 ---
 
 ## 6. Layer 4 — API Layer
 
-The API layer will allow the future website or mobile app to communicate with the Python engine.
+The implemented FastAPI layer allows HTTP clients and the future user interface to communicate with the Python engine.
 
-Possible API endpoints:
+Its responsibilities are:
 
-* get all positions
-* get one position
-* get available transitions
-* find path between two positions
-* simulate a roll sequence
+* position access
+* transition access
+* grip access
+* available-transition queries for a grappling state
+* shortest path search
+* multiple path search
 
-FastAPI will likely be used for this layer.
-
-This layer will not be built immediately.
+The API remains a thin HTTP layer. Grappling rules, validation, transition execution, and pathfinding stay in the engine rather than in route handlers.
 
 ---
 
@@ -138,45 +134,34 @@ The UI should feel playful, clear, and interactive.
 
 ---
 
-## 8. First Technical Structure
+## 8. Current Technical Structure
 
-The first Python version may use this structure:
+The current Python package uses this structure:
 
 ```text
 simroll/
+├── api/
+│   ├── __init__.py
+│   ├── app.py
+│   ├── dependencies.py
+│   └── schemas.py
 │
-├── docs/
-│   ├── project-requirements.md
-│   ├── roadmap.md
-│   ├── architecture.md
-│   └── bjj-domain-model.md
+├── engine/
+│   ├── graph.py
+│   ├── pathfinder.py
+│   └── rules.py
 │
-├── simroll/
-│   ├── models/
-│   │   ├── position.py
-│   │   ├── transition.py
-│   │   └── grip.py
-│   │
-│   ├── engine/
-│   │   ├── graph.py
-│   │   ├── simulator.py
-│   │   └── pathfinder.py
-│   │
-│   ├── data/
-│   │   ├── positions.yaml
-│   │   ├── transitions.yaml
-│   │   └── grips.yaml
-│   │
-│   └── api/
-│       └── main.py
+├── models/
+│   ├── position.py
+│   ├── transition.py
+│   ├── grip.py
+│   ├── state.py
+│   └── path.py
 │
-├── tests/
-│   ├── test_models.py
-│   └── test_graph.py
-│
-├── README.md
-├── pyproject.toml
-└── LICENSE
+└── data/
+    ├── positions.yaml
+    ├── transitions.yaml
+    └── grips.yaml
 ```
 
 ---
@@ -197,14 +182,15 @@ SimRoll should be:
 
 ## 10. Current Architecture Decision
 
-For the first version, SimRoll will not use realistic physics, animation, user accounts, or a database.
+The current version of SimRoll does not use realistic physics, animation, user accounts, or a database.
 
-The first version will focus only on:
+The current version focuses on:
 
 * modelling BJJ positions
 * modelling transitions
 * adding gi/no-gi logic
 * adding grip constraints
 * building graph-based pathfinding
+* exposing the engine through a thin FastAPI layer
 
 This keeps the project realistic and expandable.

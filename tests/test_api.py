@@ -58,6 +58,33 @@ def test_unknown_position_returns_clear_404() -> None:
     }
 
 
+def test_grips_returns_all_default_models_in_id_order() -> None:
+    response = client.get("/grips")
+
+    assert response.status_code == 200
+    expected_grips = sorted(
+        graph.grips.values(),
+        key=lambda grip: grip.id,
+    )
+    assert response.json() == [grip.model_dump() for grip in expected_grips]
+    assert [grip["id"] for grip in response.json()] == sorted(graph.grips)
+    assert set(response.json()[0]) == set(type(expected_grips[0]).model_fields)
+
+
+def test_grip_returns_existing_model() -> None:
+    response = client.get("/grips/underhook")
+
+    assert response.status_code == 200
+    assert response.json() == graph.get_grip("underhook").model_dump()
+
+
+def test_unknown_grip_returns_clear_404() -> None:
+    response = client.get("/grips/missing_grip")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Unknown grip ID 'missing_grip'."}
+
+
 def test_transitions_returns_default_models_in_id_order() -> None:
     response = client.get("/transitions")
 
@@ -124,6 +151,7 @@ def test_openapi_documents_resource_response_schemas() -> None:
 
     assert response.status_code == 200
     schemas = response.json()["components"]["schemas"]
+    assert "Grip" in schemas
     assert "Position" in schemas
     assert "Transition" in schemas
 
