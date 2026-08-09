@@ -105,6 +105,8 @@ GET /health
 GET /positions
 GET /positions/{position_id}
 GET /positions/{position_id}/transitions
+GET /grips
+GET /grips/{grip_id}
 GET /transitions
 GET /transitions/{transition_id}
 POST /transitions/available
