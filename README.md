@@ -84,6 +84,12 @@ filtered_path = pathfinder.find_shortest_path(
 
 ## API
 
+Install the application locally from the project root:
+
+```bash
+python -m pip install -e .
+```
+
 Run the FastAPI application locally from the project root:
 
 ```bash
@@ -135,3 +141,12 @@ GitHub Actions.
 
 FastAPI is kept as a thin HTTP layer over the framework-independent engine.
 React / TypeScript remain possible future layers.
+
+## Development
+
+Install the development dependencies and run the complete test suite:
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest
+```
