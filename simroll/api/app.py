@@ -14,7 +14,7 @@ from simroll.api.schemas import (
     ShortestPathResponse,
 )
 from simroll.engine import GrapplingGraph, GrapplingPathfinder
-from simroll.models import GrapplingState, Position, Transition
+from simroll.models import GrapplingState, Grip, Position, Transition
 
 app = FastAPI(
     title="SimRoll API",
@@ -78,6 +78,23 @@ def list_position_transitions(
     except KeyError as error:
         _raise_not_found(error)
     return sorted(transitions, key=lambda transition: transition.id)
+
+
+@app.get("/grips", response_model=list[Grip])
+def list_grips(graph: GraphDependency) -> list[Grip]:
+    """Return every grip in deterministic ID order."""
+
+    return sorted(graph.grips.values(), key=lambda grip: grip.id)
+
+
+@app.get("/grips/{grip_id}", response_model=Grip)
+def get_grip(grip_id: str, graph: GraphDependency) -> Grip:
+    """Return a grip by ID."""
+
+    try:
+        return graph.get_grip(grip_id)
+    except KeyError as error:
+        _raise_not_found(error)
 
 
 @app.get("/transitions", response_model=list[Transition])
