@@ -16,9 +16,9 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-4 are complete. SimRoll currently provides validated Pydantic
+Iterations 1-5 are complete. SimRoll currently provides validated Pydantic
 models and YAML data, a directed graph engine, immutable grappling-state
-updates, state-aware pathfinding, and the first Iteration 5 API endpoints.
+updates, state-aware pathfinding, and a thin HTTP API over the engine.
 
 ## Grappling State
 
@@ -90,8 +90,8 @@ Run the FastAPI application locally from the project root:
 python -m uvicorn simroll.api.app:app --reload
 ```
 
-Interactive API documentation is available at `/docs`. Iteration 5A exposes
-these read-only endpoints:
+Interactive API documentation is available at `/docs` and can be used to try
+each endpoint. The API exposes:
 
 ```text
 GET /
@@ -101,9 +101,25 @@ GET /positions/{position_id}
 GET /positions/{position_id}/transitions
 GET /transitions
 GET /transitions/{transition_id}
+POST /transitions/available
+POST /paths/shortest
+POST /paths
 ```
 
-Pathfinding endpoints are reserved for Iteration 5B.
+For example, find the shortest path from closed guard bottom to mount top:
+
+```bash
+curl -X POST http://127.0.0.1:8000/paths/shortest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_state": {
+      "position_id": "closed_guard_bottom",
+      "mode": "gi",
+      "active_grips": ["wrist_control"]
+    },
+    "target_position_id": "mount_top"
+  }'
+```
 
 ## Tech Stack
 

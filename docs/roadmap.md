@@ -84,10 +84,10 @@ Features:
 - FastAPI setup - Complete
 - Position endpoints - Complete
 - Transition endpoints - Complete
-- Pathfinding endpoints - Pending
+- Pathfinding endpoints - Complete
 
 Status:
-In Progress
+Complete
 
 ---
 
@@ -103,7 +103,7 @@ Features:
 - Basic graph visualization
 
 Status:
-Planned
+Next
 
 ---
 
