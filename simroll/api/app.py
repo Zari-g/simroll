@@ -4,9 +4,17 @@ from typing import Annotated, NoReturn
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
-from simroll.api.dependencies import get_graph
-from simroll.engine import GrapplingGraph
-from simroll.models import Position, Transition
+from simroll.api.dependencies import get_graph, get_pathfinder
+from simroll.api.schemas import (
+    AvailableTransitionsRequest,
+    GrapplingPathResponse,
+    PathsRequest,
+    PathsResponse,
+    ShortestPathRequest,
+    ShortestPathResponse,
+)
+from simroll.engine import GrapplingGraph, GrapplingPathfinder
+from simroll.models import GrapplingState, Position, Transition
 
 app = FastAPI(
     title="SimRoll API",
@@ -18,6 +26,10 @@ app = FastAPI(
 )
 
 GraphDependency = Annotated[GrapplingGraph, Depends(get_graph)]
+PathfinderDependency = Annotated[
+    GrapplingPathfinder,
+    Depends(get_pathfinder),
+]
 
 
 @app.get("/")
@@ -78,6 +90,36 @@ def list_transitions(graph: GraphDependency) -> list[Transition]:
     )
 
 
+@app.post(
+    "/transitions/available",
+    response_model=list[Transition],
+    summary="List transitions available from a grappling state",
+)
+def list_available_transitions(
+    request: AvailableTransitionsRequest,
+    graph: GraphDependency,
+) -> list[Transition]:
+    """Return outgoing transitions usable in the supplied state."""
+
+    state = GrapplingState(
+        position_id=request.position_id,
+        mode=request.mode,
+        active_grips=request.active_grips,
+    )
+    try:
+        graph.validate_state(state)
+        transitions = graph.get_available_transitions(
+            state.position_id,
+            state.mode,
+            state.active_grips,
+        )
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+    return sorted(transitions, key=lambda transition: transition.id)
+
+
 @app.get("/transitions/{transition_id}", response_model=Transition)
 def get_transition(
     transition_id: str,
@@ -91,6 +133,69 @@ def get_transition(
         _raise_not_found(error)
 
 
+@app.post(
+    "/paths/shortest",
+    response_model=ShortestPathResponse,
+    summary="Find the shortest valid path to a position",
+)
+def find_shortest_path(
+    request: ShortestPathRequest,
+    pathfinder: PathfinderDependency,
+) -> ShortestPathResponse:
+    """Return the shortest engine path, or null when none exists."""
+
+    try:
+        path = pathfinder.find_shortest_path(
+            request.start_state,
+            request.target_position_id,
+            difficulties=request.difficulties,
+            transition_types=request.transition_types,
+            max_depth=request.max_depth,
+        )
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+
+    return ShortestPathResponse(
+        path=(
+            GrapplingPathResponse.from_domain(path)
+            if path is not None
+            else None
+        )
+    )
+
+
+@app.post(
+    "/paths",
+    response_model=PathsResponse,
+    summary="Find valid paths to a position",
+)
+def find_paths(
+    request: PathsRequest,
+    pathfinder: PathfinderDependency,
+) -> PathsResponse:
+    """Return engine-ordered paths that satisfy the supplied limits."""
+
+    try:
+        paths = pathfinder.find_paths(
+            request.start_state,
+            request.target_position_id,
+            difficulties=request.difficulties,
+            transition_types=request.transition_types,
+            max_paths=request.max_paths,
+            max_depth=request.max_depth,
+        )
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+
+    return PathsResponse(
+        paths=[GrapplingPathResponse.from_domain(path) for path in paths]
+    )
+
+
 def _raise_not_found(error: KeyError) -> NoReturn:
     """Translate a known graph lookup error into an HTTP 404 response."""
 
@@ -98,4 +203,13 @@ def _raise_not_found(error: KeyError) -> NoReturn:
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=detail,
+    ) from error
+
+
+def _raise_bad_request(error: ValueError) -> NoReturn:
+    """Translate a known domain validation error into an HTTP 400 response."""
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(error),
     ) from error
