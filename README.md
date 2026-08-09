@@ -16,9 +16,10 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-5 are complete. SimRoll currently provides validated Pydantic
-models and YAML data, a directed graph engine, immutable grappling-state
-updates, state-aware pathfinding, and a thin HTTP API over the engine.
+Iterations 1-5 and the Iteration 6A frontend foundation are complete. SimRoll
+currently provides validated Pydantic models and YAML data, a directed graph
+engine, immutable grappling-state updates, state-aware pathfinding, a thin HTTP
+API over the engine, and a React frontend foundation.
 
 ## Grappling State
 
@@ -137,12 +138,42 @@ curl -X POST http://127.0.0.1:8000/paths/shortest \
 - PyYAML
 - FastAPI
 - pytest
+- React
+- TypeScript
+- Vite
 
 The full test suite runs automatically on pushes and pull requests through
 GitHub Actions.
 
 FastAPI is kept as a thin HTTP layer over the framework-independent engine.
-React / TypeScript remain possible future layers.
+The React / TypeScript frontend consumes that API without duplicating engine
+or domain logic.
+
+## Frontend Development
+
+Install and run the backend from the repository root:
+
+```bash
+python -m pip install -e .
+python -m uvicorn simroll.api.app:app --reload
+```
+
+In a second terminal, install and run the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. Vite proxies the frontend's `/api` requests to
+the backend at `http://127.0.0.1:8000`, so local backend CORS changes are not
+needed.
+
+`VITE_API_BASE_URL` configures the browser-facing API base path and defaults to
+`/api`. `VITE_API_PROXY_TARGET` configures the local proxy destination and
+defaults to `http://127.0.0.1:8000`. See `frontend/.env.example` for the local
+development values; put personal overrides in `frontend/.env.local`.
 
 ## Development
 
