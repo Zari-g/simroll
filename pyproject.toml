@@ -22,6 +22,10 @@ dev = [
     "pytest>=8.2,<9",
 ]
 
+[tool.setuptools.packages.find]
+include = ["simroll", "simroll.*"]
+exclude = ["frontend", "frontend.*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--basetemp=.pytest_tmp"
