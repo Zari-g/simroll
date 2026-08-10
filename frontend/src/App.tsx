@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getPositions } from './api/client'
 import { PositionCard } from './components/PositionCard'
+import { PositionDetail } from './components/PositionDetail'
 import { PositionSearch } from './components/PositionSearch'
 import type { Position } from './types/api'
 import './App.css'
@@ -28,6 +29,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [requestKey, setRequestKey] = useState(0)
+  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(
+    null,
+  )
 
   useEffect(() => {
     let shouldUpdate = true
@@ -91,67 +95,79 @@ function App() {
         </div>
       </header>
 
-      <section className="positions-panel" aria-labelledby="positions-heading">
-        <div className="panel-heading">
-          <div>
-            <p className="section-label">Position explorer</p>
-            <h2 id="positions-heading">Find your position</h2>
+      {selectedPositionId ? (
+        <PositionDetail
+          key={selectedPositionId}
+          positionId={selectedPositionId}
+          positions={positions}
+          onBack={() => setSelectedPositionId(null)}
+        />
+      ) : (
+        <section className="positions-panel" aria-labelledby="positions-heading">
+          <div className="panel-heading">
+            <div>
+              <p className="section-label">Position explorer</p>
+              <h2 id="positions-heading">Find your position</h2>
+            </div>
           </div>
-        </div>
 
-        {isLoading && (
-          <div className="state-message" role="status">
-            <span className="spinner" aria-hidden="true" />
-            <span>Loading positions...</span>
-          </div>
-        )}
+          {isLoading && (
+            <div className="state-message" role="status">
+              <span className="spinner" aria-hidden="true" />
+              <span>Loading positions...</span>
+            </div>
+          )}
 
-        {!isLoading && error && (
-          <div className="error-message" role="alert">
-            <strong>{error}</strong>
-            <span>Make sure the backend is running and try again.</span>
-            <button type="button" onClick={retryLoad}>
-              Retry
-            </button>
-          </div>
-        )}
+          {!isLoading && error && (
+            <div className="error-message" role="alert">
+              <strong>{error}</strong>
+              <span>Make sure the backend is running and try again.</span>
+              <button type="button" onClick={retryLoad}>
+                Retry
+              </button>
+            </div>
+          )}
 
-        {!isLoading && !error && (
-          <div className="positions-content">
-            <PositionSearch
-              query={query}
-              onQueryChange={setQuery}
-              onClear={clearSearch}
-            />
+          {!isLoading && !error && (
+            <div className="positions-content">
+              <PositionSearch
+                query={query}
+                onQueryChange={setQuery}
+                onClear={clearSearch}
+              />
 
-            <p className="position-count" aria-live="polite">
-              {resultCount}
-            </p>
+              <p className="position-count" aria-live="polite">
+                {resultCount}
+              </p>
 
-            {filteredPositions.length > 0 ? (
-              <ul className="position-grid">
-                {filteredPositions.map((position) => (
-                  <li key={position.id}>
-                    <PositionCard position={position} />
-                  </li>
-                ))}
-              </ul>
-            ) : normalizedQuery ? (
-              <div className="empty-state">
-                <strong>No positions match “{query.trim()}”.</strong>
-                <span>Try another search term or view every position.</span>
-                <button type="button" onClick={clearSearch}>
-                  Clear search
-                </button>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <strong>No positions are available yet.</strong>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+              {filteredPositions.length > 0 ? (
+                <ul className="position-grid">
+                  {filteredPositions.map((position) => (
+                    <li key={position.id}>
+                      <PositionCard
+                        position={position}
+                        onSelect={setSelectedPositionId}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : normalizedQuery ? (
+                <div className="empty-state">
+                  <strong>No positions match “{query.trim()}”.</strong>
+                  <span>Try another search term or view every position.</span>
+                  <button type="button" onClick={clearSearch}>
+                    Clear search
+                  </button>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <strong>No positions are available yet.</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
     </main>
   )
 }

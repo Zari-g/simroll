@@ -99,7 +99,8 @@ Create the first interactive frontend.
 Features:
 - Frontend foundation - Complete
 - Position explorer - Complete
-- Transition viewer
+- Transition viewer - Complete
+- Grip-aware state controls - Complete
 - Search functionality - Complete
 - Basic graph visualization
 
