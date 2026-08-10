@@ -102,7 +102,8 @@ Features:
 - Transition viewer - Complete
 - Grip-aware state controls - Complete
 - Search functionality - Complete
-- Basic graph visualization
+- Basic graph visualization - Complete
+- Pathfinding interface - Pending
 
 Status:
 In Progress

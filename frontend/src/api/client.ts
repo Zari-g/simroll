@@ -49,6 +49,10 @@ export function getPositionTransitions(
   )
 }
 
+export function getTransitions(signal?: AbortSignal): Promise<Transition[]> {
+  return requestJson<Transition[]>('/transitions', { signal })
+}
+
 export function getGrips(signal?: AbortSignal): Promise<Grip[]> {
   return requestJson<Grip[]>('/grips', { signal })
 }

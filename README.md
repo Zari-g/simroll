@@ -17,11 +17,14 @@ The goal is to build an interactive system where users can move through BJJ posi
 ## Current Status
 
 Iterations 1-5, the Iteration 6A frontend foundation, the Iteration 6B position
-explorer and search, and the Iteration 6C transition viewer are complete.
+explorer and search, the Iteration 6C transition viewer, and the Iteration 6D
+interactive graph visualization are complete.
 SimRoll currently provides validated Pydantic models and YAML data, a directed
 graph engine, immutable grappling-state updates, state-aware pathfinding, a thin
 HTTP API over the engine, and a React frontend for browsing positions and
 inspecting grip-aware transition availability for a selected grappling state.
+The frontend also includes an interactive structural grappling map with position
+nodes, named directed transition edges, and graph-to-position-detail navigation.
 
 ## Grappling State
 
@@ -143,6 +146,7 @@ curl -X POST http://127.0.0.1:8000/paths/shortest \
 - React
 - TypeScript
 - Vite
+- React Flow (`@xyflow/react`)
 
 The full test suite runs automatically on pushes and pull requests through
 GitHub Actions.
@@ -171,6 +175,11 @@ npm run dev
 Open `http://localhost:5173`. Vite proxies the frontend's `/api` requests to
 the backend at `http://127.0.0.1:8000`, so local backend CORS changes are not
 needed.
+
+Use the Positions / Grappling map switch to move between the searchable position
+list and the interactive structural graph. The map uses `GET /positions` and
+`GET /transitions`; its edges show every defined structural transition, while
+the position detail view remains the source for mode- and grip-aware availability.
 
 `VITE_API_BASE_URL` configures the browser-facing API base path and defaults to
 `/api`. `VITE_API_PROXY_TARGET` configures the local proxy destination and

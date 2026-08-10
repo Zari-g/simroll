@@ -22,6 +22,7 @@ interface PositionDetailProps {
   positionId: string
   positions: Position[]
   onBack: () => void
+  backLabel?: string
 }
 
 interface DetailData {
@@ -42,6 +43,7 @@ export function PositionDetail({
   positionId,
   positions,
   onBack,
+  backLabel = 'Back to positions',
 }: PositionDetailProps) {
   const [detail, setDetail] = useState<DetailData | null>(null)
   const [mode, setMode] = useState<GrapplingMode | null>(null)
@@ -196,7 +198,7 @@ export function PositionDetail({
       <section className="positions-panel detail-panel" aria-label="Position details">
         <div className="detail-toolbar">
           <button className="back-button" type="button" onClick={onBack}>
-            ← Back to positions
+            ← {backLabel}
           </button>
         </div>
         <div className="state-message" role="status">
@@ -212,7 +214,7 @@ export function PositionDetail({
       <section className="positions-panel detail-panel" aria-label="Position details">
         <div className="detail-toolbar">
           <button className="back-button" type="button" onClick={onBack}>
-            ← Back to positions
+            ← {backLabel}
           </button>
         </div>
         <div className="error-message" role="alert">
@@ -232,7 +234,7 @@ export function PositionDetail({
     <section className="positions-panel detail-panel" aria-labelledby="detail-heading">
       <div className="detail-toolbar">
         <button className="back-button" type="button" onClick={onBack}>
-          ← Back to positions
+          ← {backLabel}
         </button>
       </div>
 

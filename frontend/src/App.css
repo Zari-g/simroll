@@ -86,6 +86,40 @@ h2 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.panel-heading--explorer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.view-switch {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  border-radius: 0.85rem;
+  padding: 0.3rem;
+  background: rgba(4, 16, 13, 0.65);
+}
+
+.view-switch button {
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.8rem;
+  color: #9fb7ae;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.view-switch button[aria-pressed='true'] {
+  border-color: rgba(158, 231, 192, 0.38);
+  color: #0b1714;
+  background: #9ee7c0;
+}
+
 .state-message,
 .error-message,
 .positions-content {
@@ -704,6 +738,242 @@ input:focus-visible {
   line-height: 1.55;
 }
 
+.graph-content {
+  min-width: 0;
+  padding: 1.5rem 1.75rem 1.75rem;
+}
+
+.graph-explanation {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(15rem, 1fr) auto;
+  gap: 0.65rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.graph-explanation p {
+  margin-bottom: 0;
+  color: #b7c9c2;
+  line-height: 1.5;
+}
+
+.graph-explanation .section-label {
+  margin-bottom: 0.3rem;
+  color: #9ee7c0;
+  line-height: normal;
+}
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  color: #adc2ba;
+  list-style: none;
+  font-size: 0.78rem;
+}
+
+.graph-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-node {
+  width: 1.3rem;
+  height: 0.8rem;
+  border: 1px solid rgba(158, 231, 192, 0.65);
+  border-radius: 0.2rem;
+  background: rgba(158, 231, 192, 0.12);
+}
+
+.legend-arrow {
+  color: #9ee7c0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 0.8;
+}
+
+.legend-label {
+  border: 1px solid rgba(158, 231, 192, 0.2);
+  border-radius: 999px;
+  padding: 0.1rem 0.35rem;
+  color: #dff7ea;
+  background: #10251f;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.graph-explanation .graph-help {
+  grid-column: 1 / -1;
+  color: #91aca2;
+  font-size: 0.82rem;
+}
+
+.graph-state {
+  min-height: 30rem;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+}
+
+.graph-state.error-message {
+  align-items: center;
+}
+
+.graph-viewport {
+  width: 100%;
+  height: clamp(34rem, 68vh, 48rem);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(158, 231, 192, 0.16);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(40, 91, 75, 0.3), transparent 65%),
+    #071511;
+}
+
+.position-graph-node {
+  display: flex;
+  width: 15rem;
+  min-height: 10.625rem;
+  flex-direction: column;
+  border: 1px solid rgba(158, 231, 192, 0.42);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  color: #f5faf8;
+  background:
+    linear-gradient(145deg, rgba(158, 231, 192, 0.09), transparent 58%),
+    #10251f;
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.3);
+}
+
+.react-flow__node-position.selected .position-graph-node {
+  border-color: #9ee7c0;
+  box-shadow:
+    0 0 0 3px rgba(158, 231, 192, 0.16),
+    0 0.8rem 1.8rem rgba(0, 0, 0, 0.3);
+}
+
+.position-graph-node__meta {
+  margin: 0 0 0.45rem;
+  color: #9ee7c0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.position-graph-node h3 {
+  margin: 0;
+  color: #f5faf8;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.position-graph-node__modes {
+  margin: 0.55rem 0 0;
+  color: #9fb7ae;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.position-graph-node__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: auto;
+  border: 1px solid rgba(158, 231, 192, 0.3);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  color: #dff7ea;
+  background: rgba(158, 231, 192, 0.09);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.position-graph-node__action:hover {
+  border-color: rgba(158, 231, 192, 0.68);
+  background: rgba(158, 231, 192, 0.16);
+}
+
+.graph-handle {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.transition-graph-edge {
+  stroke: #9ee7c0;
+  stroke-width: 2;
+}
+
+.transition-graph-edge.is-selected {
+  stroke: #e9fff3;
+  stroke-width: 3;
+}
+
+.transition-graph-edge__label {
+  position: absolute;
+  max-width: 10rem;
+  border: 1px solid rgba(158, 231, 192, 0.22);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  color: #e2f5ea;
+  background: rgba(8, 27, 21, 0.96);
+  box-shadow: 0 0.35rem 0.8rem rgba(0, 0, 0, 0.28);
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 1.2;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.transition-graph-edge__label.is-selected {
+  border-color: #9ee7c0;
+  color: #081411;
+  background: #c8f2dc;
+}
+
+.graph-viewport .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid rgba(158, 231, 192, 0.22);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.45rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+.graph-viewport .react-flow__controls-button {
+  border-bottom-color: rgba(158, 231, 192, 0.15);
+  color: #dff7ea;
+  background: #10251f;
+}
+
+.graph-viewport .react-flow__controls-button:hover {
+  background: #19392f;
+}
+
+.graph-viewport .react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+.graph-viewport .react-flow__attribution {
+  color: #759087;
+  background: rgba(7, 21, 17, 0.82);
+}
+
+.graph-viewport .react-flow__attribution a {
+  color: #a8c8bc;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;
@@ -735,6 +1005,37 @@ input:focus-visible {
   .state-controls,
   .transitions-section {
     padding: 1.25rem;
+  }
+
+  .panel-heading--explorer,
+  .graph-explanation {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .panel-heading--explorer {
+    flex-direction: column;
+  }
+
+  .view-switch {
+    width: 100%;
+  }
+
+  .graph-content {
+    padding: 1rem;
+  }
+
+  .graph-legend {
+    justify-content: flex-start;
+  }
+
+  .graph-viewport {
+    height: min(70vh, 36rem);
+    min-height: 28rem;
+  }
+
+  .graph-state {
+    min-height: 28rem;
   }
 
   .position-card {
