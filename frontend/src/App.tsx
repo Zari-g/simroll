@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { getPositions } from './api/client'
+import { GraphExplorer } from './components/GraphExplorer'
 import { PositionCard } from './components/PositionCard'
 import { PositionDetail } from './components/PositionDetail'
 import { PositionSearch } from './components/PositionSearch'
 import type { Position } from './types/api'
 import './App.css'
+
+type ExplorerView = 'list' | 'graph'
 
 function positionMatchesQuery(position: Position, query: string) {
   const searchableFields = [
@@ -32,6 +35,7 @@ function App() {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(
     null,
   )
+  const [explorerView, setExplorerView] = useState<ExplorerView>('list')
 
   useEffect(() => {
     let shouldUpdate = true
@@ -101,13 +105,43 @@ function App() {
           positionId={selectedPositionId}
           positions={positions}
           onBack={() => setSelectedPositionId(null)}
+          backLabel={
+            explorerView === 'graph'
+              ? 'Back to grappling map'
+              : 'Back to positions'
+          }
         />
       ) : (
         <section className="positions-panel" aria-labelledby="positions-heading">
-          <div className="panel-heading">
+          <div className="panel-heading panel-heading--explorer">
             <div>
-              <p className="section-label">Position explorer</p>
-              <h2 id="positions-heading">Find your position</h2>
+              <p className="section-label">
+                {explorerView === 'list'
+                  ? 'Position explorer'
+                  : 'Graph explorer'}
+              </p>
+              <h2 id="positions-heading">
+                {explorerView === 'list'
+                  ? 'Find your position'
+                  : 'Explore the grappling map'}
+              </h2>
+            </div>
+
+            <div className="view-switch" aria-label="Explorer view">
+              <button
+                type="button"
+                aria-pressed={explorerView === 'list'}
+                onClick={() => setExplorerView('list')}
+              >
+                Positions
+              </button>
+              <button
+                type="button"
+                aria-pressed={explorerView === 'graph'}
+                onClick={() => setExplorerView('graph')}
+              >
+                Grappling map
+              </button>
             </div>
           </div>
 
@@ -128,7 +162,7 @@ function App() {
             </div>
           )}
 
-          {!isLoading && !error && (
+          {!isLoading && !error && explorerView === 'list' && (
             <div className="positions-content">
               <PositionSearch
                 query={query}
@@ -165,6 +199,13 @@ function App() {
                 </div>
               )}
             </div>
+          )}
+
+          {!isLoading && !error && explorerView === 'graph' && (
+            <GraphExplorer
+              positions={positions}
+              onSelectPosition={setSelectedPositionId}
+            />
           )}
         </section>
       )}
