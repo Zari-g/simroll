@@ -16,10 +16,11 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-5 and the Iteration 6A frontend foundation are complete. SimRoll
-currently provides validated Pydantic models and YAML data, a directed graph
-engine, immutable grappling-state updates, state-aware pathfinding, a thin HTTP
-API over the engine, and a React frontend foundation.
+Iterations 1-5, the Iteration 6A frontend foundation, and the Iteration 6B
+position explorer and search are complete. SimRoll currently provides validated
+Pydantic models and YAML data, a directed graph engine, immutable grappling-state
+updates, state-aware pathfinding, a thin HTTP API over the engine, and a React
+frontend for browsing and searching positions.
 
 ## Grappling State
 
