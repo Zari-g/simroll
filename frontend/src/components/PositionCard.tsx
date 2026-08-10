@@ -2,6 +2,7 @@ import type { Position } from '../types/api'
 
 interface PositionCardProps {
   position: Position
+  onSelect?: (positionId: string) => void
 }
 
 function formatLabel(value: string) {
@@ -25,7 +26,7 @@ function Availability({
   )
 }
 
-export function PositionCard({ position }: PositionCardProps) {
+export function PositionCard({ position, onSelect }: PositionCardProps) {
   return (
     <article className="position-card">
       <header className="position-card__header">
@@ -50,6 +51,16 @@ export function PositionCard({ position }: PositionCardProps) {
             <li key={tag}>{formatLabel(tag)}</li>
           ))}
         </ul>
+      )}
+
+      {onSelect && (
+        <button
+          className="position-card__action"
+          type="button"
+          onClick={() => onSelect(position.id)}
+        >
+          Explore position <span aria-hidden="true">→</span>
+        </button>
       )}
     </article>
   )
