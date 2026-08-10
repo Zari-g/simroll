@@ -97,13 +97,14 @@ Goal:
 Create the first interactive frontend.
 
 Features:
-- Position explorer
+- Frontend foundation - Complete
+- Position explorer - Complete
 - Transition viewer
-- Search functionality
+- Search functionality - Complete
 - Basic graph visualization
 
 Status:
-Next
+In Progress
 
 ---
 
