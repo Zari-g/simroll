@@ -16,6 +16,10 @@ import { TransitionGraphEdge } from './TransitionGraphEdge'
 interface GraphExplorerProps {
   positions: Position[]
   onSelectPosition: (positionId: string) => void
+  highlightedPositionIds?: ReadonlySet<string>
+  highlightedTransitionIds?: ReadonlySet<string>
+  highlightedStepCount?: number
+  onClearHighlight?: () => void
 }
 
 const nodeTypes: NodeTypes = { position: PositionGraphNode }
@@ -29,6 +33,10 @@ function isAbortError(error: unknown) {
 export function GraphExplorer({
   positions,
   onSelectPosition,
+  highlightedPositionIds,
+  highlightedTransitionIds,
+  highlightedStepCount,
+  onClearHighlight,
 }: GraphExplorerProps) {
   const [transitions, setTransitions] = useState<Transition[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -62,8 +70,21 @@ export function GraphExplorer({
   }, [requestKey])
 
   const { nodes, edges } = useMemo(
-    () => buildGraphElements(positions, transitions, onSelectPosition),
-    [onSelectPosition, positions, transitions],
+    () =>
+      buildGraphElements(
+        positions,
+        transitions,
+        onSelectPosition,
+        highlightedPositionIds,
+        highlightedTransitionIds,
+      ),
+    [
+      highlightedPositionIds,
+      highlightedTransitionIds,
+      onSelectPosition,
+      positions,
+      transitions,
+    ],
   )
   const retryLoad = () => setRequestKey((key) => key + 1)
 
@@ -86,6 +107,24 @@ export function GraphExplorer({
           Open a position to inspect current-state availability.
         </p>
       </div>
+
+      {highlightedPositionIds && (
+        <div className="graph-path-highlight" role="status">
+          <div>
+            <strong>Backend path highlighted</strong>
+            <span>
+              {highlightedStepCount ?? 0}{' '}
+              {(highlightedStepCount ?? 0) === 1 ? 'step' : 'steps'} · Pathfinding
+              result, not a live roll
+            </span>
+          </div>
+          {onClearHighlight && (
+            <button type="button" onClick={onClearHighlight}>
+              Clear path highlight
+            </button>
+          )}
+        </div>
+      )}
 
       {isLoading && (
         <div className="state-message graph-state" role="status">

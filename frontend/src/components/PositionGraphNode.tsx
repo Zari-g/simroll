@@ -6,14 +6,16 @@ import {
 import { formatReadable } from '../utils/format'
 
 export function PositionGraphNode({ data }: NodeProps<PositionFlowNode>) {
-  const { position, onExplore } = data
+  const { position, onExplore, isHighlighted, isDimmed } = data
   const supportedModes = [
     position.gi_allowed ? 'Gi' : null,
     position.no_gi_allowed ? 'No-Gi' : null,
   ].filter(Boolean)
 
   return (
-    <article className="position-graph-node">
+    <article
+      className={`position-graph-node${isHighlighted ? ' is-path-highlighted' : ''}${isDimmed ? ' is-path-dimmed' : ''}`}
+    >
       {graphHandlePositions.flatMap(({ side, position: handlePosition }) => [
         <Handle
           key={`target-${side}`}
@@ -32,6 +34,10 @@ export function PositionGraphNode({ data }: NodeProps<PositionFlowNode>) {
           className="graph-handle"
         />,
       ])}
+
+      {isHighlighted && (
+        <span className="position-graph-node__path-badge">Path position</span>
+      )}
 
       <p className="position-graph-node__meta">
         {formatReadable(position.category)}

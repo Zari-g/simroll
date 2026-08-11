@@ -4,10 +4,17 @@ import { GraphExplorer } from './components/GraphExplorer'
 import { PositionCard } from './components/PositionCard'
 import { PositionDetail } from './components/PositionDetail'
 import { PositionSearch } from './components/PositionSearch'
-import type { Position } from './types/api'
+import { Pathfinder } from './components/Pathfinder'
+import type { GrapplingPath, Position } from './types/api'
 import './App.css'
 
-type ExplorerView = 'list' | 'graph'
+type ExplorerView = 'list' | 'graph' | 'pathfinder'
+
+interface PathHighlight {
+  positionIds: ReadonlySet<string>
+  transitionIds: ReadonlySet<string>
+  stepCount: number
+}
 
 function positionMatchesQuery(position: Position, query: string) {
   const searchableFields = [
@@ -36,6 +43,7 @@ function App() {
     null,
   )
   const [explorerView, setExplorerView] = useState<ExplorerView>('list')
+  const [pathHighlight, setPathHighlight] = useState<PathHighlight | null>(null)
 
   useEffect(() => {
     let shouldUpdate = true
@@ -84,6 +92,15 @@ function App() {
     ? `${filteredPositions.length} of ${formatPositionCount(positions.length)}`
     : formatPositionCount(positions.length)
 
+  const showPathOnMap = (path: GrapplingPath) => {
+    setPathHighlight({
+      positionIds: new Set(path.states.map((state) => state.position_id)),
+      transitionIds: new Set(path.transition_ids),
+      stepCount: path.step_count,
+    })
+    setExplorerView('graph')
+  }
+
   return (
     <main className="app-shell">
       <header className="hero">
@@ -108,7 +125,9 @@ function App() {
           backLabel={
             explorerView === 'graph'
               ? 'Back to grappling map'
-              : 'Back to positions'
+              : explorerView === 'pathfinder'
+                ? 'Back to pathfinder'
+                : 'Back to positions'
           }
         />
       ) : (
@@ -118,12 +137,16 @@ function App() {
               <p className="section-label">
                 {explorerView === 'list'
                   ? 'Position explorer'
-                  : 'Graph explorer'}
+                  : explorerView === 'graph'
+                    ? 'Graph explorer'
+                    : 'Pathfinder'}
               </p>
               <h2 id="positions-heading">
                 {explorerView === 'list'
                   ? 'Find your position'
-                  : 'Explore the grappling map'}
+                  : explorerView === 'graph'
+                    ? 'Explore the grappling map'
+                    : 'Find a valid route'}
               </h2>
             </div>
 
@@ -141,6 +164,13 @@ function App() {
                 onClick={() => setExplorerView('graph')}
               >
                 Grappling map
+              </button>
+              <button
+                type="button"
+                aria-pressed={explorerView === 'pathfinder'}
+                onClick={() => setExplorerView('pathfinder')}
+              >
+                Pathfinder
               </button>
             </div>
           </div>
@@ -205,7 +235,15 @@ function App() {
             <GraphExplorer
               positions={positions}
               onSelectPosition={setSelectedPositionId}
+              highlightedPositionIds={pathHighlight?.positionIds}
+              highlightedTransitionIds={pathHighlight?.transitionIds}
+              highlightedStepCount={pathHighlight?.stepCount}
+              onClearHighlight={() => setPathHighlight(null)}
             />
+          )}
+
+          {!isLoading && !error && explorerView === 'pathfinder' && (
+            <Pathfinder positions={positions} onShowOnMap={showPathOnMap} />
           )}
         </section>
       )}

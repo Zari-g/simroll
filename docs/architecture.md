@@ -2,7 +2,7 @@
 
 ## 1. Architecture Goal
 
-SimRoll is a Python-based grappling engine with a FastAPI interface and may later expand into a website and mobile app.
+SimRoll is a Python-based grappling engine with a FastAPI interface and React web application, and may later expand into a mobile app.
 
 The goal is to keep the project modular so the core simulation logic can be reused across different interfaces.
 
@@ -14,11 +14,11 @@ Initial focus:
 * grip constraints
 * pathfinding between positions
 
-Future interfaces:
+Current and future interfaces:
 
-* web app
+* React web app (implemented)
 * mobile app
-* visual graph explorer
+* visual graph explorer (implemented)
 
 ---
 
@@ -27,7 +27,7 @@ Future interfaces:
 SimRoll is organized into layers:
 
 ```text
-User Interface
+React / TypeScript Frontend
     ↓
 FastAPI Layer
     ↓
@@ -38,7 +38,9 @@ Domain Models
 YAML Data
 ```
 
-The FastAPI layer and lower layers are implemented. The user interface remains future work.
+The frontend, FastAPI layer, and lower layers are implemented. The frontend
+collects path criteria and presents results, while pathfinding and grappling
+rules remain backend-owned.
 
 ---
 
@@ -96,7 +98,8 @@ This is the heart of the project. Roll-sequence simulation remains future work.
 
 ## 6. Layer 4 — API Layer
 
-The implemented FastAPI layer allows HTTP clients and the future user interface to communicate with the Python engine.
+The implemented FastAPI layer allows HTTP clients, including the current web
+interface, to communicate with the Python engine.
 
 Its responsibilities are:
 
@@ -113,15 +116,28 @@ The API remains a thin HTTP layer. Grappling rules, validation, transition execu
 
 ## 7. Layer 5 — User Interface
 
-The user interface will be added later.
+The React / TypeScript website includes:
 
-The website may include:
+* searchable Position Explorer
+* Position Detail and grip-aware Transition Viewer
+* Gi / No-Gi and active-grip state controls
+* interactive structural Grappling Map
+* backend-powered shortest and multiple-path Pathfinder
+* path-result highlighting on the existing graph
 
-* position explorer
-* transition viewer
-* search bar
-* graph visualization
-* roll simulator interface
+Path requests follow this ownership flow:
+
+```text
+Pathfinder form
+    -> FastAPI pathfinding endpoint
+    -> GrapplingPathfinder
+    -> returned GrapplingPath
+    -> readable result and optional graph highlight
+```
+
+The frontend highlights the position and transition IDs returned by the API. It
+does not discover paths, infer reachability, calculate grip changes, or execute
+the route. A roll simulator interface remains future work.
 
 The mobile app may include:
 

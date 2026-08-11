@@ -16,15 +16,20 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-5, the Iteration 6A frontend foundation, the Iteration 6B position
-explorer and search, the Iteration 6C transition viewer, and the Iteration 6D
-interactive graph visualization are complete.
+Iterations 1-6 are complete. The web interface includes the frontend foundation,
+Position Explorer and search, Position Detail and its grip-aware transition
+viewer, the interactive structural Grappling Map, and the backend-powered
+Pathfinder.
 SimRoll currently provides validated Pydantic models and YAML data, a directed
 graph engine, immutable grappling-state updates, state-aware pathfinding, a thin
 HTTP API over the engine, and a React frontend for browsing positions and
 inspecting grip-aware transition availability for a selected grappling state.
-The frontend also includes an interactive structural grappling map with position
-nodes, named directed transition edges, and graph-to-position-detail navigation.
+The Pathfinder discovers shortest or multiple valid paths through the API,
+shows the complete returned position/mode/grip state at every step, and can
+highlight any returned route on the structural Grappling Map. Position nodes,
+named directed transition edges, parallel transition routing, and
+graph-to-position-detail navigation remain available around the highlighted
+path.
 
 ## Grappling State
 
@@ -176,10 +181,19 @@ Open `http://localhost:5173`. Vite proxies the frontend's `/api` requests to
 the backend at `http://127.0.0.1:8000`, so local backend CORS changes are not
 needed.
 
-Use the Positions / Grappling map switch to move between the searchable position
-list and the interactive structural graph. The map uses `GET /positions` and
-`GET /transitions`; its edges show every defined structural transition, while
-the position detail view remains the source for mode- and grip-aware availability.
+Use the Positions / Grappling map / Pathfinder switch to move among the
+searchable position list, interactive structural graph, and path search form.
+Position Detail lets users set Gi or No-Gi mode, choose active grips, and inspect
+backend-reported transition availability for that state.
+
+Pathfinder accepts a starting position, supported grappling mode, starting grips,
+target position, and optional difficulty/type/depth limits. It calls
+`POST /paths/shortest` for the shortest valid route or `POST /paths` for multiple
+engine-ordered routes. Returned states and active grips are displayed directly;
+the frontend does not execute transitions or reproduce pathfinding rules. Use
+**Show on grappling map** on a result to emphasize its returned position and
+transition IDs while retaining the rest of the structural map, then **Clear path
+highlight** to restore the normal map.
 
 `VITE_API_BASE_URL` configures the browser-facing API base path and defaults to
 `/api`. `VITE_API_PROXY_TARGET` configures the local proxy destination and

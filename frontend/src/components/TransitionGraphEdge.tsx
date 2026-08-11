@@ -20,6 +20,11 @@ export function TransitionGraphEdge({
   const edgePath = `M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`
   const labelX = sourceX * 0.25 + controlX * 0.5 + targetX * 0.25
   const labelY = sourceY * 0.25 + controlY * 0.5 + targetY * 0.25
+  const stateClass = data?.isHighlighted
+    ? ' is-path-highlighted'
+    : data?.isDimmed
+      ? ' is-path-dimmed'
+      : ''
 
   return (
     <>
@@ -27,11 +32,11 @@ export function TransitionGraphEdge({
         id={id}
         path={edgePath}
         markerEnd={markerEnd}
-        className={selected ? 'transition-graph-edge is-selected' : 'transition-graph-edge'}
+        className={`transition-graph-edge${selected ? ' is-selected' : ''}${stateClass}`}
       />
       <EdgeLabelRenderer>
         <div
-          className={`transition-graph-edge__label${selected ? ' is-selected' : ''}`}
+          className={`transition-graph-edge__label${selected ? ' is-selected' : ''}${stateClass}`}
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}

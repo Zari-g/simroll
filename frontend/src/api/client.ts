@@ -1,7 +1,11 @@
 import type {
   AvailableTransitionsRequest,
   Grip,
+  PathsRequest,
+  PathsResponse,
   Position,
+  ShortestPathRequest,
+  ShortestPathResponse,
   Transition,
 } from '../types/api'
 
@@ -10,6 +14,16 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(
   '',
 )
 
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 async function requestJson<T>(
   path: string,
   options?: RequestInit,
@@ -17,8 +31,18 @@ async function requestJson<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, options)
 
   if (!response.ok) {
-    throw new Error(
-      `API request failed: ${response.status} ${response.statusText}`,
+    let detail: string | null = null
+
+    try {
+      const body = (await response.json()) as { detail?: unknown }
+      if (typeof body.detail === 'string') detail = body.detail
+    } catch {
+      // A non-JSON error response still receives a useful HTTP fallback.
+    }
+
+    throw new ApiError(
+      detail ?? `${response.status} ${response.statusText}`,
+      response.status,
     )
   }
 
@@ -62,6 +86,34 @@ export function getAvailableTransitions(
   signal?: AbortSignal,
 ): Promise<Transition[]> {
   return requestJson<Transition[]>('/transitions/available', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+    signal,
+  })
+}
+
+export function findShortestPath(
+  request: ShortestPathRequest,
+  signal?: AbortSignal,
+): Promise<ShortestPathResponse> {
+  return requestJson<ShortestPathResponse>('/paths/shortest', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+    signal,
+  })
+}
+
+export function findPaths(
+  request: PathsRequest,
+  signal?: AbortSignal,
+): Promise<PathsResponse> {
+  return requestJson<PathsResponse>('/paths', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
