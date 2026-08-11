@@ -12,6 +12,10 @@ import type {
   Transition,
 } from '../types/api'
 import { formatReadable } from '../utils/format'
+import {
+  filterGripIdsForMode,
+  getInitialMode,
+} from '../utils/grapplingState'
 import { GripSelector } from './GripSelector'
 import {
   TransitionCard,
@@ -33,10 +37,6 @@ interface DetailData {
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === 'AbortError'
-}
-
-function initialMode(position: Position): GrapplingMode {
-  return position.gi_allowed ? 'gi' : 'no_gi'
 }
 
 export function PositionDetail({
@@ -73,7 +73,7 @@ export function PositionDetail({
         ])
 
         setDetail({ position, transitions, grips })
-        setMode(initialMode(position))
+        setMode(getInitialMode(position))
         setSelectedGripIds([])
       } catch (requestError) {
         if (!isAbortError(requestError)) {
@@ -158,14 +158,9 @@ export function PositionDetail({
     }
 
     setMode(nextMode)
-    if (nextMode === 'no_gi') {
-      const giGripIds = new Set(
-        detail.grips.filter((grip) => grip.gi_required).map((grip) => grip.id),
-      )
-      setSelectedGripIds((currentIds) =>
-        currentIds.filter((gripId) => !giGripIds.has(gripId)),
-      )
-    }
+    setSelectedGripIds((currentIds) =>
+      filterGripIdsForMode(currentIds, detail.grips, nextMode),
+    )
   }
 
   const toggleGrip = (gripId: string) => {

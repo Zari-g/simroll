@@ -17,6 +17,8 @@ type HandleSide = 'top' | 'right' | 'bottom' | 'left'
 export interface PositionGraphNodeData extends Record<string, unknown> {
   position: Position
   onExplore: (positionId: string) => void
+  isHighlighted: boolean
+  isDimmed: boolean
 }
 
 export type PositionFlowNode = Node<PositionGraphNodeData, 'position'>
@@ -24,6 +26,8 @@ export type PositionFlowNode = Node<PositionGraphNodeData, 'position'>
 export interface TransitionGraphEdgeData extends Record<string, unknown> {
   transitionName: string
   routeOffset: number
+  isHighlighted: boolean
+  isDimmed: boolean
 }
 
 export type TransitionFlowEdge = Edge<TransitionGraphEdgeData, 'transition'>
@@ -162,7 +166,12 @@ export function buildGraphElements(
   positions: Position[],
   transitions: Transition[],
   onExplore: (positionId: string) => void,
+  highlightedPositionIds?: ReadonlySet<string>,
+  highlightedTransitionIds?: ReadonlySet<string>,
 ): GraphElements {
+  const hasHighlight =
+    highlightedPositionIds !== undefined ||
+    highlightedTransitionIds !== undefined
   const positionsById = new Map(
     positions.map((position) => [position.id, position]),
   )
@@ -188,7 +197,13 @@ export function buildGraphElements(
       id: position.id,
       type: 'position',
       position: nodePositions.get(position.id) ?? { x: 0, y: 0 },
-      data: { position, onExplore },
+      data: {
+        position,
+        onExplore,
+        isHighlighted: highlightedPositionIds?.has(position.id) ?? false,
+        isDimmed:
+          hasHighlight && !(highlightedPositionIds?.has(position.id) ?? false),
+      },
       draggable: false,
       deletable: false,
       selectable: true,
@@ -220,12 +235,20 @@ export function buildGraphElements(
       data: {
         transitionName: transition.name,
         routeOffset: routeOffsets.get(transition.id) ?? 0,
+        isHighlighted:
+          highlightedTransitionIds?.has(transition.id) ?? false,
+        isDimmed:
+          hasHighlight &&
+          !(highlightedTransitionIds?.has(transition.id) ?? false),
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 18,
         height: 18,
-        color: '#9ee7c0',
+        color:
+          highlightedTransitionIds?.has(transition.id) ?? false
+            ? '#f4d77a'
+            : '#9ee7c0',
       },
       deletable: false,
       reconnectable: false,

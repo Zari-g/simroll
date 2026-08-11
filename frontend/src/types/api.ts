@@ -42,3 +42,46 @@ export interface AvailableTransitionsRequest {
   mode: GrapplingMode
   active_grips: string[]
 }
+
+export interface GrapplingStatePayload {
+  position_id: string
+  mode: GrapplingMode
+  active_grips: string[]
+}
+
+export interface ShortestPathRequest {
+  start_state: GrapplingStatePayload
+  target_position_id: string
+  difficulties: string[] | null
+  transition_types: string[] | null
+  max_depth: number | null
+}
+
+export interface PathsRequest {
+  start_state: GrapplingStatePayload
+  target_position_id: string
+  difficulties: string[] | null
+  transition_types: string[] | null
+  max_paths: number
+  max_depth: number
+}
+
+export interface GrapplingStateResponse {
+  position_id: string
+  mode: GrapplingMode
+  active_grips: string[]
+}
+
+export interface GrapplingPath {
+  states: GrapplingStateResponse[]
+  transition_ids: string[]
+  step_count: number
+}
+
+export interface ShortestPathResponse {
+  path: GrapplingPath | null
+}
+
+export interface PathsResponse {
+  paths: GrapplingPath[]
+}
