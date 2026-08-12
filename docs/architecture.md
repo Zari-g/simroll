@@ -76,7 +76,7 @@ Core models:
 
 These models describe what the system understands about Brazilian Jiu-Jitsu.
 
-For example, a transition connects one position to another and may require specific grips. `GrapplingState` represents an immutable position, mode, and active-grip snapshot, while `GrapplingPath` represents a valid sequence of those states. Future roll simulation can build on these models without adding simulation behavior to them.
+For example, a transition connects one position to another and may require specific grips. `GrapplingState` represents an immutable position, mode, and active-grip snapshot, while `GrapplingPath` represents a valid sequence of those states. Roll simulation reuses these models without adding simulation behavior to them.
 
 ---
 
@@ -91,8 +91,12 @@ Responsibilities:
 * validate grappling states
 * execute transitions as immutable state updates
 * use `GrapplingPathfinder` for shortest and multiple path searches
+* use `RollSimulator` for user-directed steps and bounded random roll sequences
 
-This is the heart of the project. Roll-sequence simulation remains future work.
+This is the heart of the project. `RollSimulator` delegates state validation,
+transition availability, and transition application to `GrapplingGraph`, keeping
+the graph authoritative for grappling rules. Roll-specific API and UI layers
+remain future work.
 
 ---
 
@@ -165,7 +169,8 @@ simroll/
 ├── engine/
 │   ├── graph.py
 │   ├── pathfinder.py
-│   └── rules.py
+│   ├── rules.py
+│   └── simulator.py
 │
 ├── models/
 │   ├── position.py

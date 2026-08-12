@@ -16,13 +16,16 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-6 are complete. The web interface includes the frontend foundation,
+Iterations 1-6 are complete. Iteration 7A adds the backend roll simulation
+engine; roll-specific API endpoints and UI remain future work. The web interface
+includes the frontend foundation,
 Position Explorer and search, Position Detail and its grip-aware transition
 viewer, the interactive structural Grappling Map, and the backend-powered
 Pathfinder.
 SimRoll currently provides validated Pydantic models and YAML data, a directed
-graph engine, immutable grappling-state updates, state-aware pathfinding, a thin
-HTTP API over the engine, and a React frontend for browsing positions and
+graph engine, immutable grappling-state updates, state-aware pathfinding, random
+and user-directed roll simulation, a thin HTTP API over the existing engine
+features, and a React frontend for browsing positions and
 inspecting grip-aware transition availability for a selected grappling state.
 The Pathfinder discovers shortest or multiple valid paths through the API,
 shows the complete returned position/mode/grip state at every step, and can
@@ -92,6 +95,32 @@ filtered_path = pathfinder.find_shortest_path(
     transition_types={"sweep"},
 )
 ```
+
+## Roll Simulation Engine
+
+`RollSimulator` advances complete grappling states through transitions validated
+and applied by `GrapplingGraph`. Callers can select a transition, request one
+random valid step, or generate a bounded random `GrapplingPath`. Supplying a
+seeded `random.Random` makes random rolls repeatable.
+
+```python
+import random
+
+from simroll.engine import GrapplingGraph, RollSimulator
+from simroll.models import GrapplingState
+
+graph = GrapplingGraph.from_default_data()
+simulator = RollSimulator(graph)
+start = GrapplingState(
+    position_id="closed_guard_bottom",
+    mode="gi",
+    active_grips=["wrist_control"],
+)
+
+path = simulator.simulate(start, max_steps=4, rng=random.Random(7))
+```
+
+The simulator has no dedicated API endpoints or frontend controls yet.
 
 ## API
 
