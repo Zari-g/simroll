@@ -12,6 +12,8 @@ from simroll.api.schemas import (
     PathsRequest,
     PathsResponse,
     RollAvailableRequest,
+    RollSimulationRequest,
+    RollSimulationResponse,
     RollStepRequest,
     RollStepResponse,
     ShortestPathRequest,
@@ -266,6 +268,42 @@ def perform_roll_step(
     return RollStepResponse(
         transition=transition,
         next_state=GrapplingStateResponse.from_domain(next_state),
+    )
+
+
+@app.post(
+    "/rolls/simulate",
+    response_model=RollSimulationResponse,
+    summary="Simulate a bounded random roll sequence",
+)
+def simulate_roll(
+    request: RollSimulationRequest,
+    simulator: SimulatorDependency,
+) -> RollSimulationResponse:
+    """Return a simulator-generated path and its deterministic stop reason."""
+
+    try:
+        path = simulator.simulate(
+            request.start_state,
+            max_steps=request.max_steps,
+        )
+        if path.step_count == request.max_steps:
+            stop_reason = "max_steps"
+        else:
+            if simulator.get_available_transitions(path.final_state):
+                raise RuntimeError(
+                    "Simulation stopped before max_steps despite available "
+                    "transitions."
+                )
+            stop_reason = "no_available_transitions"
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+
+    return RollSimulationResponse(
+        path=GrapplingPathResponse.from_domain(path),
+        stop_reason=stop_reason,
     )
 
 

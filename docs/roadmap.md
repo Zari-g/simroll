@@ -118,13 +118,15 @@ Create a more dynamic user experience.
 Features:
 - Backend roll simulation engine - Complete (Iteration 7A)
 - Single-step roll API - Complete (Iteration 7B)
-- Simulated rolling sequences - Engine complete; API/UI future
+- Multi-step simulation API - Complete (Iteration 7C)
+- Simulated rolling sequences - Backend complete; frontend future
 - Randomized transitions - Single-step API complete; UI future
 - User-controlled branching - Single-step API complete; UI future
-- Position history - Engine complete; API/UI future
+- Position history - Backend complete; frontend future
+- Frontend roll simulator - Future
 
 Status:
-In progress (backend engine and single-step API complete)
+In progress (backend engine and roll APIs complete; frontend future)
 
 ---
 

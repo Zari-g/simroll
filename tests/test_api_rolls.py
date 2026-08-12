@@ -306,6 +306,262 @@ def test_random_roll_step_returns_null_fields_at_dead_end() -> None:
     assert response.json() == {"transition": None, "next_state": None}
 
 
+def test_roll_simulation_returns_authoritative_valid_path() -> None:
+    start_state = GrapplingState(
+        position_id="closed_guard_bottom",
+        mode="gi",
+        active_grips={"sleeve_grip", "wrist_control"},
+    )
+
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=4,
+            active_grips=["wrist_control", "sleeve_grip"],
+        ),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert set(body) == {"path", "stop_reason"}
+    assert body["path"]["states"][0] == _state_response(start_state)
+    assert body["path"]["step_count"] == len(
+        body["path"]["transition_ids"]
+    )
+    assert len(body["path"]["states"]) == (
+        len(body["path"]["transition_ids"]) + 1
+    )
+    assert body["stop_reason"] == "max_steps"
+    _assert_path_is_graph_valid(body["path"])
+
+
+def test_roll_simulation_no_gi_never_uses_gi_only_transitions() -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=6,
+            mode="no_gi",
+            active_grips=["wrist_control"],
+        ),
+    )
+
+    assert response.status_code == 200
+    path = response.json()["path"]
+    assert path["transition_ids"]
+    assert all(
+        graph.get_transition(transition_id).no_gi_allowed
+        for transition_id in path["transition_ids"]
+    )
+    assert all(state["mode"] == "no_gi" for state in path["states"])
+    _assert_path_is_graph_valid(path)
+
+
+def test_roll_simulation_gi_can_use_gi_only_transition() -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=1,
+            mode="gi",
+            active_grips=["sleeve_grip"],
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["path"]["transition_ids"] == ["flower_sweep"]
+
+
+@pytest.mark.parametrize(
+    ("active_grips", "expected_grips"),
+    [
+        (["wrist_control"], ["underhook"]),
+        (["sleeve_grip"], []),
+    ],
+)
+def test_roll_simulation_returns_engine_grip_changes(
+    active_grips: list[str],
+    expected_grips: list[str],
+) -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=1,
+            active_grips=active_grips,
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["path"]["states"][1][
+        "active_grips"
+    ] == expected_grips
+
+
+def test_roll_simulation_zero_steps_returns_only_start_state() -> None:
+    payload = _simulation_payload(
+        max_steps=0,
+        active_grips=["wrist_control", "sleeve_grip"],
+    )
+
+    response = client.post("/rolls/simulate", json=payload)
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "path": {
+            "states": [
+                {
+                    "position_id": "closed_guard_bottom",
+                    "mode": "gi",
+                    "active_grips": ["sleeve_grip", "wrist_control"],
+                }
+            ],
+            "transition_ids": [],
+            "step_count": 0,
+        },
+        "stop_reason": "max_steps",
+    }
+
+
+@pytest.mark.parametrize("max_steps", [1, 3, 7])
+def test_roll_simulation_never_exceeds_requested_bound(
+    max_steps: int,
+) -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=max_steps,
+            active_grips=["wrist_control", "sleeve_grip"],
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["path"]["step_count"] <= max_steps
+
+
+def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=5,
+            position_id="side_control_top",
+        ),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "path": {
+            "states": [
+                {
+                    "position_id": "side_control_top",
+                    "mode": "gi",
+                    "active_grips": [],
+                }
+            ],
+            "transition_ids": [],
+            "step_count": 0,
+        },
+        "stop_reason": "no_available_transitions",
+    }
+
+
+def test_roll_simulation_reports_early_dead_end() -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=5,
+            mode="no_gi",
+            active_grips=["wrist_control"],
+        ),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["path"]["step_count"] == 2
+    assert body["path"]["step_count"] < 5
+    assert body["stop_reason"] == "no_available_transitions"
+    _assert_path_is_graph_valid(body["path"])
+
+
+@pytest.mark.parametrize(
+    ("state_update", "detail"),
+    [
+        ({"position_id": "missing"}, "Unknown position ID 'missing'."),
+        ({"active_grips": ["missing"]}, "Unknown grip ID 'missing'."),
+    ],
+)
+def test_roll_simulation_translates_unknown_state_resources(
+    state_update: dict[str, object],
+    detail: str,
+) -> None:
+    payload = _simulation_payload(max_steps=2)
+    payload["start_state"].update(state_update)
+
+    response = client.post("/rolls/simulate", json=payload)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": detail}
+
+
+def test_roll_simulation_rejects_gi_grip_in_no_gi() -> None:
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=2,
+            mode="no_gi",
+            active_grips=["sleeve_grip"],
+        ),
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": (
+            "Gi-required grip 'sleeve_grip' cannot be active in no_gi mode."
+        )
+    }
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"max_steps": 1},
+        {
+            "start_state": {
+                "position_id": "closed_guard_bottom",
+                "mode": "invalid",
+            },
+            "max_steps": 1,
+        },
+        {
+            "start_state": {
+                "position_id": "closed_guard_bottom",
+                "mode": "gi",
+            },
+            "max_steps": -1,
+        },
+        {
+            "start_state": {
+                "position_id": "closed_guard_bottom",
+                "mode": "gi",
+            },
+            "max_steps": 1,
+            "unexpected": True,
+        },
+        {
+            "start_state": {
+                "position_id": "closed_guard_bottom",
+                "mode": "gi",
+                "unexpected": True,
+            },
+            "max_steps": 1,
+        },
+    ],
+)
+def test_roll_simulation_request_validation_uses_422(
+    payload: dict[str, object],
+) -> None:
+    response = client.post("/rolls/simulate", json=payload)
+
+    assert response.status_code == 422
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -352,8 +608,11 @@ def test_openapi_documents_roll_routes_and_schemas() -> None:
     document = response.json()
     assert "post" in document["paths"]["/rolls/available"]
     assert "post" in document["paths"]["/rolls/step"]
+    assert "post" in document["paths"]["/rolls/simulate"]
     assert {
         "RollAvailableRequest",
+        "RollSimulationRequest",
+        "RollSimulationResponse",
         "RollStepRequest",
         "RollStepResponse",
     }.issubset(document["components"]["schemas"])
@@ -391,9 +650,37 @@ def _step_payload(
     }
 
 
+def _simulation_payload(
+    *,
+    max_steps: int,
+    position_id: str = "closed_guard_bottom",
+    mode: str = "gi",
+    active_grips: list[str] | None = None,
+) -> dict[str, object]:
+    return {
+        "start_state": {
+            "position_id": position_id,
+            "mode": mode,
+            "active_grips": active_grips or [],
+        },
+        "max_steps": max_steps,
+    }
+
+
 def _state_response(state: GrapplingState) -> dict[str, object]:
     return {
         "position_id": state.position_id,
         "mode": state.mode,
         "active_grips": sorted(state.active_grips),
     }
+
+
+def _assert_path_is_graph_valid(path: dict[str, object]) -> None:
+    states = [GrapplingState.model_validate(state) for state in path["states"]]
+    transition_ids = path["transition_ids"]
+
+    for index, transition_id in enumerate(transition_ids):
+        assert transition_id in graph.transitions
+        assert graph.apply_transition(states[index], transition_id) == states[
+            index + 1
+        ]
