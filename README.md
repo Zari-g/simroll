@@ -16,9 +16,9 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-6 are complete. Iterations 7A and 7B add the backend roll
-simulation engine and its single-step API; multi-step roll API and UI work
-remain future iterations. The web interface includes the frontend foundation,
+Iterations 1-6 are complete. Iterations 7A through 7C add the backend roll
+simulation engine plus its single-step and multi-step APIs; Roll Simulator UI
+work remains a future iteration. The web interface includes the frontend foundation,
 Position Explorer and search, Position Detail and its grip-aware transition
 viewer, the interactive structural Grappling Map, and the backend-powered
 Pathfinder.
@@ -120,9 +120,9 @@ start = GrapplingState(
 path = simulator.simulate(start, max_steps=4, rng=random.Random(7))
 ```
 
-The simulator is exposed through single-step API endpoints for retrieving valid
-choices and applying either a selected or random transition. Multi-step
-simulation endpoints and frontend controls remain future work.
+The simulator is exposed through API endpoints for retrieving valid choices,
+applying either a selected or random transition, and generating a bounded
+multi-step roll sequence. Frontend Roll Simulator controls remain future work.
 
 ## API
 
@@ -156,6 +156,7 @@ POST /paths/shortest
 POST /paths
 POST /rolls/available
 POST /rolls/step
+POST /rolls/simulate
 ```
 
 For example, find the shortest path from closed guard bottom to mount top:

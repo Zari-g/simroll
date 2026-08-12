@@ -95,9 +95,9 @@ Responsibilities:
 
 This is the heart of the project. `RollSimulator` delegates state validation,
 transition availability, and transition application to `GrapplingGraph`, keeping
-the graph authoritative for grappling rules. The API exposes available choices
-and one selected or random step; multi-step roll API and UI layers remain future
-work.
+the graph authoritative for grappling rules. The API exposes available choices,
+one selected or random step, and bounded multi-step roll sequences. The Roll
+Simulator UI remains future work.
 
 ---
 
@@ -116,8 +116,19 @@ Its responsibilities are:
 * multiple path search
 * available roll-step choices
 * selected or random single roll steps
+* bounded random multi-step roll sequences
 
 The API remains a thin HTTP layer. Grappling rules, validation, transition execution, and pathfinding stay in the engine rather than in route handlers.
+
+Multi-step roll requests preserve the same ownership boundary:
+
+```text
+RollSimulationRequest
+    -> RollSimulator.simulate()
+    -> GrapplingPath
+    -> GrapplingPathResponse
+    -> RollSimulationResponse
+```
 
 ---
 

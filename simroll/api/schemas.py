@@ -1,5 +1,7 @@
 """Transport models for SimRoll state, pathfinding, and roll endpoints."""
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from simroll.models import (
@@ -155,3 +157,22 @@ class RollStepResponse(BaseModel):
 
     transition: Transition | None
     next_state: GrapplingStateResponse | None
+
+
+class RollSimulationRequest(BaseModel):
+    """Parameters for a bounded random roll sequence."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    start_state: GrapplingState
+    max_steps: int = Field(
+        ge=0,
+        description="Maximum number of random roll transitions to perform.",
+    )
+
+
+class RollSimulationResponse(BaseModel):
+    """Authoritative simulated path and the reason it stopped."""
+
+    path: GrapplingPathResponse
+    stop_reason: Literal["max_steps", "no_available_transitions"]
