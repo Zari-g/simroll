@@ -116,13 +116,14 @@ Goal:
 Create a more dynamic user experience.
 
 Features:
-- Simulated rolling sequences
-- Randomized transitions
-- User-controlled branching
-- Position history
+- Backend roll simulation engine - Complete (Iteration 7A)
+- Simulated rolling sequences - Engine complete; API/UI future
+- Randomized transitions - Engine complete; API/UI future
+- User-controlled branching - Engine complete; API/UI future
+- Position history - Engine complete; API/UI future
 
 Status:
-Future
+In progress (backend engine foundation complete)
 
 ---
 
