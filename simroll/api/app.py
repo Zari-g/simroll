@@ -4,16 +4,20 @@ from typing import Annotated, NoReturn
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
-from simroll.api.dependencies import get_graph, get_pathfinder
+from simroll.api.dependencies import get_graph, get_pathfinder, get_simulator
 from simroll.api.schemas import (
     AvailableTransitionsRequest,
     GrapplingPathResponse,
+    GrapplingStateResponse,
     PathsRequest,
     PathsResponse,
+    RollAvailableRequest,
+    RollStepRequest,
+    RollStepResponse,
     ShortestPathRequest,
     ShortestPathResponse,
 )
-from simroll.engine import GrapplingGraph, GrapplingPathfinder
+from simroll.engine import GrapplingGraph, GrapplingPathfinder, RollSimulator
 from simroll.models import GrapplingState, Grip, Position, Transition
 
 app = FastAPI(
@@ -30,6 +34,7 @@ PathfinderDependency = Annotated[
     GrapplingPathfinder,
     Depends(get_pathfinder),
 ]
+SimulatorDependency = Annotated[RollSimulator, Depends(get_simulator)]
 
 
 @app.get("/")
@@ -210,6 +215,57 @@ def find_paths(
 
     return PathsResponse(
         paths=[GrapplingPathResponse.from_domain(path) for path in paths]
+    )
+
+
+@app.post(
+    "/rolls/available",
+    response_model=list[Transition],
+    summary="List valid choices for the next roll step",
+)
+def list_roll_choices(
+    request: RollAvailableRequest,
+    simulator: SimulatorDependency,
+) -> list[Transition]:
+    """Return simulator-validated transitions for the supplied state."""
+
+    try:
+        return simulator.get_available_transitions(request.state)
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+
+
+@app.post(
+    "/rolls/step",
+    response_model=RollStepResponse,
+    summary="Perform one selected or random roll step",
+)
+def perform_roll_step(
+    request: RollStepRequest,
+    graph: GraphDependency,
+    simulator: SimulatorDependency,
+) -> RollStepResponse:
+    """Apply one transition, or return null fields at a random dead end."""
+
+    try:
+        if request.transition_id is not None:
+            transition = graph.get_transition(request.transition_id)
+            next_state = simulator.step(request.state, transition.id)
+        else:
+            result = simulator.random_step(request.state)
+            if result is None:
+                return RollStepResponse(transition=None, next_state=None)
+            transition, next_state = result
+    except KeyError as error:
+        _raise_not_found(error)
+    except ValueError as error:
+        _raise_bad_request(error)
+
+    return RollStepResponse(
+        transition=transition,
+        next_state=GrapplingStateResponse.from_domain(next_state),
     )
 
 

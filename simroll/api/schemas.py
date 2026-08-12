@@ -1,8 +1,13 @@
-"""Transport models for SimRoll state and pathfinding endpoints."""
+"""Transport models for SimRoll state, pathfinding, and roll endpoints."""
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from simroll.models import GrapplingMode, GrapplingPath, GrapplingState
+from simroll.models import (
+    GrapplingMode,
+    GrapplingPath,
+    GrapplingState,
+    Transition,
+)
 
 
 class AvailableTransitionsRequest(BaseModel):
@@ -122,3 +127,31 @@ class PathsResponse(BaseModel):
     """Envelope for a multiple-path search result."""
 
     paths: list[GrapplingPathResponse]
+
+
+class RollAvailableRequest(BaseModel):
+    """Complete grappling state used to list the next roll choices."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    state: GrapplingState
+
+
+class RollStepRequest(BaseModel):
+    """Parameters for one selected or random roll step."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    state: GrapplingState
+    transition_id: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Selected transition ID, or null to choose at random.",
+    )
+
+
+class RollStepResponse(BaseModel):
+    """Outcome of one roll step; both fields are null at a dead end."""
+
+    transition: Transition | None
+    next_state: GrapplingStateResponse | None
