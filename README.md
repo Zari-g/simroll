@@ -16,9 +16,10 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-6 are complete. Iterations 7A through 7C add the backend roll
-simulation engine plus its single-step and multi-step APIs; Roll Simulator UI
-work remains a future iteration. The web interface includes the frontend foundation,
+Iterations 1-6 are complete. Iterations 7A through 7D add the backend roll
+simulation engine, its single-step and multi-step APIs, and the first interactive
+Roll Simulator UI. Roll History and Auto Roll remain deferred to Iteration 7E,
+so Iteration 7 as a whole is still in progress. The web interface includes the frontend foundation,
 Position Explorer and search, Position Detail and its grip-aware transition
 viewer, the interactive structural Grappling Map, and the backend-powered
 Pathfinder.
@@ -29,7 +30,9 @@ features, and a React frontend for browsing positions and
 inspecting grip-aware transition availability for a selected grappling state.
 The Pathfinder discovers shortest or multiple valid paths through the API,
 shows the complete returned position/mode/grip state at every step, and can
-highlight any returned route on the structural Grappling Map. Position nodes,
+highlight any returned route on the structural Grappling Map. The Roll Simulator
+lets users configure a starting state and advance through backend-authoritative
+manual or random single steps. Position nodes,
 named directed transition edges, parallel transition routing, and
 graph-to-position-detail navigation remain available around the highlighted
 path.
@@ -122,7 +125,9 @@ path = simulator.simulate(start, max_steps=4, rng=random.Random(7))
 
 The simulator is exposed through API endpoints for retrieving valid choices,
 applying either a selected or random transition, and generating a bounded
-multi-step roll sequence. Frontend Roll Simulator controls remain future work.
+multi-step roll sequence. The interactive frontend deliberately uses only
+`POST /rolls/available` and `POST /rolls/step`; multi-step Auto Roll controls
+remain future work for Iteration 7E.
 
 ## API
 
@@ -215,8 +220,9 @@ Open `http://localhost:5173`. Vite proxies the frontend's `/api` requests to
 the backend at `http://127.0.0.1:8000`, so local backend CORS changes are not
 needed.
 
-Use the Positions / Grappling map / Pathfinder switch to move among the
-searchable position list, interactive structural graph, and path search form.
+Use the Positions / Grappling map / Pathfinder / Roll simulator switch to move
+among the searchable position list, interactive structural graph, path search
+form, and step-by-step roll interface.
 Position Detail lets users set Gi or No-Gi mode, choose active grips, and inspect
 backend-reported transition availability for that state.
 
@@ -228,6 +234,13 @@ the frontend does not execute transitions or reproduce pathfinding rules. Use
 **Show on grappling map** on a result to emphasize its returned position and
 transition IDs while retaining the rest of the structural map, then **Clear path
 highlight** to restore the normal map.
+
+The Roll Simulator setup reuses the shared mode and grip controls. Starting a
+roll stores that configuration locally, then asks the backend for valid moves.
+**Use Move** sends the selected transition ID, while **Surprise Me** sends a null
+transition ID so the backend chooses one random valid move. Every resulting
+position and active-grip set is rendered directly from the returned next state.
+**Start New Roll** returns to setup while preserving compatible setup selections.
 
 `VITE_API_BASE_URL` configures the browser-facing API base path and defaults to
 `/api`. `VITE_API_PROXY_TARGET` configures the local proxy destination and

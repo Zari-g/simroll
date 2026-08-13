@@ -39,8 +39,8 @@ YAML Data
 ```
 
 The frontend, FastAPI layer, and lower layers are implemented. The frontend
-collects path criteria and presents results, while pathfinding and grappling
-rules remain backend-owned.
+collects path and roll setup criteria and presents returned states, while
+pathfinding, roll execution, and grappling rules remain backend-owned.
 
 ---
 
@@ -96,8 +96,9 @@ Responsibilities:
 This is the heart of the project. `RollSimulator` delegates state validation,
 transition availability, and transition application to `GrapplingGraph`, keeping
 the graph authoritative for grappling rules. The API exposes available choices,
-one selected or random step, and bounded multi-step roll sequences. The Roll
-Simulator UI remains future work.
+one selected or random step, and bounded multi-step roll sequences. The first
+interactive Roll Simulator UI uses the two single-step endpoints; Roll History
+and Auto Roll remain future work.
 
 ---
 
@@ -142,6 +143,7 @@ The React / TypeScript website includes:
 * interactive structural Grappling Map
 * backend-powered shortest and multiple-path Pathfinder
 * path-result highlighting on the existing graph
+* interactive, user-controlled Roll Simulator
 
 Path requests follow this ownership flow:
 
@@ -155,7 +157,24 @@ Pathfinder form
 
 The frontend highlights the position and transition IDs returned by the API. It
 does not discover paths, infer reachability, calculate grip changes, or execute
-the route. A roll simulator interface remains future work.
+the route.
+
+Interactive roll steps follow this ownership flow:
+
+```text
+RollSimulator.tsx
+    -> frontend API client
+    -> FastAPI /rolls/available or /rolls/step
+    -> RollSimulator backend
+    -> GrapplingGraph
+    -> authoritative next state rendered by React
+```
+
+React owns setup selections, the current returned state, and loading/error UI.
+The backend owns transition availability, validation, random selection, grip
+changes, and next-state calculation. The current interface displays only the
+last successful move; full Roll History and Auto Roll are deferred to Iteration
+7E.
 
 The mobile app may include:
 
