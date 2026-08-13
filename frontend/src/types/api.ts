@@ -86,10 +86,24 @@ export interface RollStepResponse {
   next_state: GrapplingStateResponse | null
 }
 
+export type RollSimulationStopReason =
+  | 'max_steps'
+  | 'no_available_transitions'
+
+export interface RollSimulationRequest {
+  start_state: GrapplingStatePayload
+  max_steps: number
+}
+
 export interface GrapplingPath {
   states: GrapplingStateResponse[]
   transition_ids: string[]
   step_count: number
+}
+
+export interface RollSimulationResponse {
+  path: GrapplingPath
+  stop_reason: RollSimulationStopReason
 }
 
 export interface ShortestPathResponse {

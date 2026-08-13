@@ -1374,7 +1374,9 @@ summary:focus-visible {
 
 .roll-introduction h3,
 .roll-current-state h3,
-.roll-moves h3 {
+.roll-moves h3,
+.roll-auto h3,
+.roll-history h3 {
   margin-bottom: 0;
   color: #f5faf8;
 }
@@ -1433,6 +1435,7 @@ summary:focus-visible {
 
 .roll-primary-action,
 .roll-surprise-action,
+.roll-auto-action,
 .roll-transition-card button,
 .roll-dead-end button {
   border: 1px solid rgba(158, 231, 192, 0.4);
@@ -1446,6 +1449,7 @@ summary:focus-visible {
 
 .roll-primary-action:disabled,
 .roll-surprise-action:disabled,
+.roll-auto-action:disabled,
 .roll-transition-card button:disabled,
 .roll-dead-end button:disabled {
   cursor: not-allowed;
@@ -1516,31 +1520,19 @@ summary:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.roll-last-step {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.8rem;
-  margin-top: 1rem;
-  border-left: 0.25rem solid #f4d77a;
-  border-radius: 0.7rem;
-  padding: 0.85rem 1rem;
-  color: #f5faf8;
-  background: rgba(244, 215, 122, 0.07);
+.roll-active__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+  align-items: start;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-.roll-last-step .section-label {
-  width: 100%;
-  margin-bottom: 0;
-  color: #f4d77a;
-}
-
-.roll-last-step span {
-  color: #b7c9c2;
+.roll-active__controls {
+  min-width: 0;
 }
 
 .roll-moves {
-  margin-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 1.5rem;
 }
@@ -1639,6 +1631,260 @@ summary:focus-visible {
   margin-top: 0.55rem;
 }
 
+.roll-auto {
+  margin-top: 1.5rem;
+  border: 1px solid rgba(244, 215, 122, 0.2);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: rgba(244, 215, 122, 0.045);
+}
+
+.roll-auto > div:first-child > p:last-child {
+  margin: 0.45rem 0 0;
+  color: #b7c9c2;
+  line-height: 1.5;
+}
+
+.roll-auto__controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.roll-auto__controls label {
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #dcebe5;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.roll-auto__controls select {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.7rem;
+  padding: 0.68rem 0.75rem;
+  color: #f5faf8;
+  background: #0a1d17;
+}
+
+.roll-auto__controls select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.roll-auto-action {
+  flex: 1;
+}
+
+.roll-auto__progress {
+  margin-bottom: 0;
+}
+
+.roll-auto__status {
+  margin: 1rem 0 0;
+  border-left: 0.2rem solid #9ee7c0;
+  border-radius: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  color: #dff7ea;
+  background: rgba(158, 231, 192, 0.07);
+  line-height: 1.45;
+}
+
+.roll-auto__status--dead_end {
+  border-left-color: #f4d77a;
+  color: #f6e8b5;
+  background: rgba(244, 215, 122, 0.07);
+}
+
+.roll-history {
+  min-width: 0;
+  border: 1px solid rgba(158, 231, 192, 0.18);
+  border-radius: 1rem;
+  padding: 1.2rem;
+  background: rgba(4, 16, 13, 0.28);
+}
+
+.roll-history__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.roll-history__heading > span {
+  color: #819b91;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-align: right;
+}
+
+.roll-history__timeline {
+  max-height: 52rem;
+  margin: 0;
+  padding: 0 0.25rem 0 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-color: rgba(158, 231, 192, 0.35) transparent;
+}
+
+.roll-history__timeline > li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.roll-history__timeline > li::before {
+  position: absolute;
+  top: 1.05rem;
+  left: 0.1rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 0.15rem solid #16362c;
+  border-radius: 50%;
+  background: #85b69f;
+  content: '';
+}
+
+.roll-history__timeline > li:not(:last-child)::after {
+  position: absolute;
+  top: 1.65rem;
+  bottom: -1.2rem;
+  left: 0.34rem;
+  width: 0.1rem;
+  background: rgba(158, 231, 192, 0.22);
+  content: '';
+}
+
+.roll-history__timeline > .roll-history__item--current::before {
+  background: #f4d77a;
+  box-shadow: 0 0 0 0.2rem rgba(244, 215, 122, 0.12);
+}
+
+.roll-history__transition {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.8rem 0 0.65rem;
+  color: #f4d77a;
+  font-size: 0.8rem;
+}
+
+.roll-history__transition span {
+  color: #789087;
+}
+
+.roll-history__state {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.roll-history__item--current .roll-history__state {
+  border-color: rgba(244, 215, 122, 0.28);
+  background: rgba(244, 215, 122, 0.045);
+}
+
+.roll-history__state-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.roll-history__state-heading p,
+.roll-history__state-heading span {
+  margin: 0;
+  color: #93ada3;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roll-history__state-heading span {
+  color: #f4d77a;
+}
+
+.roll-history__state h4 {
+  margin: 0.2rem 0 0.65rem;
+  color: #f5faf8;
+  font-size: 1rem;
+}
+
+.roll-history__state dl {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.roll-history__state dl div {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 0.4rem;
+}
+
+.roll-history__state dt {
+  color: #819b91;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.roll-history__state dd {
+  margin: 0;
+  color: #dcebe5;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.roll-history__grip-changes {
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 0.65rem;
+  color: #b7c9c2;
+  font-size: 0.74rem;
+}
+
+.roll-history__grip-changes > strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #dcebe5;
+}
+
+.roll-history__grip-changes p {
+  margin: 0.2rem 0 0;
+}
+
+.roll-history__grip-added,
+.roll-history__grip-released {
+  display: inline-block;
+  min-width: 3.9rem;
+  font-weight: 800;
+}
+
+.roll-history__grip-added {
+  color: #9ee7c0;
+}
+
+.roll-history__grip-released {
+  color: #f4b8aa;
+}
+
+@media (max-width: 68rem) {
+  .roll-active__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .roll-history__timeline {
+    max-height: 38rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;
@@ -1716,13 +1962,27 @@ summary:focus-visible {
   }
 
   .roll-status-bar,
-  .roll-moves__heading {
+  .roll-moves__heading,
+  .roll-history__heading {
     align-items: stretch;
     flex-direction: column;
   }
 
   .roll-status-bar button {
     width: 100%;
+  }
+
+  .roll-auto__controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .roll-auto__controls label {
+    flex-basis: auto;
+  }
+
+  .roll-history__heading > span {
+    text-align: left;
   }
 
   .pathfinder-resource-state,

@@ -5,6 +5,8 @@ import type {
   PathsResponse,
   Position,
   RollAvailableRequest,
+  RollSimulationRequest,
+  RollSimulationResponse,
   RollStepRequest,
   RollStepResponse,
   ShortestPathRequest,
@@ -117,6 +119,20 @@ export function performRollStep(
   signal?: AbortSignal,
 ): Promise<RollStepResponse> {
   return requestJson<RollStepResponse>('/rolls/step', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+    signal,
+  })
+}
+
+export function simulateRoll(
+  request: RollSimulationRequest,
+  signal?: AbortSignal,
+): Promise<RollSimulationResponse> {
+  return requestJson<RollSimulationResponse>('/rolls/simulate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

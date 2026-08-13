@@ -16,10 +16,10 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-6 are complete. Iterations 7A through 7D add the backend roll
-simulation engine, its single-step and multi-step APIs, and the first interactive
-Roll Simulator UI. Roll History and Auto Roll remain deferred to Iteration 7E,
-so Iteration 7 as a whole is still in progress. The web interface includes the frontend foundation,
+Iterations 1-7 are complete. Iteration 7 adds the backend roll simulation
+engine, its single-step and multi-step APIs, and the complete interactive Roll
+Simulator UI with manual branching, Surprise Me, Roll History, and Auto Roll.
+The web interface includes the frontend foundation,
 Position Explorer and search, Position Detail and its grip-aware transition
 viewer, the interactive structural Grappling Map, and the backend-powered
 Pathfinder.
@@ -31,8 +31,9 @@ inspecting grip-aware transition availability for a selected grappling state.
 The Pathfinder discovers shortest or multiple valid paths through the API,
 shows the complete returned position/mode/grip state at every step, and can
 highlight any returned route on the structural Grappling Map. The Roll Simulator
-lets users configure a starting state and advance through backend-authoritative
-manual or random single steps. Position nodes,
+lets users configure a starting state, advance through backend-authoritative
+manual or random steps, inspect one continuous history, and continue branching
+after bounded Auto Rolls. Position nodes,
 named directed transition edges, parallel transition routing, and
 graph-to-position-detail navigation remain available around the highlighted
 path.
@@ -125,9 +126,9 @@ path = simulator.simulate(start, max_steps=4, rng=random.Random(7))
 
 The simulator is exposed through API endpoints for retrieving valid choices,
 applying either a selected or random transition, and generating a bounded
-multi-step roll sequence. The interactive frontend deliberately uses only
-`POST /rolls/available` and `POST /rolls/step`; multi-step Auto Roll controls
-remain future work for Iteration 7E.
+multi-step roll sequence. The interactive frontend uses `POST /rolls/available`
+and `POST /rolls/step` for branching, and `POST /rolls/simulate` for 5- or
+10-step Auto Rolls that begin at the current authoritative state.
 
 ## API
 
@@ -240,7 +241,13 @@ roll stores that configuration locally, then asks the backend for valid moves.
 **Use Move** sends the selected transition ID, while **Surprise Me** sends a null
 transition ID so the backend chooses one random valid move. Every resulting
 position and active-grip set is rendered directly from the returned next state.
-**Start New Roll** returns to setup while preserving compatible setup selections.
+The complete Roll History combines manual, Surprise Me, and Auto Roll results in
+one timeline and derives visible grip additions/releases only by comparing
+consecutive returned states. **Auto Roll** calls `POST /rolls/simulate` for 5 or
+10 steps, validates the returned path, appends its transition IDs and all states
+after the duplicate starting state, and then resumes manual choices from the
+backend's final state. **Start New Roll** clears the history and returns to setup
+while preserving compatible setup selections.
 
 `VITE_API_BASE_URL` configures the browser-facing API base path and defaults to
 `/api`. `VITE_API_PROXY_TARGET` configures the local proxy destination and

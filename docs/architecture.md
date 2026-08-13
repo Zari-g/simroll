@@ -96,9 +96,9 @@ Responsibilities:
 This is the heart of the project. `RollSimulator` delegates state validation,
 transition availability, and transition application to `GrapplingGraph`, keeping
 the graph authoritative for grappling rules. The API exposes available choices,
-one selected or random step, and bounded multi-step roll sequences. The first
-interactive Roll Simulator UI uses the two single-step endpoints; Roll History
-and Auto Roll remain future work.
+one selected or random step, and bounded multi-step roll sequences. The
+interactive Roll Simulator uses both single-step endpoints and the multi-step
+simulation endpoint while leaving every state change backend-owned.
 
 ---
 
@@ -143,7 +143,9 @@ The React / TypeScript website includes:
 * interactive structural Grappling Map
 * backend-powered shortest and multiple-path Pathfinder
 * path-result highlighting on the existing graph
-* interactive, user-controlled Roll Simulator
+* interactive Roll Simulator with manual branching and Surprise Me
+* complete in-session Roll History with display-only grip differences
+* bounded 5- and 10-step Auto Roll with continued manual branching
 
 Path requests follow this ownership flow:
 
@@ -172,9 +174,27 @@ RollSimulator.tsx
 
 React owns setup selections, the current returned state, and loading/error UI.
 The backend owns transition availability, validation, random selection, grip
-changes, and next-state calculation. The current interface displays only the
-last successful move; full Roll History and Auto Roll are deferred to Iteration
-7E.
+changes, and next-state calculation.
+
+Auto Roll follows the same boundary at path scale:
+
+```text
+current authoritative state
+    -> frontend API client
+    -> FastAPI POST /rolls/simulate
+    -> RollSimulator backend
+    -> authoritative GrapplingPath
+    -> validate and merge returned states + transition IDs
+    -> continue manual branching from the returned final state
+```
+
+The frontend history is one `{ states, transitionIds }` value that maintains
+`states.length === transitionIds.length + 1`. A single step appends the
+transition and `next_state` returned by `/rolls/step`. An Auto Roll appends all
+returned transition IDs and `path.states.slice(1)`, avoiding duplication of its
+current-state prefix. `RollHistory.tsx` resolves readable metadata and compares
+consecutive authoritative states only to display grip additions and releases;
+it never applies transitions or decides grappling validity.
 
 The mobile app may include:
 
