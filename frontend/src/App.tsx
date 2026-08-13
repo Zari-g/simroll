@@ -5,10 +5,11 @@ import { PositionCard } from './components/PositionCard'
 import { PositionDetail } from './components/PositionDetail'
 import { PositionSearch } from './components/PositionSearch'
 import { Pathfinder } from './components/Pathfinder'
+import { RollSimulator } from './components/RollSimulator'
 import type { GrapplingPath, Position } from './types/api'
 import './App.css'
 
-type ExplorerView = 'list' | 'graph' | 'pathfinder'
+type ExplorerView = 'list' | 'graph' | 'pathfinder' | 'roll'
 
 interface PathHighlight {
   positionIds: ReadonlySet<string>
@@ -139,14 +140,18 @@ function App() {
                   ? 'Position explorer'
                   : explorerView === 'graph'
                     ? 'Graph explorer'
-                    : 'Pathfinder'}
+                    : explorerView === 'pathfinder'
+                      ? 'Pathfinder'
+                      : 'Roll simulator'}
               </p>
               <h2 id="positions-heading">
                 {explorerView === 'list'
                   ? 'Find your position'
                   : explorerView === 'graph'
                     ? 'Explore the grappling map'
-                    : 'Find a valid route'}
+                    : explorerView === 'pathfinder'
+                      ? 'Find a valid route'
+                      : 'Choose your next move'}
               </h2>
             </div>
 
@@ -171,6 +176,13 @@ function App() {
                 onClick={() => setExplorerView('pathfinder')}
               >
                 Pathfinder
+              </button>
+              <button
+                type="button"
+                aria-pressed={explorerView === 'roll'}
+                onClick={() => setExplorerView('roll')}
+              >
+                Roll simulator
               </button>
             </div>
           </div>
@@ -244,6 +256,10 @@ function App() {
 
           {!isLoading && !error && explorerView === 'pathfinder' && (
             <Pathfinder positions={positions} onShowOnMap={showPathOnMap} />
+          )}
+
+          {!isLoading && !error && explorerView === 'roll' && (
+            <RollSimulator positions={positions} />
           )}
         </section>
       )}

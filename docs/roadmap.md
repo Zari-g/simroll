@@ -119,14 +119,14 @@ Features:
 - Backend roll simulation engine - Complete (Iteration 7A)
 - Single-step roll API - Complete (Iteration 7B)
 - Multi-step simulation API - Complete (Iteration 7C)
-- Simulated rolling sequences - Backend complete; frontend future
-- Randomized transitions - Single-step API complete; UI future
-- User-controlled branching - Single-step API complete; UI future
-- Position history - Backend complete; frontend future
-- Frontend roll simulator - Future
+- Interactive Roll Simulator - Complete (Iteration 7D)
+- User-controlled branching - Complete (Iteration 7D)
+- Randomized single-step transitions - Complete (Iteration 7D)
+- Roll history / Auto Roll - Future (Iteration 7E)
 
 Status:
-In progress (backend engine and roll APIs complete; frontend future)
+In progress (backend engine, roll APIs, and interactive Roll Simulator complete
+through Iteration 7D; Roll History and Auto Roll remain future work for 7E)
 
 ---
 

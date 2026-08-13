@@ -4,6 +4,9 @@ import type {
   PathsRequest,
   PathsResponse,
   Position,
+  RollAvailableRequest,
+  RollStepRequest,
+  RollStepResponse,
   ShortestPathRequest,
   ShortestPathResponse,
   Transition,
@@ -86,6 +89,34 @@ export function getAvailableTransitions(
   signal?: AbortSignal,
 ): Promise<Transition[]> {
   return requestJson<Transition[]>('/transitions/available', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+    signal,
+  })
+}
+
+export function getRollAvailableTransitions(
+  request: RollAvailableRequest,
+  signal?: AbortSignal,
+): Promise<Transition[]> {
+  return requestJson<Transition[]>('/rolls/available', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+    signal,
+  })
+}
+
+export function performRollStep(
+  request: RollStepRequest,
+  signal?: AbortSignal,
+): Promise<RollStepResponse> {
+  return requestJson<RollStepResponse>('/rolls/step', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

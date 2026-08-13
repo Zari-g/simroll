@@ -72,6 +72,20 @@ export interface GrapplingStateResponse {
   active_grips: string[]
 }
 
+export interface RollAvailableRequest {
+  state: GrapplingStatePayload
+}
+
+export interface RollStepRequest {
+  state: GrapplingStatePayload
+  transition_id: string | null
+}
+
+export interface RollStepResponse {
+  transition: Transition | null
+  next_state: GrapplingStateResponse | null
+}
+
 export interface GrapplingPath {
   states: GrapplingStateResponse[]
   transition_ids: string[]
