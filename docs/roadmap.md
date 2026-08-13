@@ -122,11 +122,18 @@ Features:
 - Interactive Roll Simulator - Complete (Iteration 7D)
 - User-controlled branching - Complete (Iteration 7D)
 - Randomized single-step transitions - Complete (Iteration 7D)
-- Roll history / Auto Roll - Future (Iteration 7E)
+- Roll History and authoritative state history - Complete (Iteration 7E)
+- Auto Roll and continued manual branching - Complete (Iteration 7E)
 
 Status:
-In progress (backend engine, roll APIs, and interactive Roll Simulator complete
-through Iteration 7D; Roll History and Auto Roll remain future work for 7E)
+Complete
+
+Milestones:
+- 7A Roll Simulation Engine - Complete
+- 7B Single-Step API - Complete
+- 7C Multi-Step API - Complete
+- 7D Interactive Roll Simulator - Complete
+- 7E Roll History & Auto Roll - Complete
 
 ---
 
