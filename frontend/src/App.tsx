@@ -11,6 +11,16 @@ import './App.css'
 
 type ExplorerView = 'list' | 'graph' | 'pathfinder' | 'roll'
 
+const navigationItems: ReadonlyArray<{
+  label: string
+  view: ExplorerView
+}> = [
+  { label: 'Positions', view: 'list' },
+  { label: 'Grappling Map', view: 'graph' },
+  { label: 'Pathfinder', view: 'pathfinder' },
+  { label: 'Roll Simulator', view: 'roll' },
+]
+
 interface PathHighlight {
   positionIds: ReadonlySet<string>
   transitionIds: ReadonlySet<string>
@@ -102,20 +112,57 @@ function App() {
     setExplorerView('graph')
   }
 
+  const currentViewLabel = navigationItems.find(
+    ({ view }) => view === explorerView,
+  )?.label
+
   return (
-    <main className="app-shell">
-      <header className="hero">
-        <div className="brand-mark" aria-hidden="true">
-          SR
-        </div>
-        <div className="hero-copy">
-          <p className="eyebrow">Brazilian Jiu-Jitsu pathways</p>
-          <h1>SimRoll</h1>
-          <p className="intro">
-            Explore Brazilian Jiu-Jitsu positions, transitions, and pathways.
-          </p>
+    <div className="app-frame">
+      <header className="app-header">
+        <div className="app-header__inner">
+          <button
+            type="button"
+            className="app-brand"
+            onClick={() => {
+              setSelectedPositionId(null)
+              setExplorerView('list')
+            }}
+            aria-label="SimRoll home — Positions"
+          >
+            <span className="brand-mark" aria-hidden="true">
+              SR
+            </span>
+            <span className="app-brand__name">SimRoll</span>
+          </button>
+
+          <nav className="primary-navigation" aria-label="Primary navigation">
+            {navigationItems.map(({ label, view }) => (
+              <button
+                key={view}
+                type="button"
+                aria-current={explorerView === view ? 'page' : undefined}
+                onClick={() => {
+                  setSelectedPositionId(null)
+                  setExplorerView(view)
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
+
+      <main className="app-shell">
+        <header className="view-header">
+          <div>
+            <p className="eyebrow">Brazilian Jiu-Jitsu simulator</p>
+            <h1>{selectedPositionId ? 'Position details' : currentViewLabel}</h1>
+          </div>
+          <p className="intro">
+            Explore positions, test pathways, and simulate the next exchange.
+          </p>
+        </header>
 
       {selectedPositionId ? (
         <PositionDetail
@@ -155,36 +202,6 @@ function App() {
               </h2>
             </div>
 
-            <div className="view-switch" aria-label="Explorer view">
-              <button
-                type="button"
-                aria-pressed={explorerView === 'list'}
-                onClick={() => setExplorerView('list')}
-              >
-                Positions
-              </button>
-              <button
-                type="button"
-                aria-pressed={explorerView === 'graph'}
-                onClick={() => setExplorerView('graph')}
-              >
-                Grappling map
-              </button>
-              <button
-                type="button"
-                aria-pressed={explorerView === 'pathfinder'}
-                onClick={() => setExplorerView('pathfinder')}
-              >
-                Pathfinder
-              </button>
-              <button
-                type="button"
-                aria-pressed={explorerView === 'roll'}
-                onClick={() => setExplorerView('roll')}
-              >
-                Roll simulator
-              </button>
-            </div>
           </div>
 
           {isLoading && (
@@ -263,7 +280,8 @@ function App() {
           )}
         </section>
       )}
-    </main>
+      </main>
+    </div>
   )
 }
 

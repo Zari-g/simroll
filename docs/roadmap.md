@@ -137,16 +137,48 @@ Milestones:
 
 ---
 
-# Iteration 8 — Mobile App
+# Iteration 8 — Visual Interface Redesign
 
 Goal:
-Expand SimRoll to mobile platforms.
+Turn the existing web experience into a polished, interactive visual BJJ simulator.
 
-Features:
-- Mobile-friendly interface
-- Saved systems
-- Offline support
-- Quick reference tools
+Milestones:
+- 8A Visual Design System & Application Shell
+- 8B Roll Simulator Layout
+- 8C Central Grappling Stage
+- 8D Available Moves Interface
+- 8E Visual Roll Timeline
+- 8F UI Polish
+
+Status:
+In progress
+
+---
+
+# Iteration 9 — Grappler Graphics System
+
+Goal:
+Create a reusable 2D grappler rig and position visualization system.
+
+Status:
+Future
+
+---
+
+# Iteration 10 — Transition Animation & Roll Playback
+
+Goal:
+Build reusable movement primitives and animated roll simulation playback.
+
+Status:
+Future
+
+---
+
+# Iteration 11 — Responsive Web & Touch UX
+
+Goal:
+Adapt the desktop simulator for responsive layouts and touch interaction.
 
 Status:
 Future
@@ -156,6 +188,9 @@ Future
 # Future Ideas
 
 Potential future systems:
+- Native mobile application
+- Offline quick-reference tools
+- Saved systems
 - AI-assisted exploration
 - Strategy analysis
 - User-created systems
