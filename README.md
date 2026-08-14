@@ -205,8 +205,8 @@ or domain logic.
 Install and run the backend from the repository root:
 
 ```bash
-python -m pip install -e .
-python -m uvicorn simroll.api.app:app --reload
+py -m pip install -e .
+py -m uvicorn simroll.api.app:app --reload
 ```
 
 In a second terminal, install and run the frontend:
