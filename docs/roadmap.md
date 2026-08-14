@@ -163,11 +163,14 @@ anatomy proportions, and rendering concerns.
 
 Milestones:
 - 9A Grappler Anatomy Model - Complete
+- 9B Layered Body Renderer - Complete
 
 Architecture:
 - Pose geometry determines where each body segment is placed.
 - Shared anatomy presets determine body proportions and rendering metadata.
-- The SVG rig combines both without changing authoritative grappling state.
+- Pure body-geometry helpers combine pose length with anatomy width and taper.
+- The layered SVG rig renders torso, limbs, hands, feet, and head without
+  changing authoritative grappling state or player ordering.
 
 Status:
 In progress

@@ -196,6 +196,20 @@ current-state prefix. `RollHistory.tsx` resolves readable metadata and compares
 consecutive authoritative states only to display grip additions and releases;
 it never applies transitions or decides grappling validity.
 
+Grappler graphics preserve the same frontend ownership boundaries. Position and
+transition systems resolve an optional animated pose, while anatomy presets
+provide widths, taper, extremity proportions, and layer hints. Pure geometry
+helpers turn those inputs into tapered body shapes for the SVG renderer:
+
+```text
+pose + anatomy
+    -> body geometry
+    -> layered SVG grappler
+```
+
+The position visual's `playerOrder` remains authoritative between grapplers;
+anatomy `layerHint` values only order body parts within one grappler.
+
 The mobile app may include:
 
 * tap-based position navigation
