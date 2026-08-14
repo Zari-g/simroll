@@ -26,11 +26,17 @@
   /* Accent and semantic colors */
   --color-accent: #4a9eff;
   --color-accent-strong: #2688f5;
+  --color-accent-hover: #70b4ff;
   --color-accent-soft: rgba(74, 158, 255, 0.12);
   --color-accent-softer: rgba(74, 158, 255, 0.06);
+  --color-accent-highlight: rgba(74, 158, 255, 0.2);
   --color-success: #55d6a8;
+  --color-success-soft: rgba(85, 214, 168, 0.1);
+  --color-success-border: rgba(85, 214, 168, 0.34);
   --color-warning: #f1c75b;
+  --color-warning-soft: rgba(241, 199, 91, 0.08);
   --color-danger: #ff716c;
+  --color-danger-soft: rgba(255, 113, 108, 0.08);
   --color-submission: #d58cff;
   --color-transition: #67c9ff;
 
