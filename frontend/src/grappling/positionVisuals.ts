@@ -2,6 +2,7 @@ import type {
   GrapplerPose,
   GrapplingPositionVisualDefinition,
 } from './types'
+import { createPoseVariant } from './positionPoseHelpers.ts'
 
 const closedGuardBottomPose: GrapplerPose = {
   head: { x: 500, y: 430 },
@@ -63,6 +64,38 @@ const mountTopPose: GrapplerPose = {
   },
 }
 
+const sideControlBottomPose = createPoseVariant(mountBottomPose, {
+  head: { x: 500, y: 175 },
+  segments: {
+    torso: { x: 500, y: 350, rotation: -90, length: 130 },
+    leftUpperArm: { x: 480, y: 235, rotation: -165, length: 100 },
+    leftForearm: { x: 384, y: 209, rotation: -135, length: 78 },
+    rightUpperArm: { x: 520, y: 235, rotation: 15, length: 100 },
+    rightForearm: { x: 616, y: 261, rotation: 45, length: 78 },
+  },
+})
+
+const sideControlTopPose: GrapplerPose = {
+  head: { x: 410, y: 310 },
+  segments: {
+    torso: { x: 575, y: 310, rotation: 180, length: 125 },
+    leftUpperArm: { x: 468, y: 292, rotation: -132, length: 80 },
+    leftForearm: { x: 414, y: 233, rotation: -40, length: 70 },
+    rightUpperArm: { x: 468, y: 328, rotation: 132, length: 80 },
+    rightForearm: { x: 414, y: 387, rotation: 35, length: 70 },
+    leftThigh: { x: 568, y: 292, rotation: -35, length: 112 },
+    leftShin: { x: 660, y: 228, rotation: 18, length: 98 },
+    rightThigh: { x: 568, y: 328, rotation: 42, length: 112 },
+    rightShin: { x: 651, y: 403, rotation: 82, length: 98 },
+  },
+}
+
+export const corePositionVisualIds = [
+  'closed_guard_bottom',
+  'mount_top',
+  'side_control_top',
+] as const
+
 const positionVisuals: Readonly<
   Record<string, GrapplingPositionVisualDefinition>
 > = {
@@ -84,6 +117,17 @@ const positionVisuals: Readonly<
       'Mount visual showing Player A straddling Player B from above the torso.',
     playerAPose: mountTopPose,
     playerBPose: mountBottomPose,
+    playerARole: 'Top',
+    playerBRole: 'Bottom',
+    playerOrder: ['playerB', 'playerA'],
+  },
+  side_control_top: {
+    positionId: 'side_control_top',
+    label: 'Side Control Top',
+    description:
+      'Side Control visual showing Player A perpendicular across the supine Player B.',
+    playerAPose: sideControlTopPose,
+    playerBPose: sideControlBottomPose,
     playerARole: 'Top',
     playerBRole: 'Bottom',
     playerOrder: ['playerB', 'playerA'],
