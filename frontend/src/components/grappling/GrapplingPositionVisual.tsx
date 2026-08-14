@@ -3,6 +3,8 @@ import {
   type GrapplerAnatomyOverrides,
 } from '../../grappling/anatomy'
 import { getPositionVisual } from '../../grappling/positionVisuals'
+import { useMemo } from 'react'
+
 import {
   resolvePositionContacts,
   resolveSceneBodyPartOrder,
@@ -42,8 +44,47 @@ export function GrapplingPositionVisual({
   anatomies,
 }: GrapplingPositionVisualProps) {
   const visual = getPositionVisual(positionId)
+  const resolvedVisual = useMemo(
+    () => (visual ? resolveVisualPose(visual, activeGripIds) : null),
+    [activeGripIds, visual],
+  )
+  const resolvedAnatomies = useMemo(
+    () => ({
+      playerA: resolveGrapplerAnatomy('playerA', anatomies),
+      playerB: resolveGrapplerAnatomy('playerB', anatomies),
+    }),
+    [anatomies],
+  )
+  const appearances = useMemo(
+    () => ({
+      playerA: resolveGrapplerAppearance('playerA', mode),
+      playerB: resolveGrapplerAppearance('playerB', mode),
+    }),
+    [mode],
+  )
+  const bodyPartOrder = useMemo(
+    () =>
+      visual
+        ? resolveSceneBodyPartOrder(
+            visual.playerOrder,
+            resolvedAnatomies,
+            visual.occlusion,
+          )
+        : [],
+    [resolvedAnatomies, visual],
+  )
+  const contacts = useMemo(
+    () =>
+      visual && resolvedVisual
+        ? [
+            ...resolvePositionContacts(visual),
+            ...resolvedVisual.gripContacts,
+          ]
+        : [],
+    [resolvedVisual, visual],
+  )
 
-  if (!visual) {
+  if (!visual || !resolvedVisual) {
     return (
       <div className="grappling-visual-fallback" role="img" aria-label={`${positionName} visualization coming soon`}>
         <span className="grappling-visual-fallback__mark" aria-hidden="true">SR</span>
@@ -53,25 +94,7 @@ export function GrapplingPositionVisual({
     )
   }
 
-  const resolvedVisual = resolveVisualPose(visual, activeGripIds)
   const poses = displayPoses ?? resolvedVisual.poses
-  const resolvedAnatomies = {
-    playerA: resolveGrapplerAnatomy('playerA', anatomies),
-    playerB: resolveGrapplerAnatomy('playerB', anatomies),
-  }
-  const appearances = {
-    playerA: resolveGrapplerAppearance('playerA', mode),
-    playerB: resolveGrapplerAppearance('playerB', mode),
-  }
-  const bodyPartOrder = resolveSceneBodyPartOrder(
-    visual.playerOrder,
-    resolvedAnatomies,
-    visual.occlusion,
-  )
-  const contacts = [
-    ...resolvePositionContacts(visual),
-    ...resolvedVisual.gripContacts,
-  ]
 
   return (
     <div className="grappling-position-visual">

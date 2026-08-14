@@ -3,6 +3,10 @@ import {
   resolveTransitionPoses,
   type GrapplerPosePair,
 } from '../grappling/interpolatePose'
+import {
+  resolveTransitionDisplayState,
+  type GrapplingDisplayState,
+} from '../grappling/displayState'
 import { getTransitionVisual } from '../grappling/transitionVisuals'
 
 interface PlayPoseAnimationOptions {
@@ -10,10 +14,14 @@ interface PlayPoseAnimationOptions {
   transitionName: string
   startPoses: GrapplerPosePair
   endPoses: GrapplerPosePair
+  startState: GrapplingDisplayState
+  endState: GrapplingDisplayState
 }
 
 interface PoseAnimationDisplay {
   poses: GrapplerPosePair
+  state: GrapplingDisplayState
+  progress: number
   transitionName: string
 }
 
@@ -40,6 +48,8 @@ export function usePoseAnimation() {
       transitionName,
       startPoses,
       endPoses,
+      startState,
+      endState,
     }: PlayPoseAnimationOptions): Promise<boolean> => {
       const definition = getTransitionVisual(transitionId)
       const reduceMotion = window.matchMedia(
@@ -47,6 +57,7 @@ export function usePoseAnimation() {
       ).matches
 
       if (!definition || reduceMotion) {
+        cancel()
         return Promise.resolve(false)
       }
 
@@ -56,6 +67,18 @@ export function usePoseAnimation() {
       return new Promise((resolve) => {
         pendingResolution.current = resolve
         const startTime = performance.now()
+
+        setDisplay({
+          poses: resolveTransitionPoses(
+            definition,
+            startPoses,
+            endPoses,
+            0,
+          ),
+          state: startState,
+          progress: 0,
+          transitionName,
+        })
 
         const renderFrame = (timestamp: number) => {
           if (animationGeneration !== generation.current) return
@@ -71,6 +94,12 @@ export function usePoseAnimation() {
               endPoses,
               progress,
             ),
+            state: resolveTransitionDisplayState(
+              startState,
+              endState,
+              progress,
+            ),
+            progress,
             transitionName,
           })
 

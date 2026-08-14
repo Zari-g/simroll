@@ -83,7 +83,7 @@ export function HeadShape({
   pose: GrapplerPose['head']
   anatomy: GrapplerAnatomy['head']
 }) {
-  const faceMarkRadius = anatomy.radius * 0.34
+  const faceMarkRadius = anatomy.radius * 0.22
 
   return (
     <g data-body-part="head">
@@ -95,7 +95,7 @@ export function HeadShape({
       />
       <path
         className="grappler-rig__face-mark"
-        d={`M ${pose.x - faceMarkRadius} ${pose.y} L ${pose.x + faceMarkRadius} ${pose.y}`}
+        d={`M ${pose.x - faceMarkRadius} ${pose.y + 3} Q ${pose.x} ${pose.y + 6} ${pose.x + faceMarkRadius} ${pose.y + 3}`}
       />
     </g>
   )
