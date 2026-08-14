@@ -22,7 +22,7 @@ export interface SegmentPose extends PointPose {
 }
 
 export interface GrapplerPose {
-  head: PointPose & { radius?: number }
+  head: PointPose
   segments: Record<GrapplerSegmentName, SegmentPose>
 }
 

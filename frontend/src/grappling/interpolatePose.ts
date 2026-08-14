@@ -62,17 +62,10 @@ export function interpolateGrapplerPose(
   if (progress <= 0) return cloneGrapplerPose(start)
   if (progress >= 1) return cloneGrapplerPose(end)
 
-  const headRadius = lerpNumber(
-    start.head.radius ?? 30,
-    end.head.radius ?? 30,
-    progress,
-  )
-
   return {
     head: {
       x: lerpNumber(start.head.x, end.head.x, progress),
       y: lerpNumber(start.head.y, end.head.y, progress),
-      radius: headRadius,
     },
     segments: Object.fromEntries(
       segmentNames.map((segmentName) => {

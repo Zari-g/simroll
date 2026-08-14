@@ -52,14 +52,6 @@
   paint-order: stroke;
 }
 
-.grappler-rig__torso {
-  stroke-width: 64;
-}
-
-.grappler-rig__limb {
-  stroke-width: 34;
-}
-
 .grappler-rig__joint,
 .grappler-rig__head {
   fill: var(--grappler-fill);

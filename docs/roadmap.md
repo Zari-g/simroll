@@ -151,17 +151,26 @@ Milestones:
 - 8F Animation Playback & Roll Timeline Integration - Complete
 
 Status:
-In progress
+Complete
 
 ---
 
 # Iteration 9 — Grappler Graphics System
 
 Goal:
-Create a reusable 2D grappler rig and position visualization system.
+Develop the reusable 2D grappler graphics system by separating pose geometry,
+anatomy proportions, and rendering concerns.
+
+Milestones:
+- 9A Grappler Anatomy Model - Complete
+
+Architecture:
+- Pose geometry determines where each body segment is placed.
+- Shared anatomy presets determine body proportions and rendering metadata.
+- The SVG rig combines both without changing authoritative grappling state.
 
 Status:
-Future
+In progress
 
 ---
 
