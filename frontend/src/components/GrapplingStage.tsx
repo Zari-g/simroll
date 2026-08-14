@@ -100,6 +100,7 @@ export function GrapplingStage({
           positionId={positionId}
           positionName={positionName}
           activeGripIds={activeGripIds}
+          mode={displayMode}
           displayPoses={animatedPoses ?? undefined}
         />
 

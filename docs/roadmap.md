@@ -164,13 +164,17 @@ anatomy proportions, and rendering concerns.
 Milestones:
 - 9A Grappler Anatomy Model - Complete
 - 9B Layered Body Renderer - Complete
+- 9C Gi / No-Gi Grappler Appearance - Complete
 
 Architecture:
 - Pose geometry determines where each body segment is placed.
 - Shared anatomy presets determine body proportions and rendering metadata.
 - Pure body-geometry helpers combine pose length with anatomy width and taper.
+- Mode-aware appearance presets select Gi or No-Gi apparel and player themes
+  independently of pose and anatomy.
 - The layered SVG rig renders torso, limbs, hands, feet, and head without
-  changing authoritative grappling state or player ordering.
+  changing authoritative grappling state or player ordering; apparel overlays
+  reuse the same pose-driven segment transforms.
 
 Status:
 In progress

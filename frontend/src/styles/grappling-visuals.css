@@ -27,24 +27,32 @@
 }
 
 .grappler-rig {
-  --grappler-fill: var(--color-text-secondary);
-  --grappler-highlight: var(--color-text-primary);
+  --grappler-skin: #c99772;
+  --grappler-skin-detail: #704b37;
   --grappler-outline: var(--color-bg-app);
-  color: var(--grappler-fill);
+  --apparel-primary: var(--color-text-secondary);
+  --apparel-secondary: var(--color-text-primary);
+  --apparel-bottom: #657184;
+  --apparel-seam: rgba(8, 11, 18, 0.62);
+  --apparel-belt: #202837;
+  color: var(--apparel-primary);
 }
 
-.grappler-rig--playerA {
-  --grappler-fill: var(--color-accent);
-  --grappler-highlight: var(--color-text-accent);
+.grappler-theme--blue {
+  --apparel-primary: #3188dc;
+  --apparel-secondary: #8bc9ff;
+  --apparel-bottom: #15528d;
 }
 
-.grappler-rig--playerB {
-  --grappler-fill: var(--color-text-secondary);
-  --grappler-highlight: var(--color-text-primary);
+.grappler-theme--light {
+  --apparel-primary: #dce4ee;
+  --apparel-secondary: #ffffff;
+  --apparel-bottom: #697587;
+  --apparel-seam: rgba(30, 42, 60, 0.7);
 }
 
 .grappler-rig__body-part {
-  fill: var(--grappler-fill);
+  fill: var(--grappler-skin);
   stroke: var(--grappler-outline);
   stroke-width: 4;
   stroke-linejoin: round;
@@ -52,7 +60,7 @@
 }
 
 .grappler-rig__head {
-  fill: var(--grappler-fill);
+  fill: var(--grappler-skin);
   stroke: var(--grappler-outline);
   stroke-width: 6;
 }
@@ -67,10 +75,82 @@
 
 .grappler-rig__face-mark {
   fill: none;
-  stroke: var(--grappler-highlight);
+  stroke: var(--grappler-skin-detail);
   stroke-linecap: round;
   stroke-width: 5;
   opacity: 0.72;
+}
+
+.grappler-apparel__garment {
+  fill: var(--apparel-primary);
+  stroke: var(--grappler-outline);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.grappler-apparel__segment--gi-top .grappler-apparel__garment {
+  fill: var(--apparel-primary);
+}
+
+.grappler-apparel__segment--gi-pants .grappler-apparel__garment {
+  fill: var(--apparel-primary);
+}
+
+.grappler-apparel__segment--rashguard .grappler-apparel__garment {
+  fill: var(--apparel-primary);
+}
+
+.grappler-apparel__segment--shorts .grappler-apparel__garment {
+  fill: var(--apparel-bottom);
+}
+
+.grappler-apparel__lapels,
+.grappler-apparel__cuff,
+.grappler-apparel__rashguard-panel,
+.grappler-apparel__shorts-cuff {
+  fill: none;
+  stroke: var(--apparel-seam);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.grappler-apparel__left-lapel,
+.grappler-apparel__right-lapel,
+.grappler-apparel__collar {
+  fill: none;
+  stroke: var(--apparel-secondary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.grappler-apparel__collar {
+  stroke-width: 4;
+}
+
+.grappler-apparel__cuff,
+.grappler-apparel__shorts-cuff {
+  stroke-width: 3;
+}
+
+.grappler-apparel__rashguard-panel {
+  stroke: var(--apparel-secondary);
+  stroke-width: 4;
+  opacity: 0.78;
+}
+
+.grappler-apparel__belt-band {
+  fill: none;
+  stroke: var(--apparel-belt);
+  stroke-linecap: square;
+  stroke-width: 10;
+}
+
+.grappler-apparel__belt-knot {
+  fill: var(--apparel-belt);
+  stroke: var(--apparel-secondary);
+  stroke-width: 2;
 }
 
 .grip-contact {
