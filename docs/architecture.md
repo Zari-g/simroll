@@ -215,6 +215,12 @@ passes the configured, live, or historical authoritative mode through the
 position visual, so apparel follows the same pose transforms during transitions
 and replay.
 
+The static core position registry currently covers all backend position IDs:
+Closed Guard Bottom, Mount Top, and Side Control Top. Closely related positions
+can derive immutable variants from an existing pose while overriding only the
+segments that change. Unknown or future position IDs still resolve to the
+existing visual fallback.
+
 The mobile app may include:
 
 * tap-based position navigation

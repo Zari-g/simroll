@@ -165,6 +165,7 @@ Milestones:
 - 9A Grappler Anatomy Model - Complete
 - 9B Layered Body Renderer - Complete
 - 9C Gi / No-Gi Grappler Appearance - Complete
+- 9D Core Position Visual Library - Complete
 
 Architecture:
 - Pose geometry determines where each body segment is placed.
@@ -172,6 +173,8 @@ Architecture:
 - Pure body-geometry helpers combine pose length with anatomy width and taper.
 - Mode-aware appearance presets select Gi or No-Gi apparel and player themes
   independently of pose and anatomy.
+- The core position library covers every current repository position and uses
+  immutable pose variants to share family geometry where useful.
 - The layered SVG rig renders torso, limbs, hands, feet, and head without
   changing authoritative grappling state or player ordering; apparel overlays
   reuse the same pose-driven segment transforms.
