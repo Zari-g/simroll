@@ -2,9 +2,15 @@ import type {
   GrapplerPose,
   GrapplingPositionVisualDefinition,
 } from './types'
+import {
+  grapplerPoseToSkeleton,
+  skeletonToGrapplerPose,
+} from './kinematics.ts'
 import { createPoseVariant } from './positionPoseHelpers.ts'
 
-const closedGuardBottomPose: GrapplerPose = {
+// First incrementally migrated pose: the local skeleton is authoritative and
+// the existing SVG-compatible geometry is derived through the adapter.
+const closedGuardBottomSkeleton = grapplerPoseToSkeleton({
   head: { x: 500, y: 430 },
   segments: {
     torso: { x: 500, y: 400, rotation: -90, length: 105 },
@@ -17,7 +23,10 @@ const closedGuardBottomPose: GrapplerPose = {
     rightThigh: { x: 516, y: 395, rotation: -48, length: 122 },
     rightShin: { x: 598, y: 304, rotation: -158, length: 105 },
   },
-}
+})
+const closedGuardBottomPose = skeletonToGrapplerPose(
+  closedGuardBottomSkeleton,
+)
 
 const closedGuardTopPose: GrapplerPose = {
   head: { x: 500, y: 125 },
