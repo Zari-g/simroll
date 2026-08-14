@@ -4,7 +4,7 @@ import type {
 } from './types'
 
 const closedGuardBottomPose: GrapplerPose = {
-  head: { x: 500, y: 430, radius: 32 },
+  head: { x: 500, y: 430 },
   segments: {
     torso: { x: 500, y: 400, rotation: -90, length: 105 },
     leftUpperArm: { x: 482, y: 310, rotation: -155, length: 76 },
@@ -19,7 +19,7 @@ const closedGuardBottomPose: GrapplerPose = {
 }
 
 const closedGuardTopPose: GrapplerPose = {
-  head: { x: 500, y: 125, radius: 30 },
+  head: { x: 500, y: 125 },
   segments: {
     torso: { x: 500, y: 265, rotation: -90, length: 102 },
     leftUpperArm: { x: 480, y: 180, rotation: 148, length: 72 },
@@ -34,7 +34,7 @@ const closedGuardTopPose: GrapplerPose = {
 }
 
 const mountBottomPose: GrapplerPose = {
-  head: { x: 500, y: 155, radius: 32 },
+  head: { x: 500, y: 155 },
   segments: {
     torso: { x: 500, y: 345, rotation: -90, length: 140 },
     leftUpperArm: { x: 478, y: 225, rotation: 160, length: 105 },
@@ -49,7 +49,7 @@ const mountBottomPose: GrapplerPose = {
 }
 
 const mountTopPose: GrapplerPose = {
-  head: { x: 500, y: 190, radius: 30 },
+  head: { x: 500, y: 190 },
   segments: {
     torso: { x: 500, y: 345, rotation: -90, length: 112 },
     leftUpperArm: { x: 480, y: 250, rotation: -158, length: 72 },

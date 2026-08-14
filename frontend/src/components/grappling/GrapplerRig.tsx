@@ -1,3 +1,7 @@
+import {
+  resolveSegmentAnatomy,
+  type GrapplerAnatomy,
+} from '../../grappling/anatomy'
 import type {
   GrapplerId,
   GrapplerPose,
@@ -8,6 +12,7 @@ import type {
 interface GrapplerRigProps {
   grapplerId: GrapplerId
   pose: GrapplerPose
+  anatomy: GrapplerAnatomy
 }
 
 const segmentOrder: readonly GrapplerSegmentName[] = [
@@ -36,11 +41,14 @@ const limbSegments = new Set<GrapplerSegmentName>([
 function RigSegment({
   name,
   pose,
+  anatomy,
 }: {
   name: GrapplerSegmentName
   pose: SegmentPose
+  anatomy: GrapplerAnatomy
 }) {
   const isTorso = name === 'torso'
+  const segmentAnatomy = resolveSegmentAnatomy(anatomy, name)
 
   return (
     <g transform={`translate(${pose.x} ${pose.y}) rotate(${pose.rotation})`}>
@@ -50,15 +58,21 @@ function RigSegment({
         y1="0"
         x2={pose.length}
         y2="0"
+        strokeWidth={segmentAnatomy.width}
       />
       {limbSegments.has(name) && (
-        <circle className="grappler-rig__joint" cx={pose.length} cy="0" r="8" />
+        <circle
+          className="grappler-rig__joint"
+          cx={pose.length}
+          cy="0"
+          r={segmentAnatomy.endpointRadius}
+        />
       )}
     </g>
   )
 }
 
-export function GrapplerRig({ grapplerId, pose }: GrapplerRigProps) {
+export function GrapplerRig({ grapplerId, pose, anatomy }: GrapplerRigProps) {
   return (
     <g className={`grappler-rig grappler-rig--${grapplerId}`} aria-hidden="true">
       {segmentOrder.map((segmentName) => (
@@ -66,13 +80,14 @@ export function GrapplerRig({ grapplerId, pose }: GrapplerRigProps) {
           key={segmentName}
           name={segmentName}
           pose={pose.segments[segmentName]}
+          anatomy={anatomy}
         />
       ))}
       <circle
         className="grappler-rig__head"
         cx={pose.head.x}
         cy={pose.head.y}
-        r={pose.head.radius ?? 30}
+        r={anatomy.head.radius}
       />
       <path
         className="grappler-rig__face-mark"

@@ -1,3 +1,7 @@
+import {
+  resolveGrapplerAnatomy,
+  type GrapplerAnatomyOverrides,
+} from '../../grappling/anatomy'
 import { getPositionVisual } from '../../grappling/positionVisuals'
 import { resolveVisualPose } from '../../grappling/resolveVisualPose'
 import type {
@@ -11,6 +15,7 @@ interface GrapplingPositionVisualProps {
   positionName: string
   activeGripIds: readonly string[]
   displayPoses?: Record<GrapplerId, GrapplerPose>
+  anatomies?: GrapplerAnatomyOverrides
 }
 
 const playerNames: Record<GrapplerId, string> = {
@@ -23,6 +28,7 @@ export function GrapplingPositionVisual({
   positionName,
   activeGripIds,
   displayPoses,
+  anatomies,
 }: GrapplingPositionVisualProps) {
   const visual = getPositionVisual(positionId)
 
@@ -60,6 +66,7 @@ export function GrapplingPositionVisual({
             key={grapplerId}
             grapplerId={grapplerId}
             pose={poses[grapplerId]}
+            anatomy={resolveGrapplerAnatomy(grapplerId, anatomies)}
           />
         ))}
         {contactIndicators.map((indicator, index) => (

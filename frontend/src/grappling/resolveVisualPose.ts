@@ -1,4 +1,4 @@
-import { getGripVisualModifier } from './gripVisuals'
+import { getGripVisualModifier } from './gripVisuals.ts'
 import type {
   GrapplerId,
   GrapplerPose,
