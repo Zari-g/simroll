@@ -3,6 +3,10 @@ import {
   type GrapplerAnatomyOverrides,
 } from '../../grappling/anatomy'
 import { getPositionVisual } from '../../grappling/positionVisuals'
+import {
+  resolveGrapplerAppearance,
+  type GrapplerApparelMode,
+} from '../../grappling/appearance'
 import { resolveVisualPose } from '../../grappling/resolveVisualPose'
 import type {
   GrapplerId,
@@ -14,6 +18,7 @@ interface GrapplingPositionVisualProps {
   positionId: string
   positionName: string
   activeGripIds: readonly string[]
+  mode: GrapplerApparelMode
   displayPoses?: Record<GrapplerId, GrapplerPose>
   anatomies?: GrapplerAnatomyOverrides
 }
@@ -27,6 +32,7 @@ export function GrapplingPositionVisual({
   positionId,
   positionName,
   activeGripIds,
+  mode,
   displayPoses,
   anatomies,
 }: GrapplingPositionVisualProps) {
@@ -67,6 +73,7 @@ export function GrapplingPositionVisual({
             grapplerId={grapplerId}
             pose={poses[grapplerId]}
             anatomy={resolveGrapplerAnatomy(grapplerId, anatomies)}
+            appearance={resolveGrapplerAppearance(grapplerId, mode)}
           />
         ))}
         {contactIndicators.map((indicator, index) => (

@@ -10,17 +10,20 @@ import {
   resolveBodyPartLayerOrder,
   type GrapplerBodyPartName,
 } from '../../grappling/bodyGeometry'
+import type { GrapplerAppearance } from '../../grappling/appearance'
 import type {
   GrapplerId,
   GrapplerPose,
   GrapplerSegmentName,
 } from '../../grappling/types'
 import { ExtremityShape, HeadShape, SegmentShape } from './BodyShape'
+import { GrapplerApparel } from './GrapplerApparel'
 
 interface GrapplerRigProps {
   grapplerId: GrapplerId
   pose: GrapplerPose
   anatomy: GrapplerAnatomy
+  appearance: GrapplerAppearance
 }
 
 const segmentNames = new Set<GrapplerBodyPartName>([
@@ -41,7 +44,12 @@ function isSegmentName(
   return segmentNames.has(bodyPartName)
 }
 
-export function GrapplerRig({ grapplerId, pose, anatomy }: GrapplerRigProps) {
+export function GrapplerRig({
+  grapplerId,
+  pose,
+  anatomy,
+  appearance,
+}: GrapplerRigProps) {
   const bodyPartOrder = useMemo(
     () => resolveBodyPartLayerOrder(anatomy),
     [anatomy],
@@ -59,14 +67,26 @@ export function GrapplerRig({ grapplerId, pose, anatomy }: GrapplerRigProps) {
     }
 
     if (isSegmentName(bodyPartName)) {
+      const segmentAnatomy = resolveSegmentAnatomy(anatomy, bodyPartName)
+
       return (
-        <SegmentShape
-          name={bodyPartName}
-          pose={pose.segments[bodyPartName]}
-          anatomy={resolveSegmentAnatomy(anatomy, bodyPartName)}
-          head={bodyPartName === 'torso' ? pose.head : undefined}
-          grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
-        />
+        <>
+          <SegmentShape
+            name={bodyPartName}
+            pose={pose.segments[bodyPartName]}
+            anatomy={segmentAnatomy}
+            head={bodyPartName === 'torso' ? pose.head : undefined}
+            grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
+          />
+          <GrapplerApparel
+            appearance={appearance}
+            name={bodyPartName}
+            pose={pose.segments[bodyPartName]}
+            anatomy={segmentAnatomy}
+            head={bodyPartName === 'torso' ? pose.head : undefined}
+            grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
+          />
+        </>
       )
     }
 
@@ -82,7 +102,10 @@ export function GrapplerRig({ grapplerId, pose, anatomy }: GrapplerRigProps) {
   }
 
   return (
-    <g className={`grappler-rig grappler-rig--${grapplerId}`} aria-hidden="true">
+    <g
+      className={`grappler-rig grappler-rig--${grapplerId} grappler-rig--${appearance.mode.replace('_', '-')} ${appearance.theme.className}`}
+      aria-hidden="true"
+    >
       {bodyPartOrder.map((bodyPartName) => (
         <g key={bodyPartName}>{renderBodyPart(bodyPartName)}</g>
       ))}

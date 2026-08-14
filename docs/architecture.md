@@ -199,16 +199,21 @@ it never applies transitions or decides grappling validity.
 Grappler graphics preserve the same frontend ownership boundaries. Position and
 transition systems resolve an optional animated pose, while anatomy presets
 provide widths, taper, extremity proportions, and layer hints. Pure geometry
-helpers turn those inputs into tapered body shapes for the SVG renderer:
+helpers turn those inputs into tapered body shapes, and mode-aware appearance
+presets decorate those shapes without owning pose or simulation state:
 
 ```text
 pose + anatomy
     -> body geometry
+body geometry + appearance
     -> layered SVG grappler
 ```
 
 The position visual's `playerOrder` remains authoritative between grapplers;
-anatomy `layerHint` values only order body parts within one grappler.
+anatomy `layerHint` values only order body parts within one grappler. The stage
+passes the configured, live, or historical authoritative mode through the
+position visual, so apparel follows the same pose transforms during transitions
+and replay.
 
 The mobile app may include:
 
