@@ -9,6 +9,7 @@ import { RollSimulator } from './components/RollSimulator'
 import type { GrapplingPath, Position } from './types/api'
 import './App.css'
 import './styles/roll-simulator.css'
+import './styles/grappling-visuals.css'
 
 type ExplorerView = 'list' | 'graph' | 'pathfinder' | 'roll'
 
