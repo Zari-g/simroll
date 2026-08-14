@@ -143,8 +143,8 @@ Goal:
 Turn the existing web experience into a polished, interactive visual BJJ simulator.
 
 Milestones:
-- 8A Visual Design System & Application Shell
-- 8B Roll Simulator Layout
+- 8A Visual Design System & Application Shell - Complete
+- 8B Roll Simulator Layout - Complete
 - 8C Central Grappling Stage
 - 8D Available Moves Interface
 - 8E Visual Roll Timeline
