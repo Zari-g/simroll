@@ -11,6 +11,14 @@ export type GrapplerSegmentName =
   | 'rightThigh'
   | 'rightShin'
 
+export type GrapplerBodyPartName =
+  | GrapplerSegmentName
+  | 'leftHand'
+  | 'rightHand'
+  | 'leftFoot'
+  | 'rightFoot'
+  | 'head'
+
 export interface PointPose {
   x: number
   y: number
@@ -35,14 +43,50 @@ export interface GrapplingPositionVisualDefinition {
   playerARole: string
   playerBRole: string
   playerOrder: readonly GrapplerId[]
+  contacts?: readonly PositionContact[]
+  occlusion?: PositionOcclusionRules
 }
 
 export type SegmentPoseOverrides = Partial<
   Record<GrapplerSegmentName, Partial<SegmentPose>>
 >
 
-export interface GripContactIndicator extends PointPose {
+export type ContactAnchorName = 'start' | 'midpoint' | 'end' | 'center'
+
+export interface ContactAnchor {
   grapplerId: GrapplerId
+  bodyPart: GrapplerBodyPartName
+  anchor?: ContactAnchorName
+  offset?: PointPose
+}
+
+interface GrapplingContactBase {
+  id: string
+  source: ContactAnchor
+  target: ContactAnchor
+}
+
+export interface PositionContact extends GrapplingContactBase {
+  type: 'control' | 'pressure' | 'hook'
+}
+
+export interface GripContact extends GrapplingContactBase {
+  type: 'grip'
+}
+
+export interface BodyPartReference {
+  grapplerId: GrapplerId
+  bodyPart: GrapplerBodyPartName
+}
+
+export interface BodyPartOcclusionOverride {
+  bodyPart: BodyPartReference
+  relativeTo: BodyPartReference
+  placement: 'before' | 'after'
+}
+
+export interface PositionOcclusionRules {
+  overrides: readonly BodyPartOcclusionOverride[]
 }
 
 export interface GripPositionVisualModifier {
@@ -50,7 +94,7 @@ export interface GripPositionVisualModifier {
   appliesTo: GrapplerId
   priority: number
   segmentOverrides: SegmentPoseOverrides
-  contactIndicator?: GripContactIndicator
+  contact?: GripContact
 }
 
 export interface GripVisualDefinition {

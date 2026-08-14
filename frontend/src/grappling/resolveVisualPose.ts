@@ -4,13 +4,13 @@ import type {
   GrapplerPose,
   GrapplerSegmentName,
   GrapplingPositionVisualDefinition,
-  GripContactIndicator,
+  GripContact,
   GripPositionVisualModifier,
 } from './types'
 
 export interface ResolvedPositionVisual {
   poses: Record<GrapplerId, GrapplerPose>
-  contactIndicators: GripContactIndicator[]
+  gripContacts: GripContact[]
 }
 
 const segmentNames: readonly GrapplerSegmentName[] = [
@@ -79,13 +79,27 @@ export function resolveVisualPose(
         left.gripId.localeCompare(right.gripId),
     )
 
-  const contactIndicators: GripContactIndicator[] = []
+  const gripContacts: GripContact[] = []
   for (const { modifier } of modifiers) {
     applyModifier(poses[modifier.appliesTo], modifier)
-    if (modifier.contactIndicator) {
-      contactIndicators.push({ ...modifier.contactIndicator })
+    if (modifier.contact) {
+      gripContacts.push({
+        ...modifier.contact,
+        source: {
+          ...modifier.contact.source,
+          offset: modifier.contact.source.offset && {
+            ...modifier.contact.source.offset,
+          },
+        },
+        target: {
+          ...modifier.contact.target,
+          offset: modifier.contact.target.offset && {
+            ...modifier.contact.target.offset,
+          },
+        },
+      })
     }
   }
 
-  return { poses, contactIndicators }
+  return { poses, gripContacts }
 }

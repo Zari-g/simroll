@@ -26,6 +26,10 @@ interface GrapplerRigProps {
   appearance: GrapplerAppearance
 }
 
+interface GrapplerBodyPartProps extends GrapplerRigProps {
+  bodyPartName: GrapplerBodyPartName
+}
+
 const segmentNames = new Set<GrapplerBodyPartName>([
   'torso',
   'leftUpperArm',
@@ -44,16 +48,13 @@ function isSegmentName(
   return segmentNames.has(bodyPartName)
 }
 
-export function GrapplerRig({
+export function GrapplerBodyPart({
   grapplerId,
   pose,
   anatomy,
   appearance,
-}: GrapplerRigProps) {
-  const bodyPartOrder = useMemo(
-    () => resolveBodyPartLayerOrder(anatomy),
-    [anatomy],
-  )
+  bodyPartName,
+}: GrapplerBodyPartProps) {
   const extremityGeometry = {
     leftHand: deriveHandGeometry(pose.segments.leftForearm, anatomy),
     rightHand: deriveHandGeometry(pose.segments.rightForearm, anatomy),
@@ -61,38 +62,35 @@ export function GrapplerRig({
     rightFoot: deriveFootGeometry(pose.segments.rightShin, anatomy),
   }
 
-  function renderBodyPart(bodyPartName: GrapplerBodyPartName) {
-    if (bodyPartName === 'head') {
-      return <HeadShape pose={pose.head} anatomy={anatomy.head} />
-    }
+  let bodyPart
+  if (bodyPartName === 'head') {
+    bodyPart = <HeadShape pose={pose.head} anatomy={anatomy.head} />
+  } else if (isSegmentName(bodyPartName)) {
+    const segmentAnatomy = resolveSegmentAnatomy(anatomy, bodyPartName)
 
-    if (isSegmentName(bodyPartName)) {
-      const segmentAnatomy = resolveSegmentAnatomy(anatomy, bodyPartName)
-
-      return (
-        <>
-          <SegmentShape
-            name={bodyPartName}
-            pose={pose.segments[bodyPartName]}
-            anatomy={segmentAnatomy}
-            head={bodyPartName === 'torso' ? pose.head : undefined}
-            grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
-          />
-          <GrapplerApparel
-            appearance={appearance}
-            name={bodyPartName}
-            pose={pose.segments[bodyPartName]}
-            anatomy={segmentAnatomy}
-            head={bodyPartName === 'torso' ? pose.head : undefined}
-            grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
-          />
-        </>
-      )
-    }
-
+    bodyPart = (
+      <>
+        <SegmentShape
+          name={bodyPartName}
+          pose={pose.segments[bodyPartName]}
+          anatomy={segmentAnatomy}
+          head={bodyPartName === 'torso' ? pose.head : undefined}
+          grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
+        />
+        <GrapplerApparel
+          appearance={appearance}
+          name={bodyPartName}
+          pose={pose.segments[bodyPartName]}
+          anatomy={segmentAnatomy}
+          head={bodyPartName === 'torso' ? pose.head : undefined}
+          grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
+        />
+      </>
+    )
+  } else {
     const isHand = bodyPartName === 'leftHand' || bodyPartName === 'rightHand'
 
-    return (
+    bodyPart = (
       <ExtremityShape
         name={bodyPartName}
         geometry={extremityGeometry[bodyPartName]}
@@ -104,10 +102,29 @@ export function GrapplerRig({
   return (
     <g
       className={`grappler-rig grappler-rig--${grapplerId} grappler-rig--${appearance.mode.replace('_', '-')} ${appearance.theme.className}`}
+      data-grappler-id={grapplerId}
+      data-scene-body-part={bodyPartName}
       aria-hidden="true"
     >
+      {bodyPart}
+    </g>
+  )
+}
+
+export function GrapplerRig(props: GrapplerRigProps) {
+  const bodyPartOrder = useMemo(
+    () => resolveBodyPartLayerOrder(props.anatomy),
+    [props.anatomy],
+  )
+
+  return (
+    <g aria-hidden="true">
       {bodyPartOrder.map((bodyPartName) => (
-        <g key={bodyPartName}>{renderBodyPart(bodyPartName)}</g>
+        <GrapplerBodyPart
+          {...props}
+          bodyPartName={bodyPartName}
+          key={bodyPartName}
+        />
       ))}
     </g>
   )

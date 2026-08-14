@@ -158,17 +158,60 @@
   pointer-events: none;
 }
 
-.grip-contact__ring {
-  fill: none;
+.grip-contact--playerB {
+  color: var(--color-text-secondary);
+}
+
+.grip-contact__link {
   stroke: currentcolor;
-  stroke-width: 3;
-  opacity: 0.45;
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+
+.grip-contact__ring {
+  fill: var(--color-bg-app);
+  fill-opacity: 0.7;
+  stroke: currentcolor;
+  stroke-width: 2;
+  opacity: 0.72;
 }
 
 .grip-contact__point {
   fill: currentcolor;
   stroke: var(--color-bg-app);
-  stroke-width: 3;
+  stroke-width: 2;
+}
+
+.position-contact {
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.position-contact__bridge {
+  stroke: currentcolor;
+  stroke-width: 7;
+  stroke-linecap: round;
+  opacity: 0.14;
+}
+
+.position-contact__mark {
+  fill: var(--color-bg-app);
+  fill-opacity: 0.28;
+  stroke: currentcolor;
+  stroke-width: 2;
+  opacity: 0.36;
+}
+
+.position-contact--hook .position-contact__mark {
+  fill: none;
+  stroke-dasharray: 7 4;
+  opacity: 0.5;
+}
+
+.position-contact--pressure .position-contact__bridge {
+  stroke-width: 11;
+  opacity: 0.12;
 }
 
 .grappling-position-visual__legend {
