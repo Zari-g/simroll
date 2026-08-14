@@ -2,6 +2,7 @@ import type { GrapplingPositionVisualDefinition } from './types'
 import { defaultGrapplerAnatomy } from './anatomy.ts'
 import { createArticulatedSkeletonPose } from './coreKinematics.ts'
 import { skeletonToGrapplerPose } from './kinematics.ts'
+import { warnForInvalidSkeletonPose } from './poseValidation.ts'
 import type {
   ArticulatedGrapplerPoseDefinition,
   GrapplerSkeletonPose,
@@ -9,8 +10,14 @@ import type {
 
 function articulatedSkeleton(
   definition: ArticulatedGrapplerPoseDefinition,
+  label: string,
 ): GrapplerSkeletonPose {
-  return createArticulatedSkeletonPose(definition, defaultGrapplerAnatomy)
+  const skeleton = createArticulatedSkeletonPose(
+    definition,
+    defaultGrapplerAnatomy,
+  )
+  warnForInvalidSkeletonPose(skeleton, label)
+  return skeleton
 }
 
 const closedGuardBottomSkeleton = articulatedSkeleton({
@@ -47,7 +54,7 @@ const closedGuardBottomSkeleton = articulatedSkeleton({
       distalLength: 105,
     },
   },
-})
+}, 'Closed Guard Bottom')
 
 const closedGuardTopSkeleton = articulatedSkeleton({
   rootPosition: { x: 500, y: 265 },
@@ -78,7 +85,7 @@ const closedGuardTopSkeleton = articulatedSkeleton({
       distalLength: 90,
     },
   },
-})
+}, 'Closed Guard Top')
 
 const mountBottomSkeleton = articulatedSkeleton({
   rootPosition: { x: 500, y: 338 },
@@ -114,7 +121,7 @@ const mountBottomSkeleton = articulatedSkeleton({
       distalLength: 90,
     },
   },
-})
+}, 'Mount Bottom')
 
 const mountTopSkeleton = articulatedSkeleton({
   rootPosition: { x: 500, y: 345 },
@@ -150,7 +157,7 @@ const mountTopSkeleton = articulatedSkeleton({
       distalLength: 102,
     },
   },
-})
+}, 'Mount Top')
 
 const sideControlBottomSkeleton = articulatedSkeleton({
   rootPosition: { x: 500, y: 342 },
@@ -186,7 +193,7 @@ const sideControlBottomSkeleton = articulatedSkeleton({
       distalLength: 90,
     },
   },
-})
+}, 'Side Control Bottom')
 
 const sideControlTopSkeleton = articulatedSkeleton({
   rootPosition: { x: 575, y: 310 },
@@ -222,7 +229,7 @@ const sideControlTopSkeleton = articulatedSkeleton({
       distalLength: 98,
     },
   },
-})
+}, 'Side Control Top')
 
 export const articulatedPositionSkeletons = {
   closed_guard_bottom: {

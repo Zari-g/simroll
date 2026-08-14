@@ -238,6 +238,28 @@ chord for compatibility with the existing SVG body path, but that chord and
 all limb segments are derived rather than separately authored. No kinematic
 calculation occurs in React or SVG components.
 
+Before forward kinematics, skeleton-backed poses pass through a reusable local
+constraint boundary:
+
+```text
+authored local skeleton
+    -> joint constraint validation
+    -> safe/constrained local skeleton
+    -> forward kinematics
+    -> resolved world joints
+    -> renderer geometry
+```
+
+The default profile stores normalized parent-relative rotation ranges separately
+from pose definitions. Validation reports rotation and structural problems for
+authoring tools and tests; correction returns a fresh pose, normalizes wrapped
+angles, and clamps only constrained rotations. Missing joints, non-finite
+transforms, invalid structural lengths, and broken hierarchy references remain
+explicit structural errors rather than being hidden by invented geometry.
+Development diagnostics run once when articulated position visuals are created,
+not on animation frames. These ranges are deliberately approximate visual
+guardrails for a 2D grappler, not medical-grade biomechanics or physics.
+
 Iterations 10A and 10B retain an incremental migration boundary. A pure
 legacy-pose adapter can normalize existing independently positioned segments
 into a connected skeleton, while the anatomy-backed articulated authoring path

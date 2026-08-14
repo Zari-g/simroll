@@ -13,6 +13,10 @@ import type {
   GrapplerSegmentName,
   SegmentPose,
 } from './types.ts'
+import {
+  constrainSkeletonPose,
+  validateSkeletonPose,
+} from './poseValidation.ts'
 
 export interface SegmentJointRelationship {
   readonly start: GrapplerJointName
@@ -99,11 +103,19 @@ export function deriveSegmentPose(
 export function resolveSkeletonPose(
   skeleton: GrapplerSkeletonPose,
 ): ResolvedGrapplerSkeleton {
+  const validation = validateSkeletonPose(skeleton)
+  const structuralViolation = validation.violations.find(
+    (violation) => violation.category === 'structure',
+  )
+  if (structuralViolation) {
+    throw new Error(`Cannot resolve malformed skeleton: ${structuralViolation.message}`)
+  }
+  const constrainedSkeleton = constrainSkeletonPose(skeleton)
   const resolved = {
     pelvis: {
-      x: skeleton.root.position.x,
-      y: skeleton.root.position.y,
-      rotation: skeleton.root.rotation,
+      x: constrainedSkeleton.root.position.x,
+      y: constrainedSkeleton.root.position.y,
+      rotation: constrainedSkeleton.root.rotation,
     },
   } as Partial<Record<GrapplerJointName, WorldJointTransform>>
 
@@ -115,7 +127,7 @@ export function resolveSkeletonPose(
       throw new Error(`Cannot resolve ${childName} before ${parentName}`)
     }
 
-    const local = skeleton.joints[childName]
+    const local = constrainedSkeleton.joints[childName]
     const offset = rotatePoint(local, parent.rotation)
     resolved[childName] = {
       x: parent.x + offset.x,
