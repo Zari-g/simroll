@@ -79,6 +79,24 @@
   opacity: 0.72;
 }
 
+.grip-contact {
+  color: var(--color-accent);
+  pointer-events: none;
+}
+
+.grip-contact__ring {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 3;
+  opacity: 0.45;
+}
+
+.grip-contact__point {
+  fill: currentcolor;
+  stroke: var(--color-bg-app);
+  stroke-width: 3;
+}
+
 .grappling-position-visual__legend {
   position: absolute;
   right: 0;

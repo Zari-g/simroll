@@ -36,3 +36,24 @@ export interface GrapplingPositionVisualDefinition {
   playerBRole: string
   playerOrder: readonly GrapplerId[]
 }
+
+export type SegmentPoseOverrides = Partial<
+  Record<GrapplerSegmentName, Partial<SegmentPose>>
+>
+
+export interface GripContactIndicator extends PointPose {
+  grapplerId: GrapplerId
+}
+
+export interface GripPositionVisualModifier {
+  positionId: string
+  appliesTo: GrapplerId
+  priority: number
+  segmentOverrides: SegmentPoseOverrides
+  contactIndicator?: GripContactIndicator
+}
+
+export interface GripVisualDefinition {
+  gripId: string
+  positionModifiers: readonly GripPositionVisualModifier[]
+}

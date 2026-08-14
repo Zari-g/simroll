@@ -145,8 +145,8 @@ Turn the existing web experience into a polished, interactive visual BJJ simulat
 Milestones:
 - 8A Visual Design System & Application Shell - Complete
 - 8B Roll Simulator Layout - Complete
-- 8C Central Grappling Stage - Complete (SVG rig, pose model, and initial position visuals)
-- 8D Available Moves Interface
+- 8C Grappling Stage / Static Grappler Foundation - Complete
+- 8D Grip Visual Modifier System - Complete
 - 8E Visual Roll Timeline
 - 8F UI Polish
 
