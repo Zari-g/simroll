@@ -97,7 +97,7 @@ export function RollControlPanel({
           <button
             className="roll-secondary-action roll-reset-action"
             type="button"
-            disabled={!isRollActive}
+            disabled={!isRollActive || isMutationLoading}
             onClick={onReset}
           >
             Reset

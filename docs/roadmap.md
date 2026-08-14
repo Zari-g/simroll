@@ -147,7 +147,7 @@ Milestones:
 - 8B Roll Simulator Layout - Complete
 - 8C Grappling Stage / Static Grappler Foundation - Complete
 - 8D Grip Visual Modifier System - Complete
-- 8E Visual Roll Timeline
+- 8E Transition Movement & Pose Interpolation - Complete
 - 8F UI Polish
 
 Status:

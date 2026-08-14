@@ -1,3 +1,4 @@
+import type { GrapplerId, GrapplerPose } from '../grappling/types'
 import type { GrapplingMode, GrapplingStateResponse } from '../types/api'
 import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
 
@@ -10,6 +11,8 @@ interface GrapplingStageProps {
   configuredGripNames: string[]
   stepCount: number
   isMutationLoading: boolean
+  animatedPoses: Record<GrapplerId, GrapplerPose> | null
+  animatedTransitionName: string | null
   resolvePositionName: (positionId: string) => string
   resolveGripName: (gripId: string) => string
 }
@@ -23,6 +26,8 @@ export function GrapplingStage({
   configuredGripNames,
   stepCount,
   isMutationLoading,
+  animatedPoses,
+  animatedTransitionName,
   resolvePositionName,
   resolveGripName,
 }: GrapplingStageProps) {
@@ -41,7 +46,15 @@ export function GrapplingStage({
     <section className="grappling-stage" aria-labelledby="grappling-stage-heading">
       <div className="grappling-stage__status">
         <span className={`stage-status-dot ${isActive ? 'is-active' : ''}`} aria-hidden="true" />
-        <span>{isMutationLoading ? 'Updating roll' : isActive ? 'Roll in progress' : 'Ready to roll'}</span>
+        <span>
+          {animatedTransitionName
+            ? `Transitioning · ${animatedTransitionName}`
+            : isMutationLoading
+              ? 'Updating roll'
+              : isActive
+                ? 'Roll in progress'
+                : 'Ready to roll'}
+        </span>
         {isActive && <span className="grappling-stage__step">Step {stepCount}</span>}
       </div>
 
@@ -56,6 +69,7 @@ export function GrapplingStage({
           positionId={positionId}
           positionName={positionName}
           activeGripIds={activeGripIds}
+          displayPoses={animatedPoses ?? undefined}
         />
 
         <dl className="grappling-stage__details">

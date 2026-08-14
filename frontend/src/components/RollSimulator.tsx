@@ -6,6 +6,9 @@ import {
   performRollStep,
   simulateRoll,
 } from '../api/client'
+import { getPositionVisual } from '../grappling/positionVisuals'
+import { resolveVisualPose } from '../grappling/resolveVisualPose'
+import { usePoseAnimation } from '../hooks/usePoseAnimation'
 import type {
   GrapplingMode,
   GrapplingStateResponse,
@@ -145,6 +148,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const rollVersion = useRef(0)
   const stepController = useRef<AbortController | null>(null)
   const autoRollController = useRef<AbortController | null>(null)
+  const poseAnimation = usePoseAnimation()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -333,6 +337,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     }
 
     rollVersion.current += 1
+    poseAnimation.cancel()
     stepController.current?.abort()
     autoRollController.current?.abort()
     stepController.current = null
@@ -388,6 +393,27 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         throw new Error('The roll step response was incomplete.')
       }
 
+      const startVisual = getPositionVisual(state.position_id)
+      const endVisual = getPositionVisual(response.next_state.position_id)
+      if (startVisual && endVisual) {
+        await poseAnimation.play({
+          transitionId: response.transition.id,
+          transitionName: response.transition.name,
+          startPoses: resolveVisualPose(
+            startVisual,
+            state.active_grips,
+          ).poses,
+          endPoses: resolveVisualPose(
+            endVisual,
+            response.next_state.active_grips,
+          ).poses,
+        })
+      }
+
+      if (controller.signal.aborted || version !== rollVersion.current) {
+        return
+      }
+
       setHistory((currentHistory) => ({
         states: [...currentHistory.states, response.next_state!],
         transitionIds: [
@@ -400,6 +426,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       setIsRandomDeadEnd(false)
       setIsAutoDeadEnd(false)
       setCurrentState(response.next_state)
+      poseAnimation.finish()
     } catch (requestError) {
       if (!isAbortError(requestError) && version === rollVersion.current) {
         console.error('Unable to apply the roll transition.', requestError)
@@ -516,6 +543,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
   const resetRoll = () => {
     rollVersion.current += 1
+    poseAnimation.cancel()
     availabilityRequestId.current += 1
     stepController.current?.abort()
     autoRollController.current?.abort()
@@ -543,7 +571,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       (!isAvailabilityLoading &&
         availabilityError === null &&
         availableTransitions.length === 0))
-  const isRollMutationLoading = isStepLoading || isAutoRollLoading
+  const isRollMutationLoading =
+    isStepLoading || isAutoRollLoading || poseAnimation.isAnimating
   const isAutoRollDisabled =
     !currentState ||
     isRollMutationLoading ||
@@ -598,6 +627,10 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           configuredGripNames={configuredGripNames}
           stepCount={history.transitionIds.length}
           isMutationLoading={isRollMutationLoading}
+          animatedPoses={poseAnimation.display?.poses ?? null}
+          animatedTransitionName={
+            poseAnimation.display?.transitionName ?? null
+          }
           resolvePositionName={resolvePositionName}
           resolveGripName={resolveGripName}
         />
