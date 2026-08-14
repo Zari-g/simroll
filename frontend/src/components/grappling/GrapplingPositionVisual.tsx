@@ -1,12 +1,16 @@
 import { getPositionVisual } from '../../grappling/positionVisuals'
 import { resolveVisualPose } from '../../grappling/resolveVisualPose'
-import type { GrapplerId } from '../../grappling/types'
+import type {
+  GrapplerId,
+  GrapplerPose,
+} from '../../grappling/types'
 import { GrapplerRig } from './GrapplerRig'
 
 interface GrapplingPositionVisualProps {
   positionId: string
   positionName: string
   activeGripIds: readonly string[]
+  displayPoses?: Record<GrapplerId, GrapplerPose>
 }
 
 const playerNames: Record<GrapplerId, string> = {
@@ -18,6 +22,7 @@ export function GrapplingPositionVisual({
   positionId,
   positionName,
   activeGripIds,
+  displayPoses,
 }: GrapplingPositionVisualProps) {
   const visual = getPositionVisual(positionId)
 
@@ -31,7 +36,11 @@ export function GrapplingPositionVisual({
     )
   }
 
-  const { poses, contactIndicators } = resolveVisualPose(visual, activeGripIds)
+  const resolvedVisual = resolveVisualPose(visual, activeGripIds)
+  const poses = displayPoses ?? resolvedVisual.poses
+  const contactIndicators = displayPoses
+    ? []
+    : resolvedVisual.contactIndicators
 
   return (
     <div className="grappling-position-visual">

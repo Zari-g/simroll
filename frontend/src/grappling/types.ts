@@ -57,3 +57,20 @@ export interface GripVisualDefinition {
   gripId: string
   positionModifiers: readonly GripPositionVisualModifier[]
 }
+
+export interface GrapplerPoseOverride {
+  head?: Partial<GrapplerPose['head']>
+  segments?: SegmentPoseOverrides
+}
+
+export interface TransitionVisualKeyframe {
+  progress: number
+  playerA?: GrapplerPoseOverride
+  playerB?: GrapplerPoseOverride
+}
+
+export interface TransitionVisualDefinition {
+  transitionId: string
+  durationMs: number
+  keyframes: readonly TransitionVisualKeyframe[]
+}
