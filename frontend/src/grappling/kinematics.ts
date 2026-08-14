@@ -19,6 +19,16 @@ export interface SegmentJointRelationship {
   readonly end: GrapplerJointName
 }
 
+export interface ResolvedCoreGeometry {
+  readonly pelvis: WorldJointTransform
+  readonly spine: WorldJointTransform
+  readonly chest: WorldJointTransform
+  readonly neck: WorldJointTransform
+  readonly head: WorldJointTransform
+  /** Renderer-compatible chord derived across the articulated core. */
+  readonly torso: SegmentPose
+}
+
 export const skeletonSegmentJoints = {
   torso: { start: 'pelvis', end: 'chest' },
   leftUpperArm: { start: 'leftShoulder', end: 'leftElbow' },
@@ -122,17 +132,37 @@ export function resolveSkeletonPose(
 export function deriveSkeletonSegments(
   skeleton: ResolvedGrapplerSkeleton,
 ): Readonly<Record<GrapplerSegmentName, SegmentPose>> {
+  const core = deriveResolvedCoreGeometry(skeleton)
+
   return Object.fromEntries(
     Object.entries(skeletonSegmentJoints).map(
       ([segmentName, relationship]) => [
         segmentName,
-        deriveSegmentPose(
-          skeleton.joints[relationship.start],
-          skeleton.joints[relationship.end],
-        ),
+        segmentName === 'torso'
+          ? core.torso
+          : deriveSegmentPose(
+              skeleton.joints[relationship.start],
+              skeleton.joints[relationship.end],
+            ),
       ],
     ),
   ) as Record<GrapplerSegmentName, SegmentPose>
+}
+
+/** Rich resolved core data kept outside React and SVG rendering code. */
+export function deriveResolvedCoreGeometry(
+  skeleton: ResolvedGrapplerSkeleton,
+): ResolvedCoreGeometry {
+  const { pelvis, spine, chest, neck, head } = skeleton.joints
+
+  return {
+    pelvis: { ...pelvis },
+    spine: { ...spine },
+    chest: { ...chest },
+    neck: { ...neck },
+    head: { ...head },
+    torso: deriveSegmentPose(pelvis, chest),
+  }
 }
 
 /** Adapter from resolved kinematic geometry to the current SVG renderer. */

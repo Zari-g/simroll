@@ -21,8 +21,8 @@ export const gripVisuals: Readonly<Record<string, GripVisualDefinition>> = {
         segmentOverrides: {
           rightUpperArm: { rotation: -122, length: 72 },
           rightForearm: {
-            x: 480,
-            y: 250,
+            x: 483.65,
+            y: 232.58,
             rotation: -150,
             length: 40,
           },

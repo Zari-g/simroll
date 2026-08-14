@@ -34,7 +34,18 @@ export interface ExtremityAnatomy {
   readonly layerHint: number
 }
 
+/** Structural proportions used by the articulated skeleton, not SVG styling. */
+export interface CoreAnatomy {
+  readonly pelvisToSpineLength: number
+  readonly spineToChestLength: number
+  readonly shoulderSpan: number
+  readonly hipSpan: number
+  readonly neckLength: number
+  readonly headOffset: number
+}
+
 export interface GrapplerAnatomy {
+  readonly core: CoreAnatomy
   readonly head: HeadAnatomy
   readonly torso: SegmentAnatomy
   readonly upperArm: SegmentAnatomy
@@ -56,6 +67,14 @@ export type GrapplerAnatomyOverrides = Partial<
 >
 
 export const defaultGrapplerAnatomy: GrapplerAnatomy = {
+  core: {
+    pelvisToSpineLength: 54,
+    spineToChestLength: 54,
+    shoulderSpan: 40,
+    hipSpan: 34,
+    neckLength: 18,
+    headOffset: 20,
+  },
   head: {
     radius: 30,
     layerHint: 30,

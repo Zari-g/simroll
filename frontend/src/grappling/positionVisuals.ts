@@ -1,103 +1,250 @@
+import type { GrapplingPositionVisualDefinition } from './types'
+import { defaultGrapplerAnatomy } from './anatomy.ts'
+import { createArticulatedSkeletonPose } from './coreKinematics.ts'
+import { skeletonToGrapplerPose } from './kinematics.ts'
 import type {
-  GrapplerPose,
-  GrapplingPositionVisualDefinition,
-} from './types'
-import {
-  grapplerPoseToSkeleton,
-  skeletonToGrapplerPose,
-} from './kinematics.ts'
-import { createPoseVariant } from './positionPoseHelpers.ts'
+  ArticulatedGrapplerPoseDefinition,
+  GrapplerSkeletonPose,
+} from './skeleton.ts'
 
-// First incrementally migrated pose: the local skeleton is authoritative and
-// the existing SVG-compatible geometry is derived through the adapter.
-const closedGuardBottomSkeleton = grapplerPoseToSkeleton({
-  head: { x: 500, y: 430 },
-  segments: {
-    torso: { x: 500, y: 400, rotation: -90, length: 105 },
-    leftUpperArm: { x: 482, y: 310, rotation: -155, length: 76 },
-    leftForearm: { x: 413, y: 278, rotation: 18, length: 70 },
-    rightUpperArm: { x: 518, y: 310, rotation: -25, length: 76 },
-    rightForearm: { x: 587, y: 278, rotation: 162, length: 70 },
-    leftThigh: { x: 484, y: 395, rotation: -132, length: 122 },
-    leftShin: { x: 402, y: 304, rotation: -22, length: 105 },
-    rightThigh: { x: 516, y: 395, rotation: -48, length: 122 },
-    rightShin: { x: 598, y: 304, rotation: -158, length: 105 },
-  },
-})
-const closedGuardBottomPose = skeletonToGrapplerPose(
-  closedGuardBottomSkeleton,
-)
-
-const closedGuardTopPose: GrapplerPose = {
-  head: { x: 500, y: 125 },
-  segments: {
-    torso: { x: 500, y: 265, rotation: -90, length: 102 },
-    leftUpperArm: { x: 480, y: 180, rotation: 148, length: 72 },
-    leftForearm: { x: 419, y: 218, rotation: 28, length: 68 },
-    rightUpperArm: { x: 520, y: 180, rotation: 32, length: 72 },
-    rightForearm: { x: 581, y: 218, rotation: 152, length: 68 },
-    leftThigh: { x: 484, y: 265, rotation: 118, length: 110 },
-    leftShin: { x: 431, y: 362, rotation: 77, length: 90 },
-    rightThigh: { x: 516, y: 265, rotation: 62, length: 110 },
-    rightShin: { x: 569, y: 362, rotation: 103, length: 90 },
-  },
+function articulatedSkeleton(
+  definition: ArticulatedGrapplerPoseDefinition,
+): GrapplerSkeletonPose {
+  return createArticulatedSkeletonPose(definition, defaultGrapplerAnatomy)
 }
 
-const mountBottomPose: GrapplerPose = {
-  head: { x: 500, y: 155 },
-  segments: {
-    torso: { x: 500, y: 345, rotation: -90, length: 140 },
-    leftUpperArm: { x: 478, y: 225, rotation: 160, length: 105 },
-    leftForearm: { x: 379, y: 261, rotation: 105, length: 88 },
-    rightUpperArm: { x: 522, y: 225, rotation: 20, length: 105 },
-    rightForearm: { x: 621, y: 261, rotation: 75, length: 88 },
-    leftThigh: { x: 484, y: 342, rotation: 118, length: 115 },
-    leftShin: { x: 430, y: 444, rotation: 82, length: 90 },
-    rightThigh: { x: 516, y: 342, rotation: 62, length: 115 },
-    rightShin: { x: 570, y: 444, rotation: 98, length: 90 },
+const closedGuardBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 300 },
+  core: {
+    pelvisRotation: 96,
+    spineFlexion: -18,
+    chestRotation: -8,
+    neckRotation: 6,
   },
-}
-
-const mountTopPose: GrapplerPose = {
-  head: { x: 500, y: 190 },
-  segments: {
-    torso: { x: 500, y: 345, rotation: -90, length: 112 },
-    leftUpperArm: { x: 480, y: 250, rotation: -158, length: 72 },
-    leftForearm: { x: 413, y: 223, rotation: 72, length: 75 },
-    rightUpperArm: { x: 520, y: 250, rotation: -22, length: 72 },
-    rightForearm: { x: 587, y: 223, rotation: 108, length: 75 },
-    leftThigh: { x: 482, y: 340, rotation: 143, length: 112 },
-    leftShin: { x: 393, y: 407, rotation: 72, length: 102 },
-    rightThigh: { x: 518, y: 340, rotation: 37, length: 112 },
-    rightShin: { x: 607, y: 407, rotation: 108, length: 102 },
-  },
-}
-
-const sideControlBottomPose = createPoseVariant(mountBottomPose, {
-  head: { x: 500, y: 175 },
-  segments: {
-    torso: { x: 500, y: 350, rotation: -90, length: 130 },
-    leftUpperArm: { x: 480, y: 235, rotation: -165, length: 100 },
-    leftForearm: { x: 384, y: 209, rotation: -135, length: 78 },
-    rightUpperArm: { x: 520, y: 235, rotation: 15, length: 100 },
-    rightForearm: { x: 616, y: 261, rotation: 45, length: 78 },
+  limbs: {
+    leftArm: {
+      proximalRotation: 135,
+      distalRotation: 173,
+      proximalLength: 76,
+      distalLength: 70,
+    },
+    rightArm: {
+      proximalRotation: -95,
+      distalRotation: -173,
+      proximalLength: 76,
+      distalLength: 70,
+    },
+    leftLeg: {
+      proximalRotation: 132,
+      distalRotation: 110,
+      proximalLength: 122,
+      distalLength: 105,
+    },
+    rightLeg: {
+      proximalRotation: -144,
+      distalRotation: -110,
+      proximalLength: 122,
+      distalLength: 105,
+    },
   },
 })
 
-const sideControlTopPose: GrapplerPose = {
-  head: { x: 410, y: 310 },
-  segments: {
-    torso: { x: 575, y: 310, rotation: 180, length: 125 },
-    leftUpperArm: { x: 468, y: 292, rotation: -132, length: 80 },
-    leftForearm: { x: 414, y: 233, rotation: -40, length: 70 },
-    rightUpperArm: { x: 468, y: 328, rotation: 132, length: 80 },
-    rightForearm: { x: 414, y: 387, rotation: 35, length: 70 },
-    leftThigh: { x: 568, y: 292, rotation: -35, length: 112 },
-    leftShin: { x: 660, y: 228, rotation: 18, length: 98 },
-    rightThigh: { x: 568, y: 328, rotation: 42, length: 112 },
-    rightShin: { x: 651, y: 403, rotation: 82, length: 98 },
+const closedGuardTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 265 },
+  core: { pelvisRotation: -88, spineFlexion: -4, chestRotation: -2 },
+  limbs: {
+    leftArm: {
+      proximalRotation: -118,
+      distalRotation: -120,
+      proximalLength: 72,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: 126,
+      distalRotation: 120,
+      proximalLength: 72,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: -154,
+      distalRotation: -41,
+      proximalLength: 110,
+      distalLength: 90,
+    },
+    rightLeg: {
+      proximalRotation: 150,
+      distalRotation: 41,
+      proximalLength: 110,
+      distalLength: 90,
+    },
   },
-}
+})
+
+const mountBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 338 },
+  core: {
+    pelvisRotation: -94,
+    spineFlexion: 12,
+    chestRotation: -6,
+    neckRotation: -4,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -112,
+      distalRotation: -55,
+      proximalLength: 105,
+      distalLength: 88,
+    },
+    rightArm: {
+      proximalRotation: 68,
+      distalRotation: 55,
+      proximalLength: 105,
+      distalLength: 88,
+    },
+    leftLeg: {
+      proximalRotation: -148,
+      distalRotation: -42,
+      proximalLength: 115,
+      distalLength: 90,
+    },
+    rightLeg: {
+      proximalRotation: 156,
+      distalRotation: 36,
+      proximalLength: 115,
+      distalLength: 90,
+    },
+  },
+})
+
+const mountTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 345 },
+  core: {
+    pelvisRotation: -88,
+    spineFlexion: -7,
+    chestRotation: 3,
+    neckRotation: 3,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -66,
+      distalRotation: -130,
+      proximalLength: 72,
+      distalLength: 75,
+    },
+    rightArm: {
+      proximalRotation: 70,
+      distalRotation: 130,
+      proximalLength: 72,
+      distalLength: 75,
+    },
+    leftLeg: {
+      proximalRotation: -129,
+      distalRotation: -71,
+      proximalLength: 112,
+      distalLength: 102,
+    },
+    rightLeg: {
+      proximalRotation: 125,
+      distalRotation: 71,
+      proximalLength: 112,
+      distalLength: 102,
+    },
+  },
+})
+
+const sideControlBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 342 },
+  core: {
+    pelvisRotation: -92,
+    spineFlexion: 10,
+    chestRotation: -14,
+    neckRotation: 8,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -69,
+      distalRotation: 30,
+      proximalLength: 100,
+      distalLength: 78,
+    },
+    rightArm: {
+      proximalRotation: 111,
+      distalRotation: 30,
+      proximalLength: 100,
+      distalLength: 78,
+    },
+    leftLeg: {
+      proximalRotation: -150,
+      distalRotation: -44,
+      proximalLength: 115,
+      distalLength: 90,
+    },
+    rightLeg: {
+      proximalRotation: 154,
+      distalRotation: 36,
+      proximalLength: 115,
+      distalLength: 90,
+    },
+  },
+})
+
+const sideControlTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 575, y: 310 },
+  core: {
+    pelvisRotation: 160,
+    spineFlexion: 15,
+    chestRotation: 10,
+    neckRotation: -5,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: 43,
+      distalRotation: 92,
+      proximalLength: 80,
+      distalLength: 70,
+    },
+    rightArm: {
+      proximalRotation: -53,
+      distalRotation: -97,
+      proximalLength: 80,
+      distalLength: 70,
+    },
+    leftLeg: {
+      proximalRotation: 165,
+      distalRotation: 53,
+      proximalLength: 112,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: -118,
+      distalRotation: 40,
+      proximalLength: 112,
+      distalLength: 98,
+    },
+  },
+})
+
+export const articulatedPositionSkeletons = {
+  closed_guard_bottom: {
+    playerA: closedGuardBottomSkeleton,
+    playerB: closedGuardTopSkeleton,
+  },
+  mount_top: {
+    playerA: mountTopSkeleton,
+    playerB: mountBottomSkeleton,
+  },
+  side_control_top: {
+    playerA: sideControlTopSkeleton,
+    playerB: sideControlBottomSkeleton,
+  },
+} as const
+
+const closedGuardBottomPose = skeletonToGrapplerPose(closedGuardBottomSkeleton)
+const closedGuardTopPose = skeletonToGrapplerPose(closedGuardTopSkeleton)
+const mountBottomPose = skeletonToGrapplerPose(mountBottomSkeleton)
+const mountTopPose = skeletonToGrapplerPose(mountTopSkeleton)
+const sideControlBottomPose = skeletonToGrapplerPose(sideControlBottomSkeleton)
+const sideControlTopPose = skeletonToGrapplerPose(sideControlTopSkeleton)
 
 export const corePositionVisualIds = [
   'closed_guard_bottom',
