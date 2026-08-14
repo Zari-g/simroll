@@ -426,7 +426,6 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       setIsRandomDeadEnd(false)
       setIsAutoDeadEnd(false)
       setCurrentState(response.next_state)
-      poseAnimation.finish()
     } catch (requestError) {
       if (!isAbortError(requestError) && version === rollVersion.current) {
         console.error('Unable to apply the roll transition.', requestError)

@@ -34,12 +34,6 @@ export function usePoseAnimation() {
     setDisplay(null)
   }, [])
 
-  const finish = useCallback(() => {
-    frameId.current = null
-    pendingResolution.current = null
-    setDisplay(null)
-  }, [])
-
   const play = useCallback(
     ({
       transitionId,
@@ -83,9 +77,17 @@ export function usePoseAnimation() {
           if (progress < 1) {
             frameId.current = requestAnimationFrame(renderFrame)
           } else {
-            frameId.current = null
             pendingResolution.current = null
             resolve(true)
+            // Keep the exact final frame mounted while the awaiting caller
+            // commits the authoritative destination state. Clear it on the
+            // next frame so the underlying destination pose is already ready.
+            frameId.current = requestAnimationFrame(() => {
+              if (animationGeneration === generation.current) {
+                frameId.current = null
+                setDisplay(null)
+              }
+            })
           }
         }
 
@@ -101,7 +103,6 @@ export function usePoseAnimation() {
     display,
     isAnimating: display !== null,
     play,
-    finish,
     cancel,
   }
 }
