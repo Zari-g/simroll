@@ -40,8 +40,8 @@ function PositionContactMark({
         className="position-contact__mark"
         cx={geometry.point.x}
         cy={geometry.point.y}
-        rx={isPressure ? 18 : 9}
-        ry={isPressure ? 7 : 5}
+        rx={isPressure ? 14 : 7}
+        ry={isPressure ? 6 : 4}
         transform={`rotate(${geometry.angle} ${geometry.point.x} ${geometry.point.y})`}
       />
     </g>
@@ -74,13 +74,13 @@ function GripContactMark({
         className="grip-contact__ring"
         cx={geometry.target.x}
         cy={geometry.target.y}
-        r="10"
+        r="8"
       />
       <circle
         className="grip-contact__point"
         cx={geometry.source.x}
         cy={geometry.source.y}
-        r="4"
+        r="3.5"
       />
     </g>
   )

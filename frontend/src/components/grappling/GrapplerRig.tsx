@@ -1,15 +1,10 @@
-import { useMemo } from 'react'
-
 import {
   deriveFootGeometry,
   deriveHandGeometry,
   resolveSegmentAnatomy,
   type GrapplerAnatomy,
 } from '../../grappling/anatomy'
-import {
-  resolveBodyPartLayerOrder,
-  type GrapplerBodyPartName,
-} from '../../grappling/bodyGeometry'
+import type { GrapplerBodyPartName } from '../../grappling/bodyGeometry'
 import type { GrapplerAppearance } from '../../grappling/appearance'
 import type {
   GrapplerId,
@@ -55,13 +50,6 @@ export function GrapplerBodyPart({
   appearance,
   bodyPartName,
 }: GrapplerBodyPartProps) {
-  const extremityGeometry = {
-    leftHand: deriveHandGeometry(pose.segments.leftForearm, anatomy),
-    rightHand: deriveHandGeometry(pose.segments.rightForearm, anatomy),
-    leftFoot: deriveFootGeometry(pose.segments.leftShin, anatomy),
-    rightFoot: deriveFootGeometry(pose.segments.rightShin, anatomy),
-  }
-
   let bodyPart
   if (bodyPartName === 'head') {
     bodyPart = <HeadShape pose={pose.head} anatomy={anatomy.head} />
@@ -89,11 +77,21 @@ export function GrapplerBodyPart({
     )
   } else {
     const isHand = bodyPartName === 'leftHand' || bodyPartName === 'rightHand'
+    const sourceSegment = isHand
+      ? pose.segments[
+          bodyPartName === 'leftHand' ? 'leftForearm' : 'rightForearm'
+        ]
+      : pose.segments[
+          bodyPartName === 'leftFoot' ? 'leftShin' : 'rightShin'
+        ]
+    const extremityGeometry = isHand
+      ? deriveHandGeometry(sourceSegment, anatomy)
+      : deriveFootGeometry(sourceSegment, anatomy)
 
     bodyPart = (
       <ExtremityShape
         name={bodyPartName}
-        geometry={extremityGeometry[bodyPartName]}
+        geometry={extremityGeometry}
         anatomy={isHand ? anatomy.hand : anatomy.foot}
       />
     )
@@ -107,25 +105,6 @@ export function GrapplerBodyPart({
       aria-hidden="true"
     >
       {bodyPart}
-    </g>
-  )
-}
-
-export function GrapplerRig(props: GrapplerRigProps) {
-  const bodyPartOrder = useMemo(
-    () => resolveBodyPartLayerOrder(props.anatomy),
-    [props.anatomy],
-  )
-
-  return (
-    <g aria-hidden="true">
-      {bodyPartOrder.map((bodyPartName) => (
-        <GrapplerBodyPart
-          {...props}
-          bodyPartName={bodyPartName}
-          key={bodyPartName}
-        />
-      ))}
     </g>
   )
 }

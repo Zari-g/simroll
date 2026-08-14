@@ -10,7 +10,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  max-height: 28rem;
+  max-height: 30rem;
   overflow: visible;
 }
 
@@ -54,7 +54,7 @@
 .grappler-rig__body-part {
   fill: var(--grappler-skin);
   stroke: var(--grappler-outline);
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linejoin: round;
   paint-order: stroke;
 }
@@ -62,29 +62,29 @@
 .grappler-rig__head {
   fill: var(--grappler-skin);
   stroke: var(--grappler-outline);
-  stroke-width: 6;
+  stroke-width: 4;
 }
 
 .grappler-rig__torso {
-  stroke-width: 5;
+  stroke-width: 4;
 }
 
 .grappler-rig__extremity {
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
 .grappler-rig__face-mark {
   fill: none;
   stroke: var(--grappler-skin-detail);
   stroke-linecap: round;
-  stroke-width: 5;
-  opacity: 0.72;
+  stroke-width: 2.5;
+  opacity: 0.4;
 }
 
 .grappler-apparel__garment {
   fill: var(--apparel-primary);
   stroke: var(--grappler-outline);
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linejoin: round;
   paint-order: stroke;
 }
@@ -164,9 +164,9 @@
 
 .grip-contact__link {
   stroke: currentcolor;
-  stroke-width: 5;
+  stroke-width: 4;
   stroke-linecap: round;
-  opacity: 0.5;
+  opacity: 0.42;
 }
 
 .grip-contact__ring {
@@ -174,7 +174,7 @@
   fill-opacity: 0.7;
   stroke: currentcolor;
   stroke-width: 2;
-  opacity: 0.72;
+  opacity: 0.66;
 }
 
 .grip-contact__point {
@@ -190,7 +190,7 @@
 
 .position-contact__bridge {
   stroke: currentcolor;
-  stroke-width: 7;
+  stroke-width: 6;
   stroke-linecap: round;
   opacity: 0.14;
 }
@@ -200,7 +200,7 @@
   fill-opacity: 0.28;
   stroke: currentcolor;
   stroke-width: 2;
-  opacity: 0.36;
+  opacity: 0.3;
 }
 
 .position-contact--hook .position-contact__mark {

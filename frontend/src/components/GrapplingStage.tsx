@@ -1,16 +1,12 @@
+import type { GrapplingDisplayState } from '../grappling/displayState'
 import type { GrapplerId, GrapplerPose } from '../grappling/types'
-import type { GrapplingMode, GrapplingStateResponse } from '../types/api'
 import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
 
 interface GrapplingStageProps {
-  currentState: GrapplingStateResponse | null
-  playbackState: GrapplingStateResponse | null
+  displayState: GrapplingDisplayState
+  isRollActive: boolean
+  isPlaybackActive: boolean
   playbackStateIndex: number | null
-  configuredPositionId: string
-  configuredPositionName: string
-  configuredMode: GrapplingMode
-  configuredGripIds: string[]
-  configuredGripNames: string[]
   stepCount: number
   isMutationLoading: boolean
   animatedPoses: Record<GrapplerId, GrapplerPose> | null
@@ -20,14 +16,10 @@ interface GrapplingStageProps {
 }
 
 export function GrapplingStage({
-  currentState,
-  playbackState,
+  displayState,
+  isRollActive,
+  isPlaybackActive,
   playbackStateIndex,
-  configuredPositionId,
-  configuredPositionName,
-  configuredMode,
-  configuredGripIds,
-  configuredGripNames,
   stepCount,
   isMutationLoading,
   animatedPoses,
@@ -35,18 +27,8 @@ export function GrapplingStage({
   resolvePositionName,
   resolveGripName,
 }: GrapplingStageProps) {
-  const isActive = currentState !== null
-  const isPlayback = playbackState !== null && playbackStateIndex !== null
-  const stageState = playbackState ?? currentState
-  const positionName = stageState
-    ? resolvePositionName(stageState.position_id)
-    : configuredPositionName
-  const positionId = stageState?.position_id ?? configuredPositionId
-  const displayMode = stageState?.mode ?? configuredMode
-  const activeGripIds = stageState?.active_grips ?? configuredGripIds
-  const activeGripNames = stageState
-    ? stageState.active_grips.map(resolveGripName)
-    : configuredGripNames
+  const positionName = resolvePositionName(displayState.positionId)
+  const activeGripNames = displayState.activeGripIds.map(resolveGripName)
   const playbackStepLabel =
     playbackStateIndex === 0 ? 'Start' : `Step ${playbackStateIndex}`
 
@@ -54,66 +36,68 @@ export function GrapplingStage({
     <section className="grappling-stage" aria-labelledby="grappling-stage-heading">
       <div className="grappling-stage__status" role="status" aria-live="polite">
         <span
-          className={`stage-status-dot ${isPlayback ? 'is-playback' : isActive ? 'is-active' : ''}`}
+          className={`stage-status-dot ${isPlaybackActive ? 'is-playback' : isRollActive ? 'is-active' : ''}`}
           aria-hidden="true"
         />
         <span>
           {animatedTransitionName
-            ? `${isPlayback ? 'Replaying' : 'Transitioning'} · ${animatedTransitionName}`
-            : isPlayback
+            ? `${isPlaybackActive ? 'Replaying' : 'Transitioning'} · ${animatedTransitionName}`
+            : isPlaybackActive
               ? 'History playback'
-            : isMutationLoading
-              ? 'Updating roll'
-              : isActive
-                ? 'Roll in progress'
-                : 'Ready to roll'}
+              : isMutationLoading
+                ? 'Updating roll'
+                : isRollActive
+                  ? 'Roll in progress'
+                  : 'Ready to roll'}
         </span>
-        {isPlayback ? (
+        {isPlaybackActive ? (
           <span className="grappling-stage__step">
             {playbackStepLabel} of {stepCount}
           </span>
         ) : (
-          isActive && <span className="grappling-stage__step">Step {stepCount}</span>
+          isRollActive && (
+            <span className="grappling-stage__step">Step {stepCount}</span>
+          )
         )}
       </div>
 
       <div className="grappling-stage__mat">
         <div className="grappling-stage__position">
           <p className="section-label">
-            {isPlayback
+            {isPlaybackActive
               ? 'History position'
-              : isActive
+              : isRollActive
                 ? 'Current position'
                 : 'Starting position'}
           </p>
           <h3 id="grappling-stage-heading">{positionName}</h3>
           <p>
-            {isPlayback
+            {isPlaybackActive
               ? `Reviewing ${playbackStepLabel}`
-              : isActive
+              : isRollActive
                 ? 'Authoritative simulator state'
                 : 'Configured starting state'}
           </p>
         </div>
 
         <GrapplingPositionVisual
-          positionId={positionId}
+          positionId={displayState.positionId}
           positionName={positionName}
-          activeGripIds={activeGripIds}
-          mode={displayMode}
+          activeGripIds={displayState.activeGripIds}
+          mode={displayState.mode}
           displayPoses={animatedPoses ?? undefined}
         />
 
         <dl className="grappling-stage__details">
           <div>
             <dt>Mode</dt>
-            <dd>{displayMode === 'gi' ? 'Gi' : 'No-Gi'}</dd>
+            <dd>{displayState.mode === 'gi' ? 'Gi' : 'No-Gi'}</dd>
           </div>
           <div>
             <dt>
-              {isPlayback
+              {isPlaybackActive
                 ? 'Recorded grips'
-                : isActive
+                : isRollActive
                   ? 'Active grips'
                   : 'Starting grips'}
             </dt>

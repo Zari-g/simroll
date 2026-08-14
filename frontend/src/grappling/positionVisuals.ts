@@ -43,9 +43,9 @@ const mountBottomPose: GrapplerPose = {
     rightUpperArm: { x: 522, y: 225, rotation: 20, length: 105 },
     rightForearm: { x: 621, y: 261, rotation: 75, length: 88 },
     leftThigh: { x: 484, y: 342, rotation: 118, length: 115 },
-    leftShin: { x: 430, y: 444, rotation: 82, length: 100 },
+    leftShin: { x: 430, y: 444, rotation: 82, length: 90 },
     rightThigh: { x: 516, y: 342, rotation: 62, length: 115 },
-    rightShin: { x: 570, y: 444, rotation: 98, length: 100 },
+    rightShin: { x: 570, y: 444, rotation: 98, length: 90 },
   },
 }
 

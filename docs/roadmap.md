@@ -167,6 +167,7 @@ Milestones:
 - 9C Gi / No-Gi Grappler Appearance - Complete
 - 9D Core Position Visual Library - Complete
 - 9E Contact & Occlusion System - Complete
+- 9F Grappler Graphics Integration & Polish - Complete
 
 Architecture:
 - Pose geometry determines where each body segment is placed.
@@ -182,9 +183,14 @@ Architecture:
 - Typed position contacts, pose-derived grip anchors, and small explicit
   body-part occlusion overrides make overlaps read as intentional control while
   keeping anatomy layering as the default.
+- One display-state boundary selects configured, live, historical, or animated
+  state so position, mode, grips, apparel, contacts, and occlusion stay aligned.
+- Live steps, Auto Roll paths, and historical replay share the same lightweight
+  pose interpolation and reusable SVG scene. Advanced transition choreography
+  remains intentionally deferred to Iteration 10.
 
 Status:
-In progress
+Complete
 
 ---
 

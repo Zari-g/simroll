@@ -196,17 +196,21 @@ current-state prefix. `RollHistory.tsx` resolves readable metadata and compares
 consecutive authoritative states only to display grip additions and releases;
 it never applies transitions or decides grappling validity.
 
-Grappler graphics preserve the same frontend ownership boundaries. Position and
-transition systems resolve an optional animated pose, while anatomy presets
-provide widths, taper, extremity proportions, and layer hints. Pure geometry
-helpers turn those inputs into tapered body shapes, and mode-aware appearance
-presets decorate those shapes without owning pose or simulation state:
+Grappler graphics preserve the same frontend ownership boundaries. A single
+display-state boundary selects configured, live, historical, or animated
+position, mode, and grip data without changing authoritative simulation state.
+Position and transition systems resolve poses; anatomy, appearance, contact,
+and occlusion metadata remain independent reusable inputs:
 
 ```text
-pose + anatomy
-    -> body geometry
-body geometry + appearance
-    -> layered SVG grappler
+authoritative grappling state
+    -> position visual
+    -> resolved pose + grip modifiers
+    -> transition interpolation
+    -> anatomy + body geometry + appearance
+    -> contact + occlusion metadata
+    -> reusable layered SVG grapplers
+    -> live, animated, or historical scene
 ```
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
@@ -222,9 +226,10 @@ position visual + resolved pose + anatomy + appearance
     -> final SVG scene
 ```
 
-The stage passes configured, live, or historical authoritative state through
-this same pipeline, so apparel, contacts, and occlusion follow transition and
-replay poses without owning simulation behavior.
+Contacts derive their anchors from the displayed pose, so live transitions,
+Auto Roll steps, and historical replay use the same moving geometry. Transition
+start and end frames use their exact source and destination display states;
+advanced intermediate choreography remains deferred to Iteration 10.
 
 The static core position registry currently covers all backend position IDs:
 Closed Guard Bottom, Mount Top, and Side Control Top. Closely related positions

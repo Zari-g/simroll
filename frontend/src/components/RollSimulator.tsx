@@ -6,6 +6,11 @@ import {
   performRollStep,
   simulateRoll,
 } from '../api/client'
+import {
+  createGrapplingDisplayState,
+  displayStateFromResponse,
+  resolveGrapplingDisplayState,
+} from '../grappling/displayState'
 import { getPositionVisual } from '../grappling/positionVisuals'
 import { resolveVisualPose } from '../grappling/resolveVisualPose'
 import { usePoseAnimation } from '../hooks/usePoseAnimation'
@@ -49,9 +54,14 @@ function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === 'AbortError'
 }
 
-function resolveStateVisualPoses(state: GrapplingStateResponse) {
+function resolveStateVisual(state: GrapplingStateResponse) {
   const visual = getPositionVisual(state.position_id)
-  return visual ? resolveVisualPose(visual, state.active_grips).poses : null
+  return visual
+    ? {
+        displayState: displayStateFromResponse(state),
+        poses: resolveVisualPose(visual, state.active_grips).poses,
+      }
+    : null
 }
 
 function statesMatch(
@@ -211,7 +221,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   }, [])
 
   useEffect(() => {
-    if (!currentState || isAutoDeadEnd) {
+    if (!currentState || isAutoDeadEnd || isAutoRollLoading) {
       return
     }
 
@@ -254,7 +264,12 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     void loadAvailableTransitions()
 
     return () => controller.abort()
-  }, [currentState, availabilityRequestKey, isAutoDeadEnd])
+  }, [
+    currentState,
+    availabilityRequestKey,
+    isAutoDeadEnd,
+    isAutoRollLoading,
+  ])
 
   useEffect(
     () => () => {
@@ -292,7 +307,9 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const selectedPosition =
     positions.find((position) => position.id === startPositionId) ?? null
   const resolvePositionName = (positionId: string) =>
-    positionNames.get(positionId) ?? formatReadable(positionId)
+    positionId
+      ? positionNames.get(positionId) ?? formatReadable(positionId)
+      : 'No position selected'
   const resolveGripName = (gripId: string) =>
     gripNames.get(gripId) ?? formatReadable(gripId)
   const resolveTransitionName = (transitionId: string) =>
@@ -407,14 +424,16 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         throw new Error('The roll step response was incomplete.')
       }
 
-      const startPoses = resolveStateVisualPoses(state)
-      const endPoses = resolveStateVisualPoses(response.next_state)
-      if (startPoses && endPoses) {
+      const startVisual = resolveStateVisual(state)
+      const endVisual = resolveStateVisual(response.next_state)
+      if (startVisual && endVisual) {
         await poseAnimation.play({
           transitionId: response.transition.id,
           transitionName: response.transition.name,
-          startPoses,
-          endPoses,
+          startPoses: startVisual.poses,
+          endPoses: endVisual.poses,
+          startState: startVisual.displayState,
+          endState: endVisual.displayState,
         })
       }
 
@@ -489,17 +508,39 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       const { path, stop_reason: stopReason } = response
 
       if (path.step_count > 0) {
-        const finalState = path.states[path.states.length - 1]
+        for (let index = 0; index < path.transition_ids.length; index += 1) {
+          const transitionId = path.transition_ids[index]
+          const startState = path.states[index]
+          const endState = path.states[index + 1]
+          const startVisual = resolveStateVisual(startState)
+          const endVisual = resolveStateVisual(endState)
 
-        setHistory((currentHistory) => ({
-          states: [...currentHistory.states, ...path.states.slice(1)],
-          transitionIds: [
-            ...currentHistory.transitionIds,
-            ...path.transition_ids,
-          ],
-        }))
+          if (startVisual && endVisual) {
+            await poseAnimation.play({
+              transitionId,
+              transitionName: resolveTransitionName(transitionId),
+              startPoses: startVisual.poses,
+              endPoses: endVisual.poses,
+              startState: startVisual.displayState,
+              endState: endVisual.displayState,
+            })
+          }
+
+          if (controller.signal.aborted || version !== rollVersion.current) {
+            return
+          }
+
+          setHistory((currentHistory) => ({
+            states: [...currentHistory.states, endState],
+            transitionIds: [
+              ...currentHistory.transitionIds,
+              transitionId,
+            ],
+          }))
+          setCurrentState(endState)
+        }
+
         setAvailableTransitions([])
-        setCurrentState(finalState)
       }
 
       setIsRandomDeadEnd(false)
@@ -629,16 +670,18 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     const replayGeneration = ++playbackGeneration.current
     poseAnimation.cancel()
 
-    const startPoses = resolveStateVisualPoses(historicalTransition.startState)
-    const endPoses = resolveStateVisualPoses(historicalTransition.endState)
-    if (startPoses && endPoses) {
+    const startVisual = resolveStateVisual(historicalTransition.startState)
+    const endVisual = resolveStateVisual(historicalTransition.endState)
+    if (startVisual && endVisual) {
       await poseAnimation.play({
         transitionId: historicalTransition.transitionId,
         transitionName: resolveTransitionName(
           historicalTransition.transitionId,
         ),
-        startPoses,
-        endPoses,
+        startPoses: startVisual.poses,
+        endPoses: endVisual.poses,
+        startState: startVisual.displayState,
+        endState: endVisual.displayState,
       })
     }
 
@@ -670,10 +713,29 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     isAvailabilityLoading ||
     availabilityError !== null ||
     isDeadEnd
-  const configuredGripNames = selectedGripIds.map(resolveGripName)
-  const configuredPositionName = selectedPosition
-    ? resolvePositionName(selectedPosition.id)
-    : 'No position selected'
+  const configuredDisplayState = useMemo(
+    () =>
+      createGrapplingDisplayState(
+        startPositionId,
+        mode,
+        selectedGripIds,
+      ),
+    [startPositionId, mode, selectedGripIds],
+  )
+  const liveDisplayState = useMemo(
+    () => (currentState ? displayStateFromResponse(currentState) : null),
+    [currentState],
+  )
+  const playbackDisplayState = useMemo(
+    () => (playbackState ? displayStateFromResponse(playbackState) : null),
+    [playbackState],
+  )
+  const displayState = resolveGrapplingDisplayState({
+    configured: configuredDisplayState,
+    live: liveDisplayState,
+    playback: playbackDisplayState,
+    transition: poseAnimation.display?.state,
+  })
 
   return (
     <div className="roll-simulator">
@@ -711,14 +773,10 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         />
 
         <GrapplingStage
-          currentState={currentState}
-          playbackState={playbackState}
+          displayState={displayState}
+          isRollActive={currentState !== null}
+          isPlaybackActive={isPlaybackActive}
           playbackStateIndex={selectedHistoryIndex}
-          configuredPositionId={startPositionId}
-          configuredPositionName={configuredPositionName}
-          configuredMode={mode}
-          configuredGripIds={selectedGripIds}
-          configuredGripNames={configuredGripNames}
           stepCount={history.transitionIds.length}
           isMutationLoading={isRollMutationLoading}
           animatedPoses={poseAnimation.display?.poses ?? null}
