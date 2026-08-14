@@ -4,6 +4,8 @@ import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
 
 interface GrapplingStageProps {
   currentState: GrapplingStateResponse | null
+  playbackState: GrapplingStateResponse | null
+  playbackStateIndex: number | null
   configuredPositionId: string
   configuredPositionName: string
   configuredMode: GrapplingMode
@@ -19,6 +21,8 @@ interface GrapplingStageProps {
 
 export function GrapplingStage({
   currentState,
+  playbackState,
+  playbackStateIndex,
   configuredPositionId,
   configuredPositionName,
   configuredMode,
@@ -32,37 +36,64 @@ export function GrapplingStage({
   resolveGripName,
 }: GrapplingStageProps) {
   const isActive = currentState !== null
-  const positionName = currentState
-    ? resolvePositionName(currentState.position_id)
+  const isPlayback = playbackState !== null && playbackStateIndex !== null
+  const stageState = playbackState ?? currentState
+  const positionName = stageState
+    ? resolvePositionName(stageState.position_id)
     : configuredPositionName
-  const positionId = currentState?.position_id ?? configuredPositionId
-  const displayMode = currentState?.mode ?? configuredMode
-  const activeGripIds = currentState?.active_grips ?? configuredGripIds
-  const activeGripNames = currentState
-    ? currentState.active_grips.map(resolveGripName)
+  const positionId = stageState?.position_id ?? configuredPositionId
+  const displayMode = stageState?.mode ?? configuredMode
+  const activeGripIds = stageState?.active_grips ?? configuredGripIds
+  const activeGripNames = stageState
+    ? stageState.active_grips.map(resolveGripName)
     : configuredGripNames
+  const playbackStepLabel =
+    playbackStateIndex === 0 ? 'Start' : `Step ${playbackStateIndex}`
 
   return (
     <section className="grappling-stage" aria-labelledby="grappling-stage-heading">
-      <div className="grappling-stage__status">
-        <span className={`stage-status-dot ${isActive ? 'is-active' : ''}`} aria-hidden="true" />
+      <div className="grappling-stage__status" role="status" aria-live="polite">
+        <span
+          className={`stage-status-dot ${isPlayback ? 'is-playback' : isActive ? 'is-active' : ''}`}
+          aria-hidden="true"
+        />
         <span>
           {animatedTransitionName
-            ? `Transitioning · ${animatedTransitionName}`
+            ? `${isPlayback ? 'Replaying' : 'Transitioning'} · ${animatedTransitionName}`
+            : isPlayback
+              ? 'History playback'
             : isMutationLoading
               ? 'Updating roll'
               : isActive
                 ? 'Roll in progress'
                 : 'Ready to roll'}
         </span>
-        {isActive && <span className="grappling-stage__step">Step {stepCount}</span>}
+        {isPlayback ? (
+          <span className="grappling-stage__step">
+            {playbackStepLabel} of {stepCount}
+          </span>
+        ) : (
+          isActive && <span className="grappling-stage__step">Step {stepCount}</span>
+        )}
       </div>
 
       <div className="grappling-stage__mat">
         <div className="grappling-stage__position">
-          <p className="section-label">{isActive ? 'Current position' : 'Starting position'}</p>
+          <p className="section-label">
+            {isPlayback
+              ? 'History position'
+              : isActive
+                ? 'Current position'
+                : 'Starting position'}
+          </p>
           <h3 id="grappling-stage-heading">{positionName}</h3>
-          <p>{isActive ? 'Authoritative simulator state' : 'Configured starting state'}</p>
+          <p>
+            {isPlayback
+              ? `Reviewing ${playbackStepLabel}`
+              : isActive
+                ? 'Authoritative simulator state'
+                : 'Configured starting state'}
+          </p>
         </div>
 
         <GrapplingPositionVisual
@@ -78,7 +109,13 @@ export function GrapplingStage({
             <dd>{displayMode === 'gi' ? 'Gi' : 'No-Gi'}</dd>
           </div>
           <div>
-            <dt>{isActive ? 'Active grips' : 'Starting grips'}</dt>
+            <dt>
+              {isPlayback
+                ? 'Recorded grips'
+                : isActive
+                  ? 'Active grips'
+                  : 'Starting grips'}
+            </dt>
             <dd>
               {activeGripNames.length > 0
                 ? activeGripNames.join(', ')

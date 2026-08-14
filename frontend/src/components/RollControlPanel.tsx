@@ -9,6 +9,7 @@ interface RollControlPanelProps {
   grips: Grip[]
   selectedGripIds: ReadonlySet<string>
   isRollActive: boolean
+  isPlaybackActive: boolean
   isGripsLoading: boolean
   gripsError: string | null
   isMutationLoading: boolean
@@ -38,6 +39,7 @@ export function RollControlPanel({
   grips,
   selectedGripIds,
   isRollActive,
+  isPlaybackActive,
   isGripsLoading,
   gripsError,
   isMutationLoading,
@@ -61,6 +63,7 @@ export function RollControlPanel({
   const setupDisabled = isRollActive
   const randomStepDisabled =
     !isRollActive ||
+    isPlaybackActive ||
     isMutationLoading ||
     isAvailabilityLoading ||
     hasAvailabilityError ||
@@ -97,7 +100,9 @@ export function RollControlPanel({
           <button
             className="roll-secondary-action roll-reset-action"
             type="button"
-            disabled={!isRollActive || isMutationLoading}
+            disabled={
+              !isRollActive || (isMutationLoading && !isPlaybackActive)
+            }
             onClick={onReset}
           >
             Reset
