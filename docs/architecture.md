@@ -216,23 +216,37 @@ authoritative grappling state
     -> live, animated, or historical scene
 ```
 
-The kinematic model is pelvis-rooted. Spine, chest, neck, and head form the
-core chain; shoulders inherit from the chest; and hips inherit from the
-pelvis. Elbows, wrists, knees, and ankles then inherit down their respective
-limb chains. Authored skeleton transforms are parent-relative, while world
-joints and the current `GrapplerPose` segment geometry are derived values.
-Forward-kinematics calculations stay in the grappling model layer rather than
-React or SVG components, and anatomy remains a separate source of widths,
-proportions, taper, and rendering metadata.
+The kinematic model is pelvis-rooted. Pelvis, spine, chest, neck, and head form
+a locally articulated core: pelvis rotation orients the full body, spine
+flexion changes the chest/head position, and chest rotation reorients the
+upper body relative to the hips. Shoulders are anatomy-derived offsets from
+the chest; hips are anatomy-derived offsets from the pelvis; and the head is
+attached through explicit chest-to-neck and neck-to-head offsets. Elbows,
+wrists, knees, and ankles inherit down their respective connected limb chains.
 
-Iteration 10A uses an incremental migration boundary. A pure legacy-pose
-adapter can normalize existing independently positioned segments into a
-connected skeleton, and a second adapter converts resolved skeletons to the
-renderer-compatible pose shape. Closed Guard Bottom exercises this path;
-other Iteration 9 poses remain on the legacy path until later milestones so
-the position library does not require a risky wholesale rewrite. Both paths
-still reach the same interpolation and rendering contracts, including exact
-source and destination frames.
+Anatomy owns structural lengths and spans alongside visual proportions:
+pelvis-to-spine length, spine-to-chest length, shoulder span, hip span, neck
+length, and head offset. Pose definitions own only root placement, local
+rotations, flexion, and limb articulation. This separation lets one anatomy be
+reused across poses without embedding widths, apparel, or SVG style in pose
+data.
+
+Authored local skeleton transforms are authoritative. Forward kinematics
+produces world joints, a resolved core description, and renderer-compatible
+`GrapplerPose` segments. The visible torso remains a simple pelvis-to-chest
+chord for compatibility with the existing SVG body path, but that chord and
+all limb segments are derived rather than separately authored. No kinematic
+calculation occurs in React or SVG components.
+
+Iterations 10A and 10B retain an incremental migration boundary. A pure
+legacy-pose adapter can normalize existing independently positioned segments
+into a connected skeleton, while the anatomy-backed articulated authoring path
+builds new local skeletons directly. A second adapter converts either resolved
+skeleton path to the existing renderer contract. Closed Guard, Mount, and Side
+Control top/bottom figures now use the articulated path; future visuals can
+migrate gradually. Both paths still reach the same grip, contact,
+interpolation, apparel, and rendering contracts, including exact source and
+destination animation frames.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an

@@ -216,8 +216,26 @@ Build reusable movement primitives and animated roll simulation playback.
 10A Status:
 Complete
 
-Remaining Iteration 10 work will build articulation and choreography on this
-foundation.
+## 10B — Articulated Pelvis, Spine & Chest
+
+- [x] Add anatomy-backed pelvis-to-spine and spine-to-chest lengths plus
+  shoulder, hip, neck, and head attachment proportions.
+- [x] Add compact typed pose controls for pelvis rotation, spine flexion,
+  chest rotation, neck/head rotation, and connected limb articulation.
+- [x] Derive shoulder anchors from the chest and hip anchors from the pelvis so
+  trunk motion carries every dependent chain coherently.
+- [x] Derive a renderer-compatible torso chord and richer resolved core data
+  from the pelvis, spine, chest, neck, and head hierarchy outside React.
+- [x] Migrate Closed Guard, Mount, and Side Control top/bottom figures to the
+  articulated authoring path while preserving legacy pose adapters.
+- [x] Cover core dependencies, flexion, symmetry, continuity, determinism,
+  immutability, migration, compatibility, and animation endpoints with tests.
+
+10B Status:
+Complete
+
+Remaining Iteration 10 work will build joint constraints and choreography on
+this foundation.
 
 Iteration 10 Status:
 In Progress

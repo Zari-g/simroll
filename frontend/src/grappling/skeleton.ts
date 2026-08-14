@@ -60,6 +60,40 @@ export interface ResolvedGrapplerSkeleton {
   readonly joints: Readonly<Record<GrapplerJointName, WorldJointTransform>>
 }
 
+/** Pose-only controls for the pelvis-rooted articulated core. */
+export interface CoreArticulation {
+  readonly pelvisRotation: number
+  readonly spineFlexion: number
+  readonly chestRotation: number
+  readonly neckRotation?: number
+  readonly headRotation?: number
+}
+
+/** Parent-relative controls for one connected two-segment limb chain. */
+export interface LimbArticulation {
+  readonly proximalRotation: number
+  readonly distalRotation: number
+  readonly proximalLength: number
+  readonly distalLength: number
+}
+
+export interface GrapplerLimbArticulations {
+  readonly leftArm: LimbArticulation
+  readonly rightArm: LimbArticulation
+  readonly leftLeg: LimbArticulation
+  readonly rightLeg: LimbArticulation
+}
+
+/**
+ * Compact authored pose. Anatomy supplies attachment spans and core lengths;
+ * this definition supplies only root placement and local articulation.
+ */
+export interface ArticulatedGrapplerPoseDefinition {
+  readonly rootPosition: JointPosition
+  readonly core: CoreArticulation
+  readonly limbs: GrapplerLimbArticulations
+}
+
 export const grapplerJointParents = {
   pelvis: null,
   spine: 'pelvis',

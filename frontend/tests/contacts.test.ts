@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { defaultGrapplerAnatomy } from '../src/grappling/anatomy.ts'
+import {
+  defaultGrapplerAnatomy,
+  getSegmentEndpoint,
+} from '../src/grappling/anatomy.ts'
 import {
   getBodyPartAnchor,
   resolveContactPoint,
@@ -68,11 +71,13 @@ test('segment start, midpoint, and end anchors use deterministic pose geometry',
     'end',
   )
 
-  assert.deepEqual(start, { x: 500, y: 400 })
-  assert.ok(Math.abs(midpoint.x - 500) < 0.000001)
-  assert.ok(Math.abs(midpoint.y - 347.5) < 0.000001)
-  assert.ok(Math.abs(end.x - 500) < 0.000001)
-  assert.ok(Math.abs(end.y - 295) < 0.000001)
+  assert.deepEqual(start, {
+    x: pose.segments.torso.x,
+    y: pose.segments.torso.y,
+  })
+  assert.ok(Math.abs(midpoint.x - (start.x + end.x) / 2) < 0.000001)
+  assert.ok(Math.abs(midpoint.y - (start.y + end.y) / 2) < 0.000001)
+  assert.deepEqual(end, getSegmentEndpoint(pose.segments.torso))
 })
 
 test('position contact metadata and derived geometry resolve deterministically', () => {

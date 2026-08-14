@@ -26,6 +26,7 @@ import type {
 } from '../src/grappling/types.ts'
 
 const requiredBodyRegions = [
+  'core',
   'head',
   'torso',
   'upperArm',
@@ -56,6 +57,11 @@ test('default anatomy defines every required human body region', () => {
   assert.ok(defaultGrapplerAnatomy.torso.width > defaultGrapplerAnatomy.upperArm.width)
   assert.ok(defaultGrapplerAnatomy.thigh.width > defaultGrapplerAnatomy.shin.width)
   assert.ok(defaultGrapplerAnatomy.upperArm.width > defaultGrapplerAnatomy.forearm.width)
+  assert.ok(defaultGrapplerAnatomy.core.shoulderSpan > defaultGrapplerAnatomy.core.hipSpan)
+  assert.ok(defaultGrapplerAnatomy.core.pelvisToSpineLength > 0)
+  assert.ok(defaultGrapplerAnatomy.core.spineToChestLength > 0)
+  assert.ok(defaultGrapplerAnatomy.core.neckLength > 0)
+  assert.ok(defaultGrapplerAnatomy.core.headOffset > 0)
 })
 
 test('every animated rig segment resolves valid anatomy metadata', () => {
@@ -180,7 +186,7 @@ test('torso geometry places the wider shoulder end nearest the head', () => {
     defaultGrapplerAnatomy,
   )
 
-  assert.ok(bottomGeometry.startWidth > bottomGeometry.endWidth)
+  assert.ok(bottomGeometry.endWidth > bottomGeometry.startWidth)
   assert.ok(topGeometry.endWidth > topGeometry.startWidth)
 })
 
