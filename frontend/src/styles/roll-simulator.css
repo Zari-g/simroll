@@ -244,6 +244,11 @@
   box-shadow: 0 0 0 0.22rem var(--color-success-soft);
 }
 
+.stage-status-dot.is-playback {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 0.22rem var(--color-accent-softer);
+}
+
 .grappling-stage__step {
   margin-left: auto;
   color: var(--color-text-muted);
@@ -549,6 +554,78 @@
   background: var(--color-warning-soft);
 }
 
+.roll-playback-message {
+  display: grid;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  background: var(--color-accent-softer);
+}
+
+.roll-playback-message p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.roll-playback-message button,
+.roll-playback-controls button {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-button);
+  padding: 0.55rem 0.75rem;
+  color: var(--color-text-primary);
+  background: var(--color-bg-interactive);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.roll-playback-message button:hover:not(:disabled),
+.roll-playback-controls button:hover:not(:disabled) {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-hover);
+}
+
+.roll-playback-message button:focus-visible,
+.roll-playback-controls button:focus-visible,
+.roll-history__state-select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.roll-playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-card);
+  padding: var(--space-3);
+  background: var(--color-accent-softer);
+}
+
+.roll-playback-controls__navigation {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.roll-playback-controls .roll-playback-controls__replay {
+  border-color: var(--color-border-accent);
+  color: var(--color-text-accent);
+}
+
+.roll-playback-controls .roll-playback-controls__live {
+  color: var(--color-text-accent);
+}
+
+.roll-playback-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .roll-simulator > .roll-history {
   margin-top: var(--space-4);
   padding: var(--space-4);
@@ -597,6 +674,40 @@
   display: none;
 }
 
+.roll-history__state-select {
+  display: grid;
+  width: 100%;
+  gap: var(--space-1);
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roll-history__state-select:disabled {
+  cursor: wait;
+}
+
+.roll-history__state-select > strong {
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.roll-history__item--selected .roll-history__state {
+  border-color: var(--color-border-accent);
+  background: var(--color-accent-softer);
+  box-shadow: inset 0 0 0 1px var(--color-border-accent);
+}
+
+.roll-simulator > .roll-history .roll-history__timeline > .roll-history__item--selected::before {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 0.25rem var(--color-accent-softer);
+}
+
 @media (max-width: 78rem) {
   .roll-simulator__workspace {
     grid-template-columns: minmax(14rem, 0.8fr) minmax(22rem, 1.5fr);
@@ -626,6 +737,18 @@
   .roll-control-panel,
   .available-moves-panel {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 34rem) {
+  .roll-playback-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .roll-playback-controls__navigation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

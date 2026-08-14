@@ -22,6 +22,7 @@ import {
   filterGripIdsForMode,
   getInitialMode,
 } from '../utils/grapplingState'
+import { getHistoricalTransition } from '../utils/rollPlayback'
 import { AvailableMovesPanel } from './AvailableMovesPanel'
 import { GrapplingStage } from './GrapplingStage'
 import { RollControlPanel } from './RollControlPanel'
@@ -46,6 +47,11 @@ type AutoRollStepCount = (typeof AUTO_ROLL_STEP_OPTIONS)[number]
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === 'AbortError'
+}
+
+function resolveStateVisualPoses(state: GrapplingStateResponse) {
+  const visual = getPositionVisual(state.position_id)
+  return visual ? resolveVisualPose(visual, state.active_grips).poses : null
 }
 
 function statesMatch(
@@ -121,6 +127,9 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     states: [],
     transitionIds: [],
   })
+  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<
+    number | null
+  >(null)
   const [availableTransitions, setAvailableTransitions] = useState<
     Transition[]
   >([])
@@ -146,6 +155,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const [isAutoDeadEnd, setIsAutoDeadEnd] = useState(false)
   const availabilityRequestId = useRef(0)
   const rollVersion = useRef(0)
+  const playbackGeneration = useRef(0)
   const stepController = useRef<AbortController | null>(null)
   const autoRollController = useRef<AbortController | null>(null)
   const poseAnimation = usePoseAnimation()
@@ -249,6 +259,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   useEffect(
     () => () => {
       rollVersion.current += 1
+      playbackGeneration.current += 1
       availabilityRequestId.current += 1
       stepController.current?.abort()
       autoRollController.current?.abort()
@@ -337,7 +348,9 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     }
 
     rollVersion.current += 1
+    playbackGeneration.current += 1
     poseAnimation.cancel()
+    setSelectedHistoryIndex(null)
     stepController.current?.abort()
     autoRollController.current?.abort()
     stepController.current = null
@@ -357,6 +370,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const applyStep = async (transitionId: string | null) => {
     if (
       !currentState ||
+      selectedHistoryIndex !== null ||
       stepController.current ||
       autoRollController.current
     ) {
@@ -393,20 +407,14 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         throw new Error('The roll step response was incomplete.')
       }
 
-      const startVisual = getPositionVisual(state.position_id)
-      const endVisual = getPositionVisual(response.next_state.position_id)
-      if (startVisual && endVisual) {
+      const startPoses = resolveStateVisualPoses(state)
+      const endPoses = resolveStateVisualPoses(response.next_state)
+      if (startPoses && endPoses) {
         await poseAnimation.play({
           transitionId: response.transition.id,
           transitionName: response.transition.name,
-          startPoses: resolveVisualPose(
-            startVisual,
-            state.active_grips,
-          ).poses,
-          endPoses: resolveVisualPose(
-            endVisual,
-            response.next_state.active_grips,
-          ).poses,
+          startPoses,
+          endPoses,
         })
       }
 
@@ -446,6 +454,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const runAutoRoll = async (stepCount: AutoRollStepCount) => {
     if (
       !currentState ||
+      selectedHistoryIndex !== null ||
       stepController.current ||
       autoRollController.current
     ) {
@@ -542,7 +551,9 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
   const resetRoll = () => {
     rollVersion.current += 1
+    playbackGeneration.current += 1
     poseAnimation.cancel()
+    setSelectedHistoryIndex(null)
     availabilityRequestId.current += 1
     stepController.current?.abort()
     autoRollController.current?.abort()
@@ -563,6 +574,86 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     setIsAutoDeadEnd(false)
   }
 
+  const returnToLive = () => {
+    playbackGeneration.current += 1
+    poseAnimation.cancel()
+    setSelectedHistoryIndex(null)
+  }
+
+  const selectHistoryState = (stateIndex: number) => {
+    if (
+      stepController.current ||
+      autoRollController.current ||
+      !history.states[stateIndex]
+    ) {
+      return
+    }
+
+    if (stateIndex === history.states.length - 1) {
+      returnToLive()
+      return
+    }
+
+    playbackGeneration.current += 1
+    poseAnimation.cancel()
+    setSelectedHistoryIndex(stateIndex)
+  }
+
+  const showPreviousHistoryState = () => {
+    if (selectedHistoryIndex === null || selectedHistoryIndex <= 0) return
+
+    selectHistoryState(selectedHistoryIndex - 1)
+  }
+
+  const showNextHistoryState = () => {
+    if (selectedHistoryIndex === null) return
+
+    const nextIndex = selectedHistoryIndex + 1
+    if (nextIndex >= history.states.length - 1) {
+      returnToLive()
+    } else {
+      selectHistoryState(nextIndex)
+    }
+  }
+
+  const replayHistoricalTransition = async () => {
+    if (selectedHistoryIndex === null || poseAnimation.isAnimating) return
+
+    const historicalTransition = getHistoricalTransition(
+      history.states,
+      history.transitionIds,
+      selectedHistoryIndex,
+    )
+    if (!historicalTransition) return
+
+    const replayGeneration = ++playbackGeneration.current
+    poseAnimation.cancel()
+
+    const startPoses = resolveStateVisualPoses(historicalTransition.startState)
+    const endPoses = resolveStateVisualPoses(historicalTransition.endState)
+    if (startPoses && endPoses) {
+      await poseAnimation.play({
+        transitionId: historicalTransition.transitionId,
+        transitionName: resolveTransitionName(
+          historicalTransition.transitionId,
+        ),
+        startPoses,
+        endPoses,
+      })
+    }
+
+    if (replayGeneration === playbackGeneration.current) {
+      setSelectedHistoryIndex(historicalTransition.transitionIndex + 1)
+    }
+  }
+
+  const playbackState =
+    selectedHistoryIndex === null
+      ? null
+      : history.states[selectedHistoryIndex] ?? null
+  const isPlaybackActive = playbackState !== null
+  const isPlaybackReplaying =
+    isPlaybackActive && poseAnimation.isAnimating
   const isDeadEnd =
     currentState !== null &&
     (isRandomDeadEnd ||
@@ -574,6 +665,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     isStepLoading || isAutoRollLoading || poseAnimation.isAnimating
   const isAutoRollDisabled =
     !currentState ||
+    isPlaybackActive ||
     isRollMutationLoading ||
     isAvailabilityLoading ||
     availabilityError !== null ||
@@ -594,6 +686,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           grips={grips}
           selectedGripIds={selectedGripIdSet}
           isRollActive={currentState !== null}
+          isPlaybackActive={isPlaybackActive}
           isGripsLoading={isGripsLoading}
           gripsError={gripsError}
           isMutationLoading={isRollMutationLoading}
@@ -619,6 +712,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
         <GrapplingStage
           currentState={currentState}
+          playbackState={playbackState}
+          playbackStateIndex={selectedHistoryIndex}
           configuredPositionId={startPositionId}
           configuredPositionName={configuredPositionName}
           configuredMode={mode}
@@ -640,6 +735,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
             currentState ? resolvePositionName(currentState.position_id) : null
           }
           isRollActive={currentState !== null}
+          isPlaybackActive={isPlaybackActive}
           isLoading={isAvailabilityLoading}
           isStepLoading={isStepLoading}
           isMutationLoading={isRollMutationLoading}
@@ -658,6 +754,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           }
           onRetryAutoRoll={() => void runAutoRoll(failedAutoRollStepCount)}
           onReset={resetRoll}
+          onReturnToLive={returnToLive}
         />
       </div>
 
@@ -668,6 +765,14 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           resolvePositionName={resolvePositionName}
           resolveGripName={resolveGripName}
           resolveTransitionName={resolveTransitionName}
+          selectedStateIndex={selectedHistoryIndex}
+          isReplaying={isPlaybackReplaying}
+          isSelectionDisabled={isStepLoading || isAutoRollLoading}
+          onSelectState={selectHistoryState}
+          onPrevious={showPreviousHistoryState}
+          onReplay={() => void replayHistoricalTransition()}
+          onNext={showNextHistoryState}
+          onReturnToLive={returnToLive}
         />
       )}
     </div>

@@ -10,6 +10,7 @@ interface AvailableMovesPanelProps {
   transitions: Transition[]
   currentPositionName: string | null
   isRollActive: boolean
+  isPlaybackActive: boolean
   isLoading: boolean
   isStepLoading: boolean
   isMutationLoading: boolean
@@ -26,12 +27,14 @@ interface AvailableMovesPanelProps {
   onRetryAvailability: () => void
   onRetryAutoRoll: () => void
   onReset: () => void
+  onReturnToLive: () => void
 }
 
 export function AvailableMovesPanel({
   transitions,
   currentPositionName,
   isRollActive,
+  isPlaybackActive,
   isLoading,
   isStepLoading,
   isMutationLoading,
@@ -48,20 +51,39 @@ export function AvailableMovesPanel({
   onRetryAvailability,
   onRetryAutoRoll,
   onReset,
+  onReturnToLive,
 }: AvailableMovesPanelProps) {
   return (
     <aside className="available-moves-panel" aria-labelledby="available-moves-heading">
       <div className="simulator-panel-heading available-moves-panel__heading">
         <div>
-          <p className="section-label">Available moves</p>
-          <h3 id="available-moves-heading">Choose a transition</h3>
+          <p className="section-label">
+            {isPlaybackActive ? 'History playback' : 'Available moves'}
+          </p>
+          <h3 id="available-moves-heading">
+            {isPlaybackActive ? 'Live moves paused' : 'Choose a transition'}
+          </h3>
         </div>
-        {isRollActive && !isLoading && !availabilityError && !isDeadEnd && (
-          <span>{transitions.length}</span>
-        )}
+        {isRollActive &&
+          !isPlaybackActive &&
+          !isLoading &&
+          !availabilityError &&
+          !isDeadEnd && <span>{transitions.length}</span>}
       </div>
 
       <div className="available-moves-panel__content" aria-live="polite">
+        {isPlaybackActive ? (
+          <div className="roll-playback-message">
+            <strong>Reviewing recorded roll history</strong>
+            <p>
+              Return to Live to continue from the authoritative current state.
+            </p>
+            <button type="button" onClick={onReturnToLive}>
+              Return to Live
+            </button>
+          </div>
+        ) : (
+          <>
         {!isRollActive && (
           <div className="roll-panel-empty">
             <strong>Moves load when the roll starts</strong>
@@ -139,6 +161,8 @@ export function AvailableMovesPanel({
           <p className={`roll-auto__status roll-auto__status--${autoRollStatus.kind}`} role="status">
             {autoRollStatus.message}
           </p>
+        )}
+          </>
         )}
       </div>
     </aside>

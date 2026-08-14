@@ -148,7 +148,7 @@ Milestones:
 - 8C Grappling Stage / Static Grappler Foundation - Complete
 - 8D Grip Visual Modifier System - Complete
 - 8E Transition Movement & Pose Interpolation - Complete
-- 8F UI Polish
+- 8F Animation Playback & Roll Timeline Integration - Complete
 
 Status:
 In progress

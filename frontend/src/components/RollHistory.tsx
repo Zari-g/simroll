@@ -1,4 +1,5 @@
 import type { GrapplingStateResponse } from '../types/api'
+import { RollPlaybackControls } from './RollPlaybackControls'
 
 interface RollHistoryProps {
   states: GrapplingStateResponse[]
@@ -6,6 +7,14 @@ interface RollHistoryProps {
   resolvePositionName: (positionId: string) => string
   resolveGripName: (gripId: string) => string
   resolveTransitionName: (transitionId: string) => string
+  selectedStateIndex: number | null
+  isReplaying: boolean
+  isSelectionDisabled: boolean
+  onSelectState: (stateIndex: number) => void
+  onPrevious: () => void
+  onReplay: () => void
+  onNext: () => void
+  onReturnToLive: () => void
 }
 
 interface GripChanges {
@@ -32,7 +41,26 @@ export function RollHistory({
   resolvePositionName,
   resolveGripName,
   resolveTransitionName,
+  selectedStateIndex,
+  isReplaying,
+  isSelectionDisabled,
+  onSelectState,
+  onPrevious,
+  onReplay,
+  onNext,
+  onReturnToLive,
 }: RollHistoryProps) {
+  const selectedLabel =
+    selectedStateIndex === null
+      ? 'Live state'
+      : selectedStateIndex === 0
+        ? 'Reviewing Start'
+        : `Reviewing Step ${selectedStateIndex}`
+  const outgoingTransitionId =
+    selectedStateIndex === null
+      ? undefined
+      : transitionIds[selectedStateIndex]
+
   return (
     <section className="roll-history" aria-labelledby="roll-history-heading">
       <div className="roll-history__heading">
@@ -43,13 +71,31 @@ export function RollHistory({
             {transitionIds.length === 1 ? 'step' : 'steps'}
           </h3>
         </div>
-        <span>Authoritative states</span>
+        <span>{selectedLabel}</span>
       </div>
+
+      {selectedStateIndex !== null && (
+        <RollPlaybackControls
+          selectedStateIndex={selectedStateIndex}
+          stateCount={states.length}
+          outgoingTransitionName={
+            outgoingTransitionId
+              ? resolveTransitionName(outgoingTransitionId)
+              : null
+          }
+          isReplaying={isReplaying}
+          onPrevious={onPrevious}
+          onReplay={onReplay}
+          onNext={onNext}
+          onReturnToLive={onReturnToLive}
+        />
+      )}
 
       <ol className="roll-history__timeline">
         {states.map((state, stateIndex) => {
           const isStart = stateIndex === 0
           const isCurrent = stateIndex === states.length - 1
+          const isSelected = selectedStateIndex === stateIndex
           const transitionId = transitionIds[stateIndex - 1]
           const changes = isStart
             ? null
@@ -60,7 +106,12 @@ export function RollHistory({
 
           return (
             <li
-              className={isCurrent ? 'roll-history__item--current' : undefined}
+              className={[
+                isCurrent ? 'roll-history__item--current' : '',
+                isSelected ? 'roll-history__item--selected' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               key={`${stateIndex}-${transitionId ?? 'start'}`}
             >
               {!isStart && (
@@ -71,11 +122,28 @@ export function RollHistory({
               )}
 
               <article className="roll-history__state">
-                <div className="roll-history__state-heading">
-                  <p>{isStart ? 'Start' : `Step ${stateIndex}`}</p>
-                  {isCurrent && <span>Current</span>}
-                </div>
-                <h4>{resolvePositionName(state.position_id)}</h4>
+                <button
+                  className="roll-history__state-select"
+                  type="button"
+                  disabled={isSelectionDisabled}
+                  aria-pressed={isSelected}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  aria-label={
+                    isCurrent
+                      ? 'View Current state and return to Live'
+                      : isStart
+                        ? 'View Start state'
+                        : `View Step ${stateIndex}`
+                  }
+                  onClick={() => onSelectState(stateIndex)}
+                >
+                  <span className="roll-history__state-heading">
+                    <span>{isStart ? 'Start' : `Step ${stateIndex}`}</span>
+                    {isCurrent && <span>Current</span>}
+                    {isSelected && <span>Selected</span>}
+                  </span>
+                  <strong>{resolvePositionName(state.position_id)}</strong>
+                </button>
                 <dl>
                   <div>
                     <dt>Mode</dt>
