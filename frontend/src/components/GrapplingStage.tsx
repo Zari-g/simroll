@@ -6,6 +6,7 @@ interface GrapplingStageProps {
   configuredPositionId: string
   configuredPositionName: string
   configuredMode: GrapplingMode
+  configuredGripIds: string[]
   configuredGripNames: string[]
   stepCount: number
   isMutationLoading: boolean
@@ -18,6 +19,7 @@ export function GrapplingStage({
   configuredPositionId,
   configuredPositionName,
   configuredMode,
+  configuredGripIds,
   configuredGripNames,
   stepCount,
   isMutationLoading,
@@ -30,6 +32,7 @@ export function GrapplingStage({
     : configuredPositionName
   const positionId = currentState?.position_id ?? configuredPositionId
   const displayMode = currentState?.mode ?? configuredMode
+  const activeGripIds = currentState?.active_grips ?? configuredGripIds
   const activeGripNames = currentState
     ? currentState.active_grips.map(resolveGripName)
     : configuredGripNames
@@ -52,6 +55,7 @@ export function GrapplingStage({
         <GrapplingPositionVisual
           positionId={positionId}
           positionName={positionName}
+          activeGripIds={activeGripIds}
         />
 
         <dl className="grappling-stage__details">

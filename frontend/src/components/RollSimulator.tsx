@@ -594,6 +594,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           configuredPositionId={startPositionId}
           configuredPositionName={configuredPositionName}
           configuredMode={mode}
+          configuredGripIds={selectedGripIds}
           configuredGripNames={configuredGripNames}
           stepCount={history.transitionIds.length}
           isMutationLoading={isRollMutationLoading}

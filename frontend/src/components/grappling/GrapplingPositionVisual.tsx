@@ -1,10 +1,12 @@
 import { getPositionVisual } from '../../grappling/positionVisuals'
+import { resolveVisualPose } from '../../grappling/resolveVisualPose'
 import type { GrapplerId } from '../../grappling/types'
 import { GrapplerRig } from './GrapplerRig'
 
 interface GrapplingPositionVisualProps {
   positionId: string
   positionName: string
+  activeGripIds: readonly string[]
 }
 
 const playerNames: Record<GrapplerId, string> = {
@@ -15,6 +17,7 @@ const playerNames: Record<GrapplerId, string> = {
 export function GrapplingPositionVisual({
   positionId,
   positionName,
+  activeGripIds,
 }: GrapplingPositionVisualProps) {
   const visual = getPositionVisual(positionId)
 
@@ -28,10 +31,7 @@ export function GrapplingPositionVisual({
     )
   }
 
-  const poses = {
-    playerA: visual.playerAPose,
-    playerB: visual.playerBPose,
-  }
+  const { poses, contactIndicators } = resolveVisualPose(visual, activeGripIds)
 
   return (
     <div className="grappling-position-visual">
@@ -52,6 +52,16 @@ export function GrapplingPositionVisual({
             grapplerId={grapplerId}
             pose={poses[grapplerId]}
           />
+        ))}
+        {contactIndicators.map((indicator, index) => (
+          <g
+            className={`grip-contact grip-contact--${indicator.grapplerId}`}
+            key={`${indicator.grapplerId}-${indicator.x}-${indicator.y}-${index}`}
+            aria-hidden="true"
+          >
+            <circle className="grip-contact__ring" cx={indicator.x} cy={indicator.y} r="15" />
+            <circle className="grip-contact__point" cx={indicator.x} cy={indicator.y} r="6" />
+          </g>
         ))}
       </svg>
 
