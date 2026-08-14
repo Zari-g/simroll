@@ -43,24 +43,26 @@
   --grappler-highlight: var(--color-text-primary);
 }
 
-.grappler-rig__torso,
-.grappler-rig__limb {
-  fill: none;
-  stroke: var(--grappler-fill);
-  stroke-linecap: round;
+.grappler-rig__body-part {
+  fill: var(--grappler-fill);
+  stroke: var(--grappler-outline);
+  stroke-width: 4;
   stroke-linejoin: round;
   paint-order: stroke;
 }
 
-.grappler-rig__joint,
 .grappler-rig__head {
   fill: var(--grappler-fill);
   stroke: var(--grappler-outline);
   stroke-width: 6;
 }
 
-.grappler-rig__joint {
-  stroke-width: 4;
+.grappler-rig__torso {
+  stroke-width: 5;
+}
+
+.grappler-rig__extremity {
+  stroke-width: 3;
 }
 
 .grappler-rig__face-mark {

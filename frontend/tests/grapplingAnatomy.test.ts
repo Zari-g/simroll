@@ -9,6 +9,11 @@ import {
   resolveSegmentAnatomy,
 } from '../src/grappling/anatomy.ts'
 import {
+  createTaperedSegmentGeometry,
+  createTorsoGeometry,
+  resolveBodyPartLayerOrder,
+} from '../src/grappling/bodyGeometry.ts'
+import {
   interpolateGrapplerPose,
   resolveTransitionPoses,
 } from '../src/grappling/interpolatePose.ts'
@@ -105,6 +110,87 @@ test('hand and foot geometry derives deterministically from limb endpoints', () 
     length: defaultGrapplerAnatomy.foot.length,
     width: defaultGrapplerAnatomy.foot.width,
   })
+})
+
+test('tapered body geometry returns deterministic rounded segment paths', () => {
+  const geometry = createTaperedSegmentGeometry(100, 40, 0.8)
+
+  assert.deepEqual(geometry, {
+    length: 100,
+    startWidth: 40,
+    endWidth: 32,
+    path: 'M 0 -20 L 100 -16 A 16 16 0 0 1 100 16 L 0 20 A 20 20 0 0 1 0 -20 Z',
+  })
+})
+
+test('renderer geometry keeps pose length authoritative and anatomy controls width', () => {
+  const visual = getPositionVisual('mount_top')
+  assert.ok(visual)
+  const poseSnapshot = structuredClone(visual.playerAPose)
+  const upperArm = visual.playerAPose.segments.leftUpperArm
+  const standard = createTaperedSegmentGeometry(
+    upperArm.length,
+    defaultGrapplerAnatomy.upperArm.width,
+    defaultGrapplerAnatomy.upperArm.taper,
+  )
+  const wider = createTaperedSegmentGeometry(
+    upperArm.length,
+    defaultGrapplerAnatomy.upperArm.width + 8,
+    defaultGrapplerAnatomy.upperArm.taper,
+  )
+
+  assert.equal(standard.length, upperArm.length)
+  assert.equal(wider.length, upperArm.length)
+  assert.equal(wider.startWidth, standard.startWidth + 8)
+  assert.notEqual(wider.path, standard.path)
+  assert.deepEqual(visual.playerAPose, poseSnapshot)
+})
+
+test('every rig segment resolves tapered renderer geometry', () => {
+  const visual = getPositionVisual('closed_guard_bottom')
+  assert.ok(visual)
+
+  for (const segmentName of rigSegmentNames) {
+    const pose = visual.playerAPose.segments[segmentName]
+    const anatomy = resolveSegmentAnatomy(defaultGrapplerAnatomy, segmentName)
+    const geometry = createTaperedSegmentGeometry(
+      pose.length,
+      anatomy.width,
+      anatomy.taper,
+    )
+
+    assert.equal(geometry.length, pose.length)
+    assert.ok(geometry.startWidth > geometry.endWidth)
+    assert.match(geometry.path, /^M 0 /)
+    assert.match(geometry.path, / Z$/)
+  }
+})
+
+test('torso geometry places the wider shoulder end nearest the head', () => {
+  const closedGuard = getPositionVisual('closed_guard_bottom')
+  assert.ok(closedGuard)
+  const bottomGeometry = createTorsoGeometry(
+    closedGuard.playerAPose.segments.torso,
+    closedGuard.playerAPose.head,
+    defaultGrapplerAnatomy,
+  )
+  const topGeometry = createTorsoGeometry(
+    closedGuard.playerBPose.segments.torso,
+    closedGuard.playerBPose.head,
+    defaultGrapplerAnatomy,
+  )
+
+  assert.ok(bottomGeometry.startWidth > bottomGeometry.endWidth)
+  assert.ok(topGeometry.endWidth > topGeometry.startWidth)
+})
+
+test('body-part layer hints place legs behind torso and arms above it', () => {
+  const order = resolveBodyPartLayerOrder(defaultGrapplerAnatomy)
+
+  assert.ok(order.indexOf('leftThigh') < order.indexOf('torso'))
+  assert.ok(order.indexOf('torso') < order.indexOf('leftUpperArm'))
+  assert.ok(order.indexOf('leftForearm') < order.indexOf('leftHand'))
+  assert.ok(order.indexOf('rightFoot') < order.indexOf('head'))
 })
 
 test('pose interpolation stays independent from anatomy configuration', () => {
