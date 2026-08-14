@@ -234,8 +234,22 @@ Complete
 10B Status:
 Complete
 
-Remaining Iteration 10 work will build joint constraints and choreography on
-this foundation.
+## 10C â€” Joint Constraints & Pose Validation
+
+- [x] Add a typed reusable human constraint profile for the articulated core,
+  shoulders, elbows, wrists, hips, knees, and ankles.
+- [x] Validate authored local transforms and structural integrity independently
+  from deterministic angle normalization and correction.
+- [x] Apply safe local rotations before forward kinematics while preserving
+  the renderer, contacts, grips, playback, and exact valid endpoints.
+- [x] Add development-only authoring diagnostics and focused coverage for
+  limits, reporting, immutability, continuity, and all six migrated figures.
+
+10C Status:
+Complete
+
+Remaining Iteration 10 work will build transition choreography on this safer
+kinematic foundation.
 
 Iteration 10 Status:
 In Progress
