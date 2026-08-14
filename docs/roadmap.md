@@ -166,6 +166,7 @@ Milestones:
 - 9B Layered Body Renderer - Complete
 - 9C Gi / No-Gi Grappler Appearance - Complete
 - 9D Core Position Visual Library - Complete
+- 9E Contact & Occlusion System - Complete
 
 Architecture:
 - Pose geometry determines where each body segment is placed.
@@ -178,6 +179,9 @@ Architecture:
 - The layered SVG rig renders torso, limbs, hands, feet, and head without
   changing authoritative grappling state or player ordering; apparel overlays
   reuse the same pose-driven segment transforms.
+- Typed position contacts, pose-derived grip anchors, and small explicit
+  body-part occlusion overrides make overlaps read as intentional control while
+  keeping anatomy layering as the default.
 
 Status:
 In progress

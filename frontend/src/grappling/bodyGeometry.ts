@@ -3,18 +3,12 @@ import {
   type GrapplerAnatomy,
 } from './anatomy.ts'
 import type {
-  GrapplerSegmentName,
+  GrapplerBodyPartName,
   PointPose,
   SegmentPose,
 } from './types'
 
-export type GrapplerBodyPartName =
-  | GrapplerSegmentName
-  | 'leftHand'
-  | 'rightHand'
-  | 'leftFoot'
-  | 'rightFoot'
-  | 'head'
+export type { GrapplerBodyPartName } from './types'
 
 export interface TaperedSegmentGeometry {
   readonly length: number

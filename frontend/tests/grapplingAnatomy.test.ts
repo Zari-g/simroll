@@ -220,7 +220,7 @@ test('position resolution preserves base poses while applying grip visuals', () 
 
   assert.equal(resolved.poses.playerA.segments.rightUpperArm.rotation, -122)
   assert.equal(visual.playerAPose.segments.rightUpperArm.rotation, baseRotation)
-  assert.equal(resolved.contactIndicators.length, 1)
+  assert.equal(resolved.gripContacts.length, 1)
 })
 
 test('transition pose resolution still interpolates both grapplers', () => {

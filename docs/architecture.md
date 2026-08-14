@@ -209,11 +209,22 @@ body geometry + appearance
     -> layered SVG grappler
 ```
 
-The position visual's `playerOrder` remains authoritative between grapplers;
-anatomy `layerHint` values only order body parts within one grappler. The stage
-passes the configured, live, or historical authoritative mode through the
-position visual, so apparel follows the same pose transforms during transitions
-and replay.
+The position visual's `playerOrder` and anatomy `layerHint` values provide the
+default body-part order. Small position-owned occlusion overrides may move an
+explicit body part before or after another body part when grappling requires an
+interleaved overlap. Typed position contacts remain separate from active grip
+contacts, and pure anchor helpers derive both from the displayed pose:
+
+```text
+position visual + resolved pose + anatomy + appearance
+    -> default layered body parts + targeted occlusion overrides
+    -> pose-derived position contacts + active grip contacts
+    -> final SVG scene
+```
+
+The stage passes configured, live, or historical authoritative state through
+this same pipeline, so apparel, contacts, and occlusion follow transition and
+replay poses without owning simulation behavior.
 
 The static core position registry currently covers all backend position IDs:
 Closed Guard Bottom, Mount Top, and Side Control Top. Closely related positions

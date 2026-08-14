@@ -109,6 +109,50 @@ const positionVisuals: Readonly<
     playerARole: 'Bottom',
     playerBRole: 'Top',
     playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'closed-guard-left-hook',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'leftThigh',
+          anchor: 'start',
+        },
+      },
+      {
+        id: 'closed-guard-right-hook',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'rightShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'rightThigh',
+          anchor: 'start',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'leftThigh' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'torso' },
+          placement: 'before',
+        },
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'rightThigh' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'torso' },
+          placement: 'before',
+        },
+      ],
+    },
   },
   mount_top: {
     positionId: 'mount_top',
@@ -120,6 +164,64 @@ const positionVisuals: Readonly<
     playerARole: 'Top',
     playerBRole: 'Bottom',
     playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'mount-torso-pressure',
+        type: 'pressure',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+      },
+      {
+        id: 'mount-left-knee-control',
+        type: 'control',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftThigh',
+          anchor: 'start',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'start',
+        },
+      },
+      {
+        id: 'mount-right-knee-control',
+        type: 'control',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'rightThigh',
+          anchor: 'start',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'start',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerB', bodyPart: 'leftForearm' },
+          relativeTo: { grapplerId: 'playerA', bodyPart: 'torso' },
+          placement: 'before',
+        },
+        {
+          bodyPart: { grapplerId: 'playerB', bodyPart: 'rightForearm' },
+          relativeTo: { grapplerId: 'playerA', bodyPart: 'torso' },
+          placement: 'before',
+        },
+      ],
+    },
   },
   side_control_top: {
     positionId: 'side_control_top',
@@ -131,6 +233,45 @@ const positionVisuals: Readonly<
     playerARole: 'Top',
     playerBRole: 'Bottom',
     playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'side-control-torso-pressure',
+        type: 'pressure',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+      },
+      {
+        id: 'side-control-shoulder-control',
+        type: 'control',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftUpperArm',
+          anchor: 'start',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'leftUpperArm' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'torso' },
+          placement: 'before',
+        },
+      ],
+    },
   },
 }
 

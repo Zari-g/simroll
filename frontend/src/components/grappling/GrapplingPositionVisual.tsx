@@ -4,6 +4,10 @@ import {
 } from '../../grappling/anatomy'
 import { getPositionVisual } from '../../grappling/positionVisuals'
 import {
+  resolvePositionContacts,
+  resolveSceneBodyPartOrder,
+} from '../../grappling/contacts'
+import {
   resolveGrapplerAppearance,
   type GrapplerApparelMode,
 } from '../../grappling/appearance'
@@ -12,7 +16,8 @@ import type {
   GrapplerId,
   GrapplerPose,
 } from '../../grappling/types'
-import { GrapplerRig } from './GrapplerRig'
+import { GrapplerBodyPart } from './GrapplerRig'
+import { GrapplingContacts } from './GrapplingContacts'
 
 interface GrapplingPositionVisualProps {
   positionId: string
@@ -50,9 +55,23 @@ export function GrapplingPositionVisual({
 
   const resolvedVisual = resolveVisualPose(visual, activeGripIds)
   const poses = displayPoses ?? resolvedVisual.poses
-  const contactIndicators = displayPoses
-    ? []
-    : resolvedVisual.contactIndicators
+  const resolvedAnatomies = {
+    playerA: resolveGrapplerAnatomy('playerA', anatomies),
+    playerB: resolveGrapplerAnatomy('playerB', anatomies),
+  }
+  const appearances = {
+    playerA: resolveGrapplerAppearance('playerA', mode),
+    playerB: resolveGrapplerAppearance('playerB', mode),
+  }
+  const bodyPartOrder = resolveSceneBodyPartOrder(
+    visual.playerOrder,
+    resolvedAnatomies,
+    visual.occlusion,
+  )
+  const contacts = [
+    ...resolvePositionContacts(visual),
+    ...resolvedVisual.gripContacts,
+  ]
 
   return (
     <div className="grappling-position-visual">
@@ -67,25 +86,21 @@ export function GrapplingPositionVisual({
         <desc id={`grappling-visual-description-${positionId}`}>{visual.description}</desc>
         <circle className="grappling-position-visual__center-ring" cx="500" cy="300" r="225" />
         <path className="grappling-position-visual__orientation" d="M 500 72 l -12 20 h 24 z" />
-        {visual.playerOrder.map((grapplerId) => (
-          <GrapplerRig
-            key={grapplerId}
+        {bodyPartOrder.map(({ grapplerId, bodyPart }) => (
+          <GrapplerBodyPart
+            key={`${grapplerId}-${bodyPart}`}
             grapplerId={grapplerId}
             pose={poses[grapplerId]}
-            anatomy={resolveGrapplerAnatomy(grapplerId, anatomies)}
-            appearance={resolveGrapplerAppearance(grapplerId, mode)}
+            anatomy={resolvedAnatomies[grapplerId]}
+            appearance={appearances[grapplerId]}
+            bodyPartName={bodyPart}
           />
         ))}
-        {contactIndicators.map((indicator, index) => (
-          <g
-            className={`grip-contact grip-contact--${indicator.grapplerId}`}
-            key={`${indicator.grapplerId}-${indicator.x}-${indicator.y}-${index}`}
-            aria-hidden="true"
-          >
-            <circle className="grip-contact__ring" cx={indicator.x} cy={indicator.y} r="15" />
-            <circle className="grip-contact__point" cx={indicator.x} cy={indicator.y} r="6" />
-          </g>
-        ))}
+        <GrapplingContacts
+          contacts={contacts}
+          poses={poses}
+          anatomies={resolvedAnatomies}
+        />
       </svg>
 
       <div className="grappling-position-visual__legend" aria-label="Grappler legend">
