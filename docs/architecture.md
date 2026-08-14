@@ -205,6 +205,9 @@ and occlusion metadata remain independent reusable inputs:
 ```text
 authoritative grappling state
     -> position visual
+    -> local kinematic skeleton (for migrated poses)
+    -> resolved world joints
+    -> derived renderer segments
     -> resolved pose + grip modifiers
     -> transition interpolation
     -> anatomy + body geometry + appearance
@@ -212,6 +215,24 @@ authoritative grappling state
     -> reusable layered SVG grapplers
     -> live, animated, or historical scene
 ```
+
+The kinematic model is pelvis-rooted. Spine, chest, neck, and head form the
+core chain; shoulders inherit from the chest; and hips inherit from the
+pelvis. Elbows, wrists, knees, and ankles then inherit down their respective
+limb chains. Authored skeleton transforms are parent-relative, while world
+joints and the current `GrapplerPose` segment geometry are derived values.
+Forward-kinematics calculations stay in the grappling model layer rather than
+React or SVG components, and anatomy remains a separate source of widths,
+proportions, taper, and rendering metadata.
+
+Iteration 10A uses an incremental migration boundary. A pure legacy-pose
+adapter can normalize existing independently positioned segments into a
+connected skeleton, and a second adapter converts resolved skeletons to the
+renderer-compatible pose shape. Closed Guard Bottom exercises this path;
+other Iteration 9 poses remain on the legacy path until later milestones so
+the position library does not require a risky wholesale rewrite. Both paths
+still reach the same interpolation and rendering contracts, including exact
+source and destination frames.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an

@@ -199,8 +199,28 @@ Complete
 Goal:
 Build reusable movement primitives and animated roll simulation playback.
 
-Status:
-Future
+## 10A — Hierarchical Kinematic Grappler Skeleton
+
+- [x] Define a typed pelvis-rooted hierarchy for the core, head, arms, and
+  legs, with immutable parent-relative joint transforms.
+- [x] Resolve local transforms into world joints and derive renderer segments,
+  rotations, and lengths with pure helpers.
+- [x] Add a compatibility adapter from legacy flat poses and migrate one
+  representative Closed Guard pose without re-authoring the Iteration 9
+  position library.
+- [x] Preserve the existing SVG, anatomy, apparel, contact, grip, occlusion,
+  playback, and exact transition-endpoint contracts.
+- [x] Cover hierarchy, connected segments, parent movement, deterministic
+  conversion, endpoint compatibility, and immutability with frontend tests.
+
+10A Status:
+Complete
+
+Remaining Iteration 10 work will build articulation and choreography on this
+foundation.
+
+Iteration 10 Status:
+In Progress
 
 ---
 

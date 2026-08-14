@@ -4,6 +4,7 @@ import type {
   PointPose,
   SegmentPose,
 } from './types'
+import { calculateSegmentEndpoint } from './kinematics.ts'
 
 export type SegmentAnatomyRegion =
   | 'torso'
@@ -146,12 +147,7 @@ export function resolveSegmentAnatomy(
 }
 
 export function getSegmentEndpoint(segment: SegmentPose): PointPose {
-  const angle = (segment.rotation * Math.PI) / 180
-
-  return {
-    x: segment.x + Math.cos(angle) * segment.length,
-    y: segment.y + Math.sin(angle) * segment.length,
-  }
+  return calculateSegmentEndpoint(segment)
 }
 
 function deriveExtremityGeometry(
