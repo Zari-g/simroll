@@ -6,6 +6,7 @@ interface GripSelectorProps {
   mode: GrapplingMode
   selectedGripIds: ReadonlySet<string>
   onToggle: (gripId: string) => void
+  isDisabled?: boolean
 }
 
 export function GripSelector({
@@ -13,6 +14,7 @@ export function GripSelector({
   mode,
   selectedGripIds,
   onToggle,
+  isDisabled = false,
 }: GripSelectorProps) {
   return (
     <fieldset className="grip-selector">
@@ -23,15 +25,15 @@ export function GripSelector({
 
       <ul className="grip-list">
         {grips.map((grip) => {
-          const isDisabled = mode === 'no_gi' && grip.gi_required
+          const isGripDisabled = isDisabled || (mode === 'no_gi' && grip.gi_required)
 
           return (
             <li key={grip.id}>
-              <label className={`grip-option ${isDisabled ? 'grip-option--disabled' : ''}`}>
+              <label className={`grip-option ${isGripDisabled ? 'grip-option--disabled' : ''}`}>
                 <input
                   type="checkbox"
                   checked={selectedGripIds.has(grip.id)}
-                  disabled={isDisabled}
+                  disabled={isGripDisabled}
                   onChange={() => onToggle(grip.id)}
                 />
                 <span className="grip-option__body">

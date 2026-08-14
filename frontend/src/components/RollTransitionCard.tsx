@@ -6,6 +6,7 @@ interface RollTransitionCardProps {
   destinationName: string
   resolveGripName: (gripId: string) => string
   isDisabled: boolean
+  isFailed: boolean
   onUse: (transitionId: string) => void
 }
 
@@ -14,38 +15,51 @@ export function RollTransitionCard({
   destinationName,
   resolveGripName,
   isDisabled,
+  isFailed,
   onUse,
 }: RollTransitionCardProps) {
-  return (
-    <article className="roll-transition-card">
-      <div className="roll-transition-card__body">
-        <header>
-          <h4>{transition.name}</h4>
-          <p className="transition-meta">
-            {formatReadable(transition.difficulty)} ·{' '}
-            {formatReadable(transition.transition_type)}
-          </p>
-        </header>
+  const normalizedType = transition.transition_type.toLowerCase()
+  const semanticType = normalizedType.includes('submission')
+    ? 'submission'
+    : normalizedType.includes('sweep')
+      ? 'sweep'
+      : 'transition'
 
-        <p className="transition-route">
+  return (
+    <button
+      className={`roll-transition-card roll-transition-card--${semanticType}${isFailed ? ' is-failed' : ''}`}
+      type="button"
+      disabled={isDisabled}
+      aria-describedby={isFailed ? `move-error-${transition.id}` : undefined}
+      onClick={() => onUse(transition.id)}
+    >
+      <span className="roll-transition-card__body">
+        <span className="roll-transition-card__header">
+          <strong>{transition.name}</strong>
+          <span className="roll-transition-card__type">
+            {formatReadable(transition.transition_type)}
+          </span>
+        </span>
+
+        <span className="transition-meta">{formatReadable(transition.difficulty)}</span>
+        <span className="transition-route">
           Moves to <strong>{destinationName}</strong>
-        </p>
+        </span>
 
         {transition.required_grips.length > 0 && (
-          <p className="roll-transition-card__requirements">
+          <span className="roll-transition-card__requirements">
             <strong>Required grips:</strong>{' '}
             {transition.required_grips.map(resolveGripName).join(', ')}
-          </p>
+          </span>
         )}
-      </div>
 
-      <button
-        type="button"
-        disabled={isDisabled}
-        onClick={() => onUse(transition.id)}
-      >
-        Use Move
-      </button>
-    </article>
+        {isFailed && (
+          <span id={`move-error-${transition.id}`} className="roll-transition-card__failure">
+            Last attempt failed. Select to retry.
+          </span>
+        )}
+      </span>
+      <span className="roll-transition-card__action" aria-hidden="true">Use move →</span>
+    </button>
   )
 }

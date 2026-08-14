@@ -19,9 +19,10 @@ import {
   filterGripIdsForMode,
   getInitialMode,
 } from '../utils/grapplingState'
-import { GripSelector } from './GripSelector'
+import { AvailableMovesPanel } from './AvailableMovesPanel'
+import { GrapplingStage } from './GrapplingStage'
+import { RollControlPanel } from './RollControlPanel'
 import { RollHistory } from './RollHistory'
-import { RollTransitionCard } from './RollTransitionCard'
 
 interface RollSimulatorProps {
   positions: Position[]
@@ -535,309 +536,98 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     setIsAutoDeadEnd(false)
   }
 
-  if (!currentState) {
-    return (
-      <div className="roll-simulator roll-setup">
-        <div className="roll-introduction">
-          <p className="section-label">New roll</p>
-          <h3>Set your starting state</h3>
-          <p>
-            Choose a position, mode, and any active grips. The backend will
-            decide which moves are valid once the roll starts.
-          </p>
-        </div>
-
-        <div className="roll-setup__form">
-          <label className="roll-position-select">
-            <span>Starting position</span>
-            <select
-              value={startPositionId}
-              onChange={(event) => handlePositionChange(event.target.value)}
-            >
-              {positions.map((position) => (
-                <option key={position.id} value={position.id}>
-                  {position.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <fieldset className="mode-selector">
-            <legend>Mode</legend>
-            <div className="segmented-control">
-              <label>
-                <input
-                  type="radio"
-                  name="roll-setup-mode"
-                  value="gi"
-                  checked={mode === 'gi'}
-                  disabled={!selectedPosition?.gi_allowed}
-                  onChange={() => handleModeChange('gi')}
-                />
-                <span>Gi</span>
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="roll-setup-mode"
-                  value="no_gi"
-                  checked={mode === 'no_gi'}
-                  disabled={!selectedPosition?.no_gi_allowed}
-                  onChange={() => handleModeChange('no_gi')}
-                />
-                <span>No-Gi</span>
-              </label>
-            </div>
-          </fieldset>
-
-          {isGripsLoading ? (
-            <div className="state-message roll-resource-state" role="status">
-              <span className="spinner" aria-hidden="true" />
-              <span>Loading grips...</span>
-            </div>
-          ) : gripsError ? (
-            <div className="scoped-error" role="alert">
-              <span>{gripsError}</span>
-              <button
-                type="button"
-                onClick={() => setGripsRequestKey((key) => key + 1)}
-              >
-                Retry
-              </button>
-            </div>
-          ) : (
-            <GripSelector
-              grips={grips}
-              mode={mode}
-              selectedGripIds={selectedGripIdSet}
-              onToggle={toggleGrip}
-            />
-          )}
-
-          <button
-            className="roll-primary-action"
-            type="button"
-            disabled={!selectedPosition || isGripsLoading || !!gripsError}
-            onClick={startRoll}
-          >
-            Start Roll
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   const isDeadEnd =
-    isRandomDeadEnd ||
-    isAutoDeadEnd ||
-    (!isAvailabilityLoading &&
-      availabilityError === null &&
-      availableTransitions.length === 0)
+    currentState !== null &&
+    (isRandomDeadEnd ||
+      isAutoDeadEnd ||
+      (!isAvailabilityLoading &&
+        availabilityError === null &&
+        availableTransitions.length === 0))
   const isRollMutationLoading = isStepLoading || isAutoRollLoading
   const isAutoRollDisabled =
+    !currentState ||
     isRollMutationLoading ||
     isAvailabilityLoading ||
     availabilityError !== null ||
     isDeadEnd
+  const configuredGripNames = selectedGripIds.map(resolveGripName)
+  const configuredPositionName = selectedPosition
+    ? resolvePositionName(selectedPosition.id)
+    : 'No position selected'
 
   return (
-    <div className="roll-simulator roll-active">
-      <div className="roll-status-bar">
-        <p className="section-label">Roll in progress</p>
-        <button type="button" onClick={resetRoll}>
-          Start New Roll
-        </button>
+    <div className="roll-simulator">
+      <div className="roll-simulator__workspace">
+        <RollControlPanel
+          positions={positions}
+          selectedPosition={selectedPosition}
+          startPositionId={startPositionId}
+          mode={mode}
+          grips={grips}
+          selectedGripIds={selectedGripIdSet}
+          isRollActive={currentState !== null}
+          isGripsLoading={isGripsLoading}
+          gripsError={gripsError}
+          isMutationLoading={isRollMutationLoading}
+          isAvailabilityLoading={isAvailabilityLoading}
+          hasAvailabilityError={availabilityError !== null}
+          isDeadEnd={isDeadEnd}
+          autoRollStepCount={autoRollStepCount}
+          autoRollStepOptions={AUTO_ROLL_STEP_OPTIONS}
+          isAutoRollDisabled={isAutoRollDisabled}
+          isAutoRollLoading={isAutoRollLoading}
+          onPositionChange={handlePositionChange}
+          onModeChange={handleModeChange}
+          onToggleGrip={toggleGrip}
+          onRetryGrips={() => setGripsRequestKey((key) => key + 1)}
+          onStartRoll={startRoll}
+          onRandomStep={() => void applyStep(null)}
+          onAutoRollStepCountChange={(stepCount) =>
+            setAutoRollStepCount(stepCount as AutoRollStepCount)
+          }
+          onAutoRoll={() => void runAutoRoll(autoRollStepCount)}
+          onReset={resetRoll}
+        />
+
+        <GrapplingStage
+          currentState={currentState}
+          configuredPositionName={configuredPositionName}
+          configuredMode={mode}
+          configuredGripNames={configuredGripNames}
+          stepCount={history.transitionIds.length}
+          isMutationLoading={isRollMutationLoading}
+          resolvePositionName={resolvePositionName}
+          resolveGripName={resolveGripName}
+        />
+
+        <AvailableMovesPanel
+          transitions={availableTransitions}
+          currentPositionName={
+            currentState ? resolvePositionName(currentState.position_id) : null
+          }
+          isRollActive={currentState !== null}
+          isLoading={isAvailabilityLoading}
+          isStepLoading={isStepLoading}
+          isMutationLoading={isRollMutationLoading}
+          isDeadEnd={isDeadEnd}
+          availabilityError={availabilityError}
+          stepError={stepError}
+          autoRollError={autoRollError}
+          autoRollStatus={autoRollStatus}
+          failedTransitionId={failedTransitionId}
+          resolvePositionName={resolvePositionName}
+          resolveGripName={resolveGripName}
+          onUseTransition={(transitionId) => void applyStep(transitionId)}
+          onRetryStep={() => void applyStep(failedTransitionId ?? null)}
+          onRetryAvailability={() =>
+            setAvailabilityRequestKey((key) => key + 1)
+          }
+          onRetryAutoRoll={() => void runAutoRoll(failedAutoRollStepCount)}
+          onReset={resetRoll}
+        />
       </div>
 
-      <section className="roll-current-state" aria-labelledby="roll-state-heading">
-        <div>
-          <p className="section-label">Current position</p>
-          <h3 id="roll-state-heading">
-            {resolvePositionName(currentState.position_id)}
-          </h3>
-        </div>
-        <dl>
-          <div>
-            <dt>Mode</dt>
-            <dd>{currentState.mode === 'gi' ? 'Gi' : 'No-Gi'}</dd>
-          </div>
-          <div>
-            <dt>Active grips</dt>
-            <dd>
-              {currentState.active_grips.length > 0
-                ? currentState.active_grips.map(resolveGripName).join(', ')
-                : 'None'}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <div className="roll-active__layout">
-        <div className="roll-active__controls">
-          <section className="roll-moves" aria-labelledby="roll-moves-heading">
-            <div className="roll-moves__heading">
-              <div>
-                <p className="section-label">Available moves</p>
-                <h3 id="roll-moves-heading">Choose your next transition</h3>
-              </div>
-              {!isAvailabilityLoading && !availabilityError && !isDeadEnd && (
-                <span>{availableTransitions.length} available</span>
-              )}
-            </div>
-
-            {isStepLoading && (
-              <p className="roll-progress" role="status">
-                <span className="spinner" aria-hidden="true" />
-                Applying move...
-              </p>
-            )}
-
-            {stepError && (
-              <div className="scoped-error" role="alert">
-                <span>{stepError} Your current state has not changed.</span>
-                <button
-                  type="button"
-                  disabled={isRollMutationLoading}
-                  onClick={() => void applyStep(failedTransitionId ?? null)}
-                >
-                  Try again
-                </button>
-              </div>
-            )}
-
-            {isAvailabilityLoading && (
-              <p className="roll-progress" role="status">
-                <span className="spinner" aria-hidden="true" />
-                Loading available moves...
-              </p>
-            )}
-
-            {availabilityError && (
-              <div className="scoped-error" role="alert">
-                <span>{availabilityError}</span>
-                <button
-                  type="button"
-                  disabled={isRollMutationLoading}
-                  onClick={() => setAvailabilityRequestKey((key) => key + 1)}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {isDeadEnd && (
-              <div className="roll-dead-end">
-                <p className="section-label">Roll paused</p>
-                <strong>
-                  No valid moves are available from{' '}
-                  {resolvePositionName(currentState.position_id)}.
-                </strong>
-                <button type="button" onClick={resetRoll}>
-                  Start New Roll
-                </button>
-              </div>
-            )}
-
-            {!isAvailabilityLoading && !availabilityError && !isDeadEnd && (
-              <>
-                <ul className="roll-transition-list">
-                  {availableTransitions.map((transition) => (
-                    <li key={transition.id}>
-                      <RollTransitionCard
-                        transition={transition}
-                        destinationName={resolvePositionName(
-                          transition.to_position,
-                        )}
-                        resolveGripName={resolveGripName}
-                        isDisabled={isRollMutationLoading}
-                        onUse={(transitionId) => void applyStep(transitionId)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className="roll-surprise-action"
-                  type="button"
-                  disabled={isRollMutationLoading}
-                  onClick={() => void applyStep(null)}
-                >
-                  Surprise Me
-                </button>
-              </>
-            )}
-          </section>
-
-          <section className="roll-auto" aria-labelledby="roll-auto-heading">
-            <div>
-              <p className="section-label">Auto Roll</p>
-              <h3 id="roll-auto-heading">Keep the roll moving</h3>
-              <p>
-                Let SimRoll choose several backend-valid moves from your current
-                state.
-              </p>
-            </div>
-
-            <div className="roll-auto__controls">
-              <label>
-                <span>Steps</span>
-                <select
-                  value={autoRollStepCount}
-                  disabled={isAutoRollDisabled}
-                  onChange={(event) =>
-                    setAutoRollStepCount(
-                      Number(event.target.value) as AutoRollStepCount,
-                    )
-                  }
-                >
-                  {AUTO_ROLL_STEP_OPTIONS.map((stepCount) => (
-                    <option key={stepCount} value={stepCount}>
-                      {stepCount}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                className="roll-auto-action"
-                type="button"
-                disabled={isAutoRollDisabled}
-                onClick={() => void runAutoRoll(autoRollStepCount)}
-              >
-                Auto Roll
-              </button>
-            </div>
-
-            {isAutoRollLoading && (
-              <p className="roll-progress roll-auto__progress" role="status">
-                <span className="spinner" aria-hidden="true" />
-                Simulating roll...
-              </p>
-            )}
-
-            {autoRollError && (
-              <div className="scoped-error" role="alert">
-                <span>{autoRollError}</span>
-                <button
-                  type="button"
-                  disabled={isRollMutationLoading}
-                  onClick={() => void runAutoRoll(failedAutoRollStepCount)}
-                >
-                  Try again
-                </button>
-              </div>
-            )}
-
-            {autoRollStatus && (
-              <p
-                className={`roll-auto__status roll-auto__status--${autoRollStatus.kind}`}
-                role="status"
-              >
-                {autoRollStatus.message}
-              </p>
-            )}
-          </section>
-        </div>
-
+      {currentState && (
         <RollHistory
           states={history.states}
           transitionIds={history.transitionIds}
@@ -845,7 +635,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           resolveGripName={resolveGripName}
           resolveTransitionName={resolveTransitionName}
         />
-      </div>
+      )}
     </div>
   )
 }

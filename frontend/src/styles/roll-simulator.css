@@ -1,0 +1,658 @@
+.roll-simulator {
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-bg-app);
+}
+
+.roll-simulator__workspace {
+  display: grid;
+  grid-template-columns: minmax(15rem, 17rem) minmax(25rem, 1fr) minmax(17rem, 20rem);
+  min-height: 43rem;
+  gap: var(--space-4);
+}
+
+.roll-control-panel,
+.available-moves-panel,
+.grappling-stage {
+  min-width: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-panel);
+  background: var(--color-bg-panel-secondary);
+  overflow: hidden;
+}
+
+.simulator-panel-heading {
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-4);
+  background: var(--color-bg-panel);
+}
+
+.simulator-panel-heading .section-label {
+  margin-bottom: var(--space-1);
+}
+
+.simulator-panel-heading h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.roll-control-panel {
+  align-self: start;
+}
+
+.roll-control-group {
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-4);
+}
+
+.roll-control-group:last-child {
+  border-bottom: 0;
+}
+
+.roll-control-group h4 {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.roll-control-group__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.roll-control-group__heading > span {
+  color: var(--color-text-muted);
+  font-size: 0.64rem;
+}
+
+.roll-action-stack {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.roll-action-stack .roll-primary-action {
+  grid-column: 1 / -1;
+}
+
+.roll-primary-action,
+.roll-secondary-action,
+.roll-auto-action,
+.roll-dead-end button {
+  min-height: 2.6rem;
+  border-radius: var(--radius-button);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-weight: 800;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.roll-primary-action,
+.roll-auto-action,
+.roll-dead-end button {
+  border: 1px solid var(--color-accent-strong);
+  color: var(--color-text-on-accent);
+  background: var(--color-accent);
+}
+
+.roll-primary-action:hover:not(:disabled),
+.roll-auto-action:hover:not(:disabled),
+.roll-dead-end button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.roll-secondary-action {
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-primary);
+  background: var(--color-bg-interactive);
+}
+
+.roll-secondary-action:hover:not(:disabled) {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-hover);
+}
+
+.roll-reset-action {
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.roll-primary-action:disabled,
+.roll-secondary-action:disabled,
+.roll-auto-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.roll-position-select {
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: 0.78rem;
+}
+
+.roll-position-select select {
+  padding: 0.65rem var(--space-3);
+}
+
+.roll-control-panel .mode-selector {
+  margin: 0 0 var(--space-4);
+  border: 0;
+  padding: 0;
+}
+
+.roll-control-panel .mode-selector legend,
+.roll-control-panel .grip-selector legend {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
+.roll-control-panel .control-help {
+  display: none;
+}
+
+.roll-control-panel .grip-list {
+  max-height: 13rem;
+  gap: var(--space-2);
+  padding-right: var(--space-1);
+  overflow-y: auto;
+}
+
+.roll-control-panel .grip-option {
+  padding: var(--space-2);
+}
+
+.roll-control-panel .grip-option__body > span,
+.roll-control-panel .grip-option__body > small {
+  display: none;
+}
+
+.roll-grips--locked {
+  opacity: 0.68;
+}
+
+.roll-resource-state {
+  padding: var(--space-3) 0;
+}
+
+.roll-control-help {
+  margin: calc(var(--space-2) * -1) 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.roll-auto__controls {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  align-items: end;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.roll-auto__controls label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roll-auto__controls select {
+  width: 100%;
+  padding: 0.62rem var(--space-2);
+}
+
+.grappling-stage {
+  display: flex;
+  min-height: 43rem;
+  flex-direction: column;
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-panel);
+  box-shadow: 0 0 2.5rem rgba(74, 158, 255, 0.08);
+}
+
+.grappling-stage__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-panel-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stage-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.stage-status-dot.is-active {
+  background: var(--color-success);
+  box-shadow: 0 0 0 0.22rem var(--color-success-soft);
+}
+
+.grappling-stage__step {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.grappling-stage__mat {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--space-8);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, transparent 0 24%, rgba(74, 158, 255, 0.08) 24.2% 24.5%, transparent 24.7%),
+    linear-gradient(rgba(163, 184, 218, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 184, 218, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% 45%, var(--color-accent-soft), transparent 65%),
+    var(--color-bg-panel);
+  background-size: auto, 3rem 3rem, 3rem 3rem, auto, auto;
+}
+
+.grappling-stage__position {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.grappling-stage__position h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: clamp(2rem, 3.6vw, 3.4rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.grappling-stage__position > p:last-child {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.grappling-stage__placeholder {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-self: center;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.grappling-stage__placeholder > span:last-child {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+}
+
+.grappling-stage__marker {
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 1px solid var(--color-border-accent);
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, transparent 49%, var(--color-border-accent) 49% 51%, transparent 51%),
+    linear-gradient(transparent 49%, var(--color-border-accent) 49% 51%, transparent 51%),
+    var(--color-accent-softer);
+}
+
+.grappling-stage__details {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(6rem, 0.35fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  margin: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  background: rgba(8, 11, 18, 0.78);
+}
+
+.grappling-stage__details dt {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.grappling-stage__details dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.available-moves-panel {
+  align-self: start;
+}
+
+.available-moves-panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.available-moves-panel__heading > span {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-accent);
+  background: var(--color-accent-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.available-moves-panel__content {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.roll-panel-empty,
+.roll-moves-loading {
+  display: flex;
+  min-height: 13rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.roll-panel-empty p,
+.roll-moves-loading > span:last-child {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.roll-transition-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roll-transition-card {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  flex-direction: column;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-transition);
+  border-radius: var(--radius-card);
+  padding: var(--space-3);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+}
+
+.roll-transition-card--submission {
+  border-left-color: var(--color-submission);
+}
+
+.roll-transition-card--sweep {
+  border-left-color: var(--color-success);
+}
+
+.roll-transition-card:hover:not(:disabled) {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-hover);
+  transform: translateY(-1px);
+}
+
+.roll-transition-card:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.roll-transition-card.is-failed {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.roll-transition-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.roll-transition-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.roll-transition-card__header > strong {
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+}
+
+.roll-transition-card__type {
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  padding: 0.16rem 0.4rem;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-panel-secondary);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.roll-transition-card--submission .roll-transition-card__type {
+  color: var(--color-submission);
+}
+
+.roll-transition-card--sweep .roll-transition-card__type {
+  color: var(--color-success);
+}
+
+.roll-transition-card .transition-meta,
+.roll-transition-card .transition-route,
+.roll-transition-card__requirements,
+.roll-transition-card__failure {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.roll-transition-card .transition-meta {
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.roll-transition-card__failure {
+  color: var(--color-danger);
+  font-weight: 750;
+}
+
+.roll-transition-card__action {
+  color: var(--color-text-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.roll-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.roll-progress .spinner,
+.roll-moves-loading .spinner {
+  width: 1rem;
+  height: 1rem;
+}
+
+.roll-dead-end {
+  border-color: var(--color-warning);
+  color: var(--color-text-primary);
+  background: var(--color-warning-soft);
+}
+
+.roll-dead-end p:not(.section-label) {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
+.roll-auto__status {
+  margin: 0;
+  border-left-color: var(--color-success);
+  background: var(--color-success-soft);
+  font-size: 0.78rem;
+}
+
+.roll-auto__status--dead_end {
+  border-left-color: var(--color-warning);
+  color: var(--color-text-primary);
+  background: var(--color-warning-soft);
+}
+
+.roll-simulator > .roll-history {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+}
+
+.roll-simulator > .roll-history .roll-history__timeline {
+  display: grid;
+  grid-auto-columns: minmax(15rem, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-3);
+  max-height: none;
+  padding: 0 0 var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.roll-simulator > .roll-history .roll-history__timeline > li {
+  padding: 1.6rem 0 0;
+}
+
+.roll-simulator > .roll-history .roll-history__timeline > li::before {
+  top: 0.35rem;
+  left: 0.2rem;
+}
+
+.roll-simulator > .roll-history .roll-history__timeline > li:not(:last-child)::after {
+  top: 0.62rem;
+  right: calc(var(--space-3) * -1);
+  bottom: auto;
+  left: 0.75rem;
+  width: auto;
+  height: 0.1rem;
+}
+
+.roll-simulator > .roll-history .roll-history__transition {
+  position: absolute;
+  top: 0;
+  right: var(--space-2);
+  left: 1.35rem;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.roll-simulator > .roll-history .roll-history__transition span {
+  display: none;
+}
+
+@media (max-width: 78rem) {
+  .roll-simulator__workspace {
+    grid-template-columns: minmax(14rem, 0.8fr) minmax(22rem, 1.5fr);
+  }
+
+  .grappling-stage {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .available-moves-panel {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 58rem) {
+  .roll-simulator__workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .grappling-stage {
+    min-height: 34rem;
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .roll-control-panel,
+  .available-moves-panel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 38rem) {
+  .roll-simulator {
+    padding: var(--space-3);
+  }
+
+  .roll-simulator__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .grappling-stage,
+  .roll-control-panel,
+  .available-moves-panel {
+    grid-column: 1;
+  }
+
+  .grappling-stage {
+    min-height: 30rem;
+  }
+
+  .grappling-stage__mat {
+    padding: var(--space-5);
+  }
+
+  .grappling-stage__details {
+    grid-template-columns: 1fr;
+  }
+}
