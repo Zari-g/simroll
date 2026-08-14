@@ -591,6 +591,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
         <GrapplingStage
           currentState={currentState}
+          configuredPositionId={startPositionId}
           configuredPositionName={configuredPositionName}
           configuredMode={mode}
           configuredGripNames={configuredGripNames}

@@ -1,7 +1,9 @@
 import type { GrapplingMode, GrapplingStateResponse } from '../types/api'
+import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
 
 interface GrapplingStageProps {
   currentState: GrapplingStateResponse | null
+  configuredPositionId: string
   configuredPositionName: string
   configuredMode: GrapplingMode
   configuredGripNames: string[]
@@ -13,6 +15,7 @@ interface GrapplingStageProps {
 
 export function GrapplingStage({
   currentState,
+  configuredPositionId,
   configuredPositionName,
   configuredMode,
   configuredGripNames,
@@ -25,6 +28,7 @@ export function GrapplingStage({
   const positionName = currentState
     ? resolvePositionName(currentState.position_id)
     : configuredPositionName
+  const positionId = currentState?.position_id ?? configuredPositionId
   const displayMode = currentState?.mode ?? configuredMode
   const activeGripNames = currentState
     ? currentState.active_grips.map(resolveGripName)
@@ -45,11 +49,10 @@ export function GrapplingStage({
           <p>{isActive ? 'Authoritative simulator state' : 'Configured starting state'}</p>
         </div>
 
-        <div className="grappling-stage__placeholder">
-          <span className="grappling-stage__marker" aria-hidden="true" />
-          <strong>{isActive ? 'Grappling stage' : 'Start the roll to load valid transitions'}</strong>
-          <span>Future grappler visualization area</span>
-        </div>
+        <GrapplingPositionVisual
+          positionId={positionId}
+          positionName={positionName}
+        />
 
         <dl className="grappling-stage__details">
           <div>
