@@ -5,6 +5,7 @@ import {
   defaultGrapplerAnatomy,
   deriveFootGeometry,
   deriveHandGeometry,
+  getSegmentEndpoint,
   resolveGrapplerAnatomy,
   resolveSegmentAnatomy,
 } from '../src/grappling/anatomy.ts'
@@ -179,15 +180,56 @@ test('torso geometry places the wider shoulder end nearest the head', () => {
     closedGuard.playerAPose.segments.torso,
     closedGuard.playerAPose.head,
     defaultGrapplerAnatomy,
+    closedGuard.playerAPose.core,
   )
   const topGeometry = createTorsoGeometry(
     closedGuard.playerBPose.segments.torso,
     closedGuard.playerBPose.head,
     defaultGrapplerAnatomy,
+    closedGuard.playerBPose.core,
   )
 
   assert.ok(bottomGeometry.endWidth > bottomGeometry.startWidth)
   assert.ok(topGeometry.endWidth > topGeometry.startWidth)
+})
+
+test('articulated torso geometry follows the resolved spine without mutating it', () => {
+  const visual = getPositionVisual('closed_guard_bottom')
+  assert.ok(visual)
+  const pose = visual.playerAPose
+  assert.ok(pose.core)
+  const poseSnapshot = structuredClone(pose)
+  const articulated = createTorsoGeometry(
+    pose.segments.torso,
+    pose.head,
+    defaultGrapplerAnatomy,
+    pose.core,
+  )
+  const legacyChord = createTorsoGeometry(
+    pose.segments.torso,
+    pose.head,
+    defaultGrapplerAnatomy,
+  )
+
+  assert.match(articulated.path, / Q /)
+  assert.match(articulated.centerlinePath, / Q /)
+  assert.notEqual(articulated.path, legacyChord.path)
+  assert.ok(Math.abs(articulated.midsection.center.y) > 1)
+  assert.equal(
+    Math.hypot(
+      articulated.waist.left.x - articulated.waist.right.x,
+      articulated.waist.left.y - articulated.waist.right.y,
+    ),
+    defaultGrapplerAnatomy.torso.width * defaultGrapplerAnatomy.torso.taper,
+  )
+  assert.equal(
+    Math.hypot(
+      articulated.shoulders.left.x - articulated.shoulders.right.x,
+      articulated.shoulders.left.y - articulated.shoulders.right.y,
+    ),
+    defaultGrapplerAnatomy.torso.width,
+  )
+  assert.deepEqual(pose, poseSnapshot)
 })
 
 test('body-part layer hints place legs behind torso and arms above it', () => {
@@ -224,7 +266,10 @@ test('position resolution preserves base poses while applying grip visuals', () 
 
   const resolved = resolveVisualPose(visual, ['sleeve_grip'])
 
-  assert.equal(resolved.poses.playerA.segments.rightUpperArm.rotation, -122)
+  assert.equal(
+    resolved.poses.playerA.segments.rightUpperArm.rotation,
+    -78.599,
+  )
   assert.equal(visual.playerAPose.segments.rightUpperArm.rotation, baseRotation)
   assert.equal(resolved.gripContacts.length, 1)
 })
@@ -252,4 +297,43 @@ test('transition pose resolution still interpolates both grapplers', () => {
 
   assert.ok(Number.isFinite(poses.playerA.head.x))
   assert.ok(Number.isFinite(poses.playerB.segments.torso.rotation))
+  assert.ok(poses.playerA.core)
+  assert.ok(poses.playerB.core)
+})
+
+test('authored torso keyframes carry the derived core silhouette with them', () => {
+  const closedGuard = getPositionVisual('closed_guard_bottom')
+  const mount = getPositionVisual('mount_top')
+  const transition = getTransitionVisual('hip_bump_sweep')
+  assert.ok(closedGuard)
+  assert.ok(mount)
+  assert.ok(transition)
+  const poses = resolveTransitionPoses(
+    transition,
+    {
+      playerA: closedGuard.playerAPose,
+      playerB: closedGuard.playerBPose,
+    },
+    {
+      playerA: mount.playerAPose,
+      playerB: mount.playerBPose,
+    },
+    0.3,
+  )
+  const torso = poses.playerA.segments.torso
+  const torsoEnd = getSegmentEndpoint(torso)
+  assert.ok(poses.playerA.core)
+
+  assert.ok(
+    Math.hypot(
+      poses.playerA.core.pelvis.x - torso.x,
+      poses.playerA.core.pelvis.y - torso.y,
+    ) < 1e-10,
+  )
+  assert.ok(
+    Math.hypot(
+      poses.playerA.core.chest.x - torsoEnd.x,
+      poses.playerA.core.chest.y - torsoEnd.y,
+    ) < 1e-10,
+  )
 })

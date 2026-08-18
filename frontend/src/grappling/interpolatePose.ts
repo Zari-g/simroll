@@ -1,8 +1,10 @@
 import type {
+  GrapplerCorePose,
   GrapplerId,
   GrapplerPose,
   GrapplerPoseOverride,
   GrapplerSegmentName,
+  SegmentPose,
   TransitionVisualDefinition,
 } from './types'
 
@@ -45,12 +47,69 @@ export function easeInOutCubic(progress: number) {
 function cloneGrapplerPose(pose: GrapplerPose): GrapplerPose {
   return {
     head: { ...pose.head },
+    core: pose.core && {
+      pelvis: { ...pose.core.pelvis },
+      spine: { ...pose.core.spine },
+      chest: { ...pose.core.chest },
+    },
     segments: Object.fromEntries(
       segmentNames.map((segmentName) => [
         segmentName,
         { ...pose.segments[segmentName] },
       ]),
     ) as GrapplerPose['segments'],
+  }
+}
+
+function transformCorePoint(
+  point: GrapplerCorePose['pelvis'],
+  from: SegmentPose,
+  to: SegmentPose,
+) {
+  const fromRadians = (-from.rotation * Math.PI) / 180
+  const x = point.x - from.x
+  const y = point.y - from.y
+  const localX = x * Math.cos(fromRadians) - y * Math.sin(fromRadians)
+  const localY = x * Math.sin(fromRadians) + y * Math.cos(fromRadians)
+  const scale = to.length / from.length
+  const toRadians = (to.rotation * Math.PI) / 180
+
+  return {
+    x:
+      to.x +
+      localX * scale * Math.cos(toRadians) -
+      localY * scale * Math.sin(toRadians),
+    y:
+      to.y +
+      localX * scale * Math.sin(toRadians) +
+      localY * scale * Math.cos(toRadians),
+  }
+}
+
+function transformCorePose(
+  core: GrapplerCorePose,
+  to: SegmentPose,
+): GrapplerCorePose {
+  const from = {
+    x: core.pelvis.x,
+    y: core.pelvis.y,
+    rotation:
+      (Math.atan2(
+        core.chest.y - core.pelvis.y,
+        core.chest.x - core.pelvis.x,
+      ) *
+        180) /
+      Math.PI,
+    length: Math.hypot(
+      core.chest.x - core.pelvis.x,
+      core.chest.y - core.pelvis.y,
+    ),
+  }
+
+  return {
+    pelvis: transformCorePoint(core.pelvis, from, to),
+    spine: transformCorePoint(core.spine, from, to),
+    chest: transformCorePoint(core.chest, from, to),
   }
 }
 
@@ -67,6 +126,23 @@ export function interpolateGrapplerPose(
       x: lerpNumber(start.head.x, end.head.x, progress),
       y: lerpNumber(start.head.y, end.head.y, progress),
     },
+    core:
+      start.core && end.core
+        ? {
+            pelvis: {
+              x: lerpNumber(start.core.pelvis.x, end.core.pelvis.x, progress),
+              y: lerpNumber(start.core.pelvis.y, end.core.pelvis.y, progress),
+            },
+            spine: {
+              x: lerpNumber(start.core.spine.x, end.core.spine.x, progress),
+              y: lerpNumber(start.core.spine.y, end.core.spine.y, progress),
+            },
+            chest: {
+              x: lerpNumber(start.core.chest.x, end.core.chest.x, progress),
+              y: lerpNumber(start.core.chest.y, end.core.chest.y, progress),
+            },
+          }
+        : undefined,
     segments: Object.fromEntries(
       segmentNames.map((segmentName) => {
         const startSegment = start.segments[segmentName]
@@ -110,8 +186,21 @@ function applyPoseOverride(
     }
   }
 
+  const core =
+    pose.core && override.segments?.torso
+      ? transformCorePose(
+          pose.core,
+          segments.torso,
+        )
+      : pose.core && {
+          pelvis: { ...pose.core.pelvis },
+          spine: { ...pose.core.spine },
+          chest: { ...pose.core.chest },
+        }
+
   return {
     head: { ...pose.head, ...override.head },
+    core,
     segments,
   }
 }

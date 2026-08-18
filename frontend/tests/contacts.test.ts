@@ -237,3 +237,51 @@ test('grip contacts resolve from hands to targets deterministically', () => {
   ) < 8)
   assert.deepEqual(visual, visualSnapshot)
 })
+
+test('re-authored pose contacts stay aligned with the displayed bodies', () => {
+  for (const positionId of corePositionVisualIds) {
+    const visual = getPositionVisual(positionId)
+    assert.ok(visual)
+    const poses = {
+      playerA: visual.playerAPose,
+      playerB: visual.playerBPose,
+    }
+
+    for (const contact of resolvePositionContacts(visual)) {
+      const geometry = resolveContactPoint(contact, poses, anatomies)
+      assert.ok(
+        Math.hypot(
+          geometry.source.x - geometry.target.x,
+          geometry.source.y - geometry.target.y,
+        ) < 60,
+        contact.id,
+      )
+    }
+  }
+})
+
+test('all re-authored grip overlays finish on their targets', () => {
+  for (const [positionId, gripId] of [
+    ['closed_guard_bottom', 'sleeve_grip'],
+    ['closed_guard_bottom', 'wrist_control'],
+    ['mount_top', 'underhook'],
+  ] as const) {
+    const visual = getPositionVisual(positionId)
+    assert.ok(visual)
+    const resolved = resolveVisualPose(visual, [gripId])
+    assert.equal(resolved.gripContacts.length, 1)
+    const geometry = resolveContactPoint(
+      resolved.gripContacts[0],
+      resolved.poses,
+      anatomies,
+    )
+
+    assert.ok(
+      Math.hypot(
+        geometry.source.x - geometry.target.x,
+        geometry.source.y - geometry.target.y,
+      ) < 3,
+      gripId,
+    )
+  }
+})

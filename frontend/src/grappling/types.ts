@@ -29,8 +29,16 @@ export interface SegmentPose extends PointPose {
   length: number
 }
 
+/** Renderer-facing points derived from the authoritative articulated core. */
+export interface GrapplerCorePose {
+  readonly pelvis: PointPose
+  readonly spine: PointPose
+  readonly chest: PointPose
+}
+
 export interface GrapplerPose {
   head: PointPose
+  core?: GrapplerCorePose
   segments: Record<GrapplerSegmentName, SegmentPose>
 }
 

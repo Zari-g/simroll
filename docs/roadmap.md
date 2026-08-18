@@ -248,6 +248,22 @@ Complete
 10C Status:
 Complete
 
+## 10D — Core Pose Realism
+
+- [x] Re-author Closed Guard, Mount, and Side Control top/bottom figures with
+  clearer pelvis, chest, head, limb, and opponent relationships.
+- [x] Carry resolved pelvis-spine-chest points through the renderer pose and
+  derive a curved anatomy-backed SVG torso silhouette from them.
+- [x] Reuse torso landmarks for Gi and No-Gi apparel while preserving legacy
+  torso chords, contacts, grips, transitions, and targeted occlusion rules.
+- [x] Keep all six authored skeletons inside the default human constraint
+  profile and add focused torso/core geometry coverage.
+- [x] Inspect all three scenes at normal Roll Simulator scale in the running
+  application.
+
+10D Status:
+Complete
+
 Remaining Iteration 10 work will build transition choreography on this safer
 kinematic foundation.
 

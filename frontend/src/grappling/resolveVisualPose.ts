@@ -28,6 +28,11 @@ const segmentNames: readonly GrapplerSegmentName[] = [
 function clonePose(pose: GrapplerPose): GrapplerPose {
   return {
     head: { ...pose.head },
+    core: pose.core && {
+      pelvis: { ...pose.core.pelvis },
+      spine: { ...pose.core.spine },
+      chest: { ...pose.core.chest },
+    },
     segments: Object.fromEntries(
       segmentNames.map((segmentName) => [
         segmentName,

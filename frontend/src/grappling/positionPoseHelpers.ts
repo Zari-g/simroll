@@ -25,6 +25,11 @@ export function createPoseVariant(
       ...basePose.head,
       ...override.head,
     },
+    core: basePose.core && {
+      pelvis: { ...basePose.core.pelvis },
+      spine: { ...basePose.core.spine },
+      chest: { ...basePose.core.chest },
+    },
     segments: Object.fromEntries(
       segmentNames.map((segmentName) => [
         segmentName,
