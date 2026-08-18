@@ -274,6 +274,26 @@ core curvature to the torso renderer; future visuals can migrate gradually.
 Both paths still reach the same grip, contact, interpolation, apparel, and
 rendering contracts, including exact source and destination animation frames.
 
+Transition choreography stays on the same skeleton boundary. Reusable pure
+motion primitives apply pelvis-rooted shifts and local joint rotation deltas to
+intermediate skeleton blends; optional authored local overrides handle the few
+action-specific silhouettes that primitives cannot express cleanly. Generated
+phases are constrained once and cached for each source/destination pose pair,
+then the existing transition interpolator samples those renderer-ready
+keyframes:
+
+```text
+source skeleton
+    -> primitive-driven motion phases + local authored overrides
+    -> constrained skeleton keyframes
+    -> existing eased keyframe interpolation
+    -> renderer
+```
+
+This is authored choreography rather than physics, collision handling, or IK.
+Source and destination frames bypass intermediate generation so their resolved
+poses remain exact, including grip-modified endpoints.
+
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an
 explicit body part before or after another body part when grappling requires an

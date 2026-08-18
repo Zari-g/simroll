@@ -1,3 +1,10 @@
+import type { MotionPrimitive } from './motionPrimitives.ts'
+import type {
+  GrapplerChildJointName,
+  GrapplerSkeletonPose,
+  LocalJointTransform,
+} from './skeleton.ts'
+
 export type GrapplerId = 'playerA' | 'playerB'
 
 export type GrapplerSegmentName =
@@ -115,10 +122,27 @@ export interface GrapplerPoseOverride {
   segments?: SegmentPoseOverrides
 }
 
+export interface SkeletonPoseOverride {
+  readonly root?: {
+    readonly position?: Partial<GrapplerSkeletonPose['root']['position']>
+    readonly rotation?: number
+  }
+  readonly joints?: Partial<
+    Record<GrapplerChildJointName, Partial<LocalJointTransform>>
+  >
+}
+
+export interface TransitionGrapplerChoreography {
+  readonly primitives?: readonly MotionPrimitive[]
+  readonly override?: SkeletonPoseOverride
+}
+
 export interface TransitionVisualKeyframe {
-  progress: number
-  playerA?: GrapplerPoseOverride
-  playerB?: GrapplerPoseOverride
+  readonly progress: number
+  /** Skeleton blend used before primitives; defaults to the phase progress. */
+  readonly baseProgress?: number
+  readonly playerA?: TransitionGrapplerChoreography
+  readonly playerB?: TransitionGrapplerChoreography
 }
 
 export interface TransitionVisualDefinition {

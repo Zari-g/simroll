@@ -50,3 +50,22 @@
     - escape
     - mount
   notes: Recovers guard by creating space and trapping a leg.
+
+- id: mount_to_side_control
+  name: Mount to Side Control
+  from_position: mount_top
+  to_position: side_control_top
+  transition_type: pass
+  required_grips:
+    - underhook
+  created_grips:
+    - underhook
+  removed_grips: []
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: beginner
+  tags:
+    - mount
+    - side_control
+    - transition
+  notes: Posts, shifts weight, and pummels the near knee through to settle in side control.
