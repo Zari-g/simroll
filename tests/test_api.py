@@ -100,6 +100,7 @@ def test_transitions_returns_default_models_in_id_order() -> None:
         "elbow_escape",
         "flower_sweep",
         "hip_bump_sweep",
+        "mount_to_side_control",
     ]
 
 

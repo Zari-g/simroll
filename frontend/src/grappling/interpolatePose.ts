@@ -1,12 +1,19 @@
 import type {
-  GrapplerCorePose,
+  GrapplerChildJointName,
+  GrapplerSkeletonPose,
+  LocalJointTransform,
+} from './skeleton.ts'
+import type {
   GrapplerId,
   GrapplerPose,
-  GrapplerPoseOverride,
   GrapplerSegmentName,
-  SegmentPose,
+  SkeletonPoseOverride,
+  TransitionGrapplerChoreography,
   TransitionVisualDefinition,
 } from './types'
+import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
+import { composeMotionPrimitives } from './motionPrimitives.ts'
+import { constrainSkeletonPose } from './poseValidation.ts'
 
 export type GrapplerPosePair = Record<GrapplerId, GrapplerPose>
 
@@ -61,58 +68,6 @@ function cloneGrapplerPose(pose: GrapplerPose): GrapplerPose {
   }
 }
 
-function transformCorePoint(
-  point: GrapplerCorePose['pelvis'],
-  from: SegmentPose,
-  to: SegmentPose,
-) {
-  const fromRadians = (-from.rotation * Math.PI) / 180
-  const x = point.x - from.x
-  const y = point.y - from.y
-  const localX = x * Math.cos(fromRadians) - y * Math.sin(fromRadians)
-  const localY = x * Math.sin(fromRadians) + y * Math.cos(fromRadians)
-  const scale = to.length / from.length
-  const toRadians = (to.rotation * Math.PI) / 180
-
-  return {
-    x:
-      to.x +
-      localX * scale * Math.cos(toRadians) -
-      localY * scale * Math.sin(toRadians),
-    y:
-      to.y +
-      localX * scale * Math.sin(toRadians) +
-      localY * scale * Math.cos(toRadians),
-  }
-}
-
-function transformCorePose(
-  core: GrapplerCorePose,
-  to: SegmentPose,
-): GrapplerCorePose {
-  const from = {
-    x: core.pelvis.x,
-    y: core.pelvis.y,
-    rotation:
-      (Math.atan2(
-        core.chest.y - core.pelvis.y,
-        core.chest.x - core.pelvis.x,
-      ) *
-        180) /
-      Math.PI,
-    length: Math.hypot(
-      core.chest.x - core.pelvis.x,
-      core.chest.y - core.pelvis.y,
-    ),
-  }
-
-  return {
-    pelvis: transformCorePoint(core.pelvis, from, to),
-    spine: transformCorePoint(core.spine, from, to),
-    chest: transformCorePoint(core.chest, from, to),
-  }
-}
-
 export function interpolateGrapplerPose(
   start: GrapplerPose,
   end: GrapplerPose,
@@ -121,29 +76,7 @@ export function interpolateGrapplerPose(
   if (progress <= 0) return cloneGrapplerPose(start)
   if (progress >= 1) return cloneGrapplerPose(end)
 
-  return {
-    head: {
-      x: lerpNumber(start.head.x, end.head.x, progress),
-      y: lerpNumber(start.head.y, end.head.y, progress),
-    },
-    core:
-      start.core && end.core
-        ? {
-            pelvis: {
-              x: lerpNumber(start.core.pelvis.x, end.core.pelvis.x, progress),
-              y: lerpNumber(start.core.pelvis.y, end.core.pelvis.y, progress),
-            },
-            spine: {
-              x: lerpNumber(start.core.spine.x, end.core.spine.x, progress),
-              y: lerpNumber(start.core.spine.y, end.core.spine.y, progress),
-            },
-            chest: {
-              x: lerpNumber(start.core.chest.x, end.core.chest.x, progress),
-              y: lerpNumber(start.core.chest.y, end.core.chest.y, progress),
-            },
-          }
-        : undefined,
-    segments: Object.fromEntries(
+  const segments = Object.fromEntries(
       segmentNames.map((segmentName) => {
         const startSegment = start.segments[segmentName]
         const endSegment = end.segments[segmentName]
@@ -165,63 +98,182 @@ export function interpolateGrapplerPose(
           },
         ]
       }),
-    ) as GrapplerPose['segments'],
-  }
-}
-
-function applyPoseOverride(
-  pose: GrapplerPose,
-  override?: GrapplerPoseOverride,
-): GrapplerPose {
-  if (!override) return pose
-
-  const segments = { ...pose.segments }
-  for (const segmentName of segmentNames) {
-    const segmentOverride = override.segments?.[segmentName]
-    if (segmentOverride) {
-      segments[segmentName] = {
-        ...segments[segmentName],
-        ...segmentOverride,
-      }
-    }
-  }
-
-  const core =
-    pose.core && override.segments?.torso
-      ? transformCorePose(
-          pose.core,
-          segments.torso,
-        )
-      : pose.core && {
-          pelvis: { ...pose.core.pelvis },
-          spine: { ...pose.core.spine },
-          chest: { ...pose.core.chest },
-        }
+    ) as GrapplerPose['segments']
+  const torsoRadians = (segments.torso.rotation * Math.PI) / 180
 
   return {
-    head: { ...pose.head, ...override.head },
-    core,
+    head: {
+      x: lerpNumber(start.head.x, end.head.x, progress),
+      y: lerpNumber(start.head.y, end.head.y, progress),
+    },
+    core:
+      start.core && end.core
+        ? {
+            pelvis: { x: segments.torso.x, y: segments.torso.y },
+            spine: {
+              x: lerpNumber(start.core.spine.x, end.core.spine.x, progress),
+              y: lerpNumber(start.core.spine.y, end.core.spine.y, progress),
+            },
+            chest: {
+              x: segments.torso.x + Math.cos(torsoRadians) * segments.torso.length,
+              y: segments.torso.y + Math.sin(torsoRadians) * segments.torso.length,
+            },
+          }
+        : undefined,
     segments,
   }
 }
 
-function resolveAuthoredKeyframe(
+function interpolateSkeletonPose(
+  start: GrapplerSkeletonPose,
+  end: GrapplerSkeletonPose,
+  progress: number,
+): GrapplerSkeletonPose {
+  return {
+    root: {
+      position: {
+        x: lerpNumber(start.root.position.x, end.root.position.x, progress),
+        y: lerpNumber(start.root.position.y, end.root.position.y, progress),
+      },
+      rotation: interpolateAngle(start.root.rotation, end.root.rotation, progress),
+    },
+    joints: Object.fromEntries(
+      Object.entries(start.joints).map(([name, transform]) => {
+        const jointName = name as GrapplerChildJointName
+        const target = end.joints[jointName]
+        return [
+          jointName,
+          {
+            x: lerpNumber(transform.x, target.x, progress),
+            y: lerpNumber(transform.y, target.y, progress),
+            rotation: interpolateAngle(transform.rotation, target.rotation, progress),
+          },
+        ]
+      }),
+    ) as Record<GrapplerChildJointName, LocalJointTransform>,
+  }
+}
+
+function applySkeletonOverride(
+  pose: GrapplerSkeletonPose,
+  override?: SkeletonPoseOverride,
+): GrapplerSkeletonPose {
+  if (!override) return pose
+  const joints = { ...pose.joints }
+  for (const [name, transform] of Object.entries(override.joints ?? {})) {
+    const jointName = name as GrapplerChildJointName
+    joints[jointName] = { ...joints[jointName], ...transform }
+  }
+  return {
+    root: {
+      position: { ...pose.root.position, ...override.root?.position },
+      rotation: override.root?.rotation ?? pose.root.rotation,
+    },
+    joints,
+  }
+}
+
+function resolveChoreographedSkeleton(
+  start: GrapplerSkeletonPose,
+  end: GrapplerSkeletonPose,
+  baseProgress: number,
+  choreography?: TransitionGrapplerChoreography,
+): GrapplerSkeletonPose {
+  const blended = interpolateSkeletonPose(start, end, baseProgress)
+  const moved = composeMotionPrimitives(blended, choreography?.primitives ?? [])
+  return constrainSkeletonPose(applySkeletonOverride(moved, choreography?.override))
+}
+
+interface CompiledTransitionFrame {
+  readonly progress: number
+  readonly poses: GrapplerPosePair
+  readonly skeletons?: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>
+}
+
+const compiledTransitionCache = new WeakMap<
+  TransitionVisualDefinition,
+  WeakMap<GrapplerPosePair, WeakMap<GrapplerPosePair, readonly CompiledTransitionFrame[]>>
+>()
+
+function compileTransitionFrames(
+  definition: TransitionVisualDefinition,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
-  progress: number,
-  playerA?: GrapplerPoseOverride,
-  playerB?: GrapplerPoseOverride,
-): GrapplerPosePair {
-  return {
-    playerA: applyPoseOverride(
-      interpolateGrapplerPose(start.playerA, end.playerA, progress),
-      playerA,
-    ),
-    playerB: applyPoseOverride(
-      interpolateGrapplerPose(start.playerB, end.playerB, progress),
-      playerB,
-    ),
+): readonly CompiledTransitionFrame[] {
+  const startSkeletons = {
+    playerA: grapplerPoseToSkeleton(start.playerA),
+    playerB: grapplerPoseToSkeleton(start.playerB),
   }
+  const endSkeletons = {
+    playerA: grapplerPoseToSkeleton(end.playerA),
+    playerB: grapplerPoseToSkeleton(end.playerB),
+  }
+
+  return [
+    { progress: 0, poses: { playerA: cloneGrapplerPose(start.playerA), playerB: cloneGrapplerPose(start.playerB) } },
+    ...definition.keyframes
+      .filter((phase) => phase.progress > 0 && phase.progress < 1)
+      .map((phase) => {
+        const baseProgress = phase.baseProgress ?? phase.progress
+        const skeletons = {
+          playerA: resolveChoreographedSkeleton(
+            startSkeletons.playerA,
+            endSkeletons.playerA,
+            baseProgress,
+            phase.playerA,
+          ),
+          playerB: resolveChoreographedSkeleton(
+            startSkeletons.playerB,
+            endSkeletons.playerB,
+            baseProgress,
+            phase.playerB,
+          ),
+        }
+        return {
+          progress: phase.progress,
+          skeletons,
+          poses: {
+            playerA: skeletonToGrapplerPose(skeletons.playerA),
+            playerB: skeletonToGrapplerPose(skeletons.playerB),
+          },
+        }
+      }),
+    { progress: 1, poses: { playerA: cloneGrapplerPose(end.playerA), playerB: cloneGrapplerPose(end.playerB) } },
+  ].sort((left, right) => left.progress - right.progress)
+}
+
+function getCompiledTransitionFrames(
+  definition: TransitionVisualDefinition,
+  start: GrapplerPosePair,
+  end: GrapplerPosePair,
+) {
+  let byStart = compiledTransitionCache.get(definition)
+  if (!byStart) {
+    byStart = new WeakMap()
+    compiledTransitionCache.set(definition, byStart)
+  }
+  let byEnd = byStart.get(start)
+  if (!byEnd) {
+    byEnd = new WeakMap()
+    byStart.set(start, byEnd)
+  }
+  let frames = byEnd.get(end)
+  if (!frames) {
+    frames = compileTransitionFrames(definition, start, end)
+    byEnd.set(end, frames)
+  }
+  return frames
+}
+
+/** Authoring/test access to the constrained local skeleton phases. */
+export function resolveTransitionSkeletonKeyframes(
+  definition: TransitionVisualDefinition,
+  start: GrapplerPosePair,
+  end: GrapplerPosePair,
+) {
+  return getCompiledTransitionFrames(definition, start, end)
+    .filter((frame) => frame.skeletons)
+    .map((frame) => ({ progress: frame.progress, skeletons: frame.skeletons! }))
 }
 
 export function resolveTransitionPoses(
@@ -230,25 +282,16 @@ export function resolveTransitionPoses(
   end: GrapplerPosePair,
   progress: number,
 ): GrapplerPosePair {
-  if (progress <= 0) return resolveAuthoredKeyframe(start, end, 0)
-  if (progress >= 1) return resolveAuthoredKeyframe(start, end, 1)
+  if (progress <= 0) return {
+    playerA: cloneGrapplerPose(start.playerA),
+    playerB: cloneGrapplerPose(start.playerB),
+  }
+  if (progress >= 1) return {
+    playerA: cloneGrapplerPose(end.playerA),
+    playerB: cloneGrapplerPose(end.playerB),
+  }
 
-  const frames = [
-    { progress: 0, poses: resolveAuthoredKeyframe(start, end, 0) },
-    ...definition.keyframes
-      .filter((keyframe) => keyframe.progress > 0 && keyframe.progress < 1)
-      .map((keyframe) => ({
-        progress: keyframe.progress,
-        poses: resolveAuthoredKeyframe(
-          start,
-          end,
-          keyframe.progress,
-          keyframe.playerA,
-          keyframe.playerB,
-        ),
-      })),
-    { progress: 1, poses: resolveAuthoredKeyframe(start, end, 1) },
-  ].sort((left, right) => left.progress - right.progress)
+  const frames = getCompiledTransitionFrames(definition, start, end)
 
   const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
   const leftFrame = frames[rightIndex - 1]
