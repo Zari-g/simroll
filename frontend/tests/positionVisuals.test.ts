@@ -52,6 +52,16 @@ function assertFinitePose(pose: GrapplerPose) {
   assert.ok(Number.isFinite(pose.head.x))
   assert.ok(Number.isFinite(pose.head.y))
   assertPointInMat(pose.head)
+  assert.ok(pose.core)
+  for (const point of [
+    pose.core.pelvis,
+    pose.core.spine,
+    pose.core.chest,
+  ]) {
+    assert.ok(Number.isFinite(point.x))
+    assert.ok(Number.isFinite(point.y))
+    assertPointInMat(point)
+  }
 
   assert.deepEqual(Object.keys(pose.segments).sort(), [...segmentNames].sort())
 
@@ -102,7 +112,7 @@ test('all core poses resolve anatomy-backed body geometry', () => {
         const segment = pose.segments[segmentName]
         const segmentAnatomy = resolveSegmentAnatomy(anatomy, segmentName)
         const geometry = segmentName === 'torso'
-          ? createTorsoGeometry(segment, pose.head, anatomy)
+          ? createTorsoGeometry(segment, pose.head, anatomy, pose.core)
           : createTaperedSegmentGeometry(
               segment.length,
               segmentAnatomy.width,
@@ -110,7 +120,10 @@ test('all core poses resolve anatomy-backed body geometry', () => {
             )
 
         assert.equal(geometry.length, segment.length)
-        assert.match(geometry.path, /^M 0 /)
+        assert.match(
+          geometry.path,
+          segmentName === 'torso' ? / Q / : /^M 0 /,
+        )
         assert.match(geometry.path, / Z$/)
       }
     }

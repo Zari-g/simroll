@@ -9,13 +9,18 @@ import {
   createTorsoGeometry,
   type GrapplerBodyPartName,
 } from '../../grappling/bodyGeometry'
-import type { GrapplerPose, SegmentPose } from '../../grappling/types'
+import type {
+  GrapplerCorePose,
+  GrapplerPose,
+  SegmentPose,
+} from '../../grappling/types'
 
 interface SegmentShapeProps {
   name: GrapplerBodyPartName
   pose: SegmentPose
   anatomy: SegmentAnatomy
   head?: GrapplerPose['head']
+  core?: GrapplerCorePose
   grapplerAnatomy?: GrapplerAnatomy
 }
 
@@ -24,11 +29,12 @@ export function SegmentShape({
   pose,
   anatomy,
   head,
+  core,
   grapplerAnatomy,
 }: SegmentShapeProps) {
   const geometry =
     name === 'torso' && head && grapplerAnatomy
-      ? createTorsoGeometry(pose, head, grapplerAnatomy)
+      ? createTorsoGeometry(pose, head, grapplerAnatomy, core)
       : createTaperedSegmentGeometry(
           pose.length,
           anatomy.width,

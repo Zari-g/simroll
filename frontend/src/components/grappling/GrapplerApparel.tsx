@@ -6,9 +6,11 @@ import type { GrapplerAppearance } from '../../grappling/appearance'
 import {
   createTaperedSegmentGeometry,
   createTorsoGeometry,
-  torsoShouldersAreAtStart,
+  type TorsoCrossSection,
+  type TorsoGeometry,
 } from '../../grappling/bodyGeometry'
 import type {
+  GrapplerCorePose,
   GrapplerPose,
   GrapplerSegmentName,
   SegmentPose,
@@ -20,6 +22,7 @@ interface GrapplerApparelProps {
   pose: SegmentPose
   anatomy: SegmentAnatomy
   head?: GrapplerPose['head']
+  core?: GrapplerCorePose
   grapplerAnatomy?: GrapplerAnatomy
 }
 
@@ -27,25 +30,32 @@ function formatSvgNumber(value: number): string {
   return Number(value.toFixed(3)).toString()
 }
 
+function sectionPoint(
+  section: TorsoCrossSection,
+  edge: 'left' | 'right',
+  scale: number,
+) {
+  return {
+    x: section.center.x + (section[edge].x - section.center.x) * scale,
+    y: section.center.y + (section[edge].y - section.center.y) * scale,
+  }
+}
+
+function svgPoint(point: { x: number; y: number }) {
+  return `${formatSvgNumber(point.x)} ${formatSvgNumber(point.y)}`
+}
+
 function GiTorsoDetails({
-  pose,
-  head,
-  anatomy,
+  geometry,
   appearance,
 }: {
-  pose: SegmentPose
-  head: GrapplerPose['head']
-  anatomy: GrapplerAnatomy
+  geometry: TorsoGeometry
   appearance: GrapplerAppearance
 }) {
-  const shouldersAtStart = torsoShouldersAreAtStart(pose, head)
-  const shoulderX = shouldersAtStart ? 0 : pose.length
-  const waistX = shouldersAtStart ? pose.length : 0
-  const direction = shouldersAtStart ? 1 : -1
-  const chestX = shoulderX + direction * pose.length * 0.46
-  const beltX = waistX - direction * pose.length * 0.18
-  const shoulderRadius = anatomy.torso.width / 2
-  const waistRadius = (anatomy.torso.width * anatomy.torso.taper) / 2
+  const leftCollar = sectionPoint(geometry.shoulders, 'left', 0.5)
+  const rightCollar = sectionPoint(geometry.shoulders, 'right', 0.5)
+  const leftWaist = sectionPoint(geometry.waist, 'left', 0.9)
+  const rightWaist = sectionPoint(geometry.waist, 'right', 0.9)
 
   return (
     <>
@@ -53,15 +63,15 @@ function GiTorsoDetails({
         <g className="grappler-apparel__lapels">
           <path
             className="grappler-apparel__left-lapel"
-            d={`M ${shoulderX} -${formatSvgNumber(shoulderRadius * 0.48)} L ${formatSvgNumber(chestX)} 0 L ${formatSvgNumber(beltX)} -${formatSvgNumber(waistRadius * 0.24)}`}
+            d={`M ${svgPoint(sectionPoint(geometry.shoulders, 'left', 0.48))} L ${svgPoint(geometry.midsection.center)} L ${svgPoint(sectionPoint(geometry.waist, 'left', 0.24))}`}
           />
           <path
             className="grappler-apparel__right-lapel"
-            d={`M ${shoulderX} ${formatSvgNumber(shoulderRadius * 0.48)} L ${formatSvgNumber(chestX)} 0 L ${formatSvgNumber(beltX)} ${formatSvgNumber(waistRadius * 0.24)}`}
+            d={`M ${svgPoint(sectionPoint(geometry.shoulders, 'right', 0.48))} L ${svgPoint(geometry.midsection.center)} L ${svgPoint(sectionPoint(geometry.waist, 'right', 0.24))}`}
           />
           <path
             className="grappler-apparel__collar"
-            d={`M ${shoulderX} -${formatSvgNumber(shoulderRadius * 0.5)} Q ${formatSvgNumber(shoulderX + direction * shoulderRadius * 0.28)} 0 ${shoulderX} ${formatSvgNumber(shoulderRadius * 0.5)}`}
+            d={`M ${svgPoint(leftCollar)} Q ${svgPoint(geometry.shoulders.center)} ${svgPoint(rightCollar)}`}
           />
         </g>
       )}
@@ -69,12 +79,12 @@ function GiTorsoDetails({
         <g className="grappler-apparel__belt">
           <path
             className="grappler-apparel__belt-band"
-            d={`M ${formatSvgNumber(beltX)} -${formatSvgNumber(waistRadius * 0.9)} L ${formatSvgNumber(beltX)} ${formatSvgNumber(waistRadius * 0.9)}`}
+            d={`M ${svgPoint(leftWaist)} L ${svgPoint(rightWaist)}`}
           />
           <circle
             className="grappler-apparel__belt-knot"
-            cx={beltX}
-            cy="0"
+            cx={geometry.waist.center.x}
+            cy={geometry.waist.center.y}
             r="5"
           />
         </g>
@@ -89,6 +99,7 @@ function GiApparel({
   pose,
   anatomy,
   head,
+  core,
   grapplerAnatomy,
 }: GrapplerApparelProps) {
   const isTop = appearance.topSegments.includes(name)
@@ -100,7 +111,7 @@ function GiApparel({
 
   const geometry =
     name === 'torso' && head && grapplerAnatomy
-      ? createTorsoGeometry(pose, head, grapplerAnatomy)
+      ? createTorsoGeometry(pose, head, grapplerAnatomy, core)
       : createTaperedSegmentGeometry(pose.length, anatomy.width, anatomy.taper)
 
   return (
@@ -112,9 +123,7 @@ function GiApparel({
       <path className="grappler-apparel__garment" d={geometry.path} />
       {name === 'torso' && head && grapplerAnatomy && (
         <GiTorsoDetails
-          pose={pose}
-          head={head}
-          anatomy={grapplerAnatomy}
+          geometry={geometry as TorsoGeometry}
           appearance={appearance}
         />
       )}
@@ -140,6 +149,7 @@ function NoGiApparel({
   pose,
   anatomy,
   head,
+  core,
   grapplerAnatomy,
 }: GrapplerApparelProps) {
   const isTop = appearance.topSegments.includes(name)
@@ -152,7 +162,7 @@ function NoGiApparel({
   const apparelLength = isBottom ? pose.length * 0.62 : pose.length
   const geometry =
     name === 'torso' && head && grapplerAnatomy
-      ? createTorsoGeometry(pose, head, grapplerAnatomy)
+      ? createTorsoGeometry(pose, head, grapplerAnatomy, core)
       : createTaperedSegmentGeometry(
           apparelLength,
           anatomy.width,
@@ -169,7 +179,7 @@ function NoGiApparel({
       {name === 'torso' && (
         <path
           className="grappler-apparel__rashguard-panel"
-          d={`M ${formatSvgNumber(pose.length * 0.12)} 0 L ${formatSvgNumber(pose.length * 0.88)} 0`}
+          d={(geometry as TorsoGeometry).centerlinePath}
         />
       )}
       {isBottom && (

@@ -165,7 +165,7 @@ test('validation and correction are immutable and deterministic', () => {
   assert.notEqual(firstCorrection.joints, skeleton.joints)
 })
 
-test('all six migrated 10B figures satisfy the default profile', () => {
+test('all six re-authored core figures satisfy the default profile', () => {
   for (const [label, skeleton] of migratedSkeletons) {
     assert.deepEqual(validateSkeletonPose(skeleton), {
       valid: true,

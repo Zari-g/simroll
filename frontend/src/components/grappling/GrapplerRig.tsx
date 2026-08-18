@@ -63,6 +63,7 @@ export function GrapplerBodyPart({
           pose={pose.segments[bodyPartName]}
           anatomy={segmentAnatomy}
           head={bodyPartName === 'torso' ? pose.head : undefined}
+          core={bodyPartName === 'torso' ? pose.core : undefined}
           grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
         />
         <GrapplerApparel
@@ -71,6 +72,7 @@ export function GrapplerBodyPart({
           pose={pose.segments[bodyPartName]}
           anatomy={segmentAnatomy}
           head={bodyPartName === 'torso' ? pose.head : undefined}
+          core={bodyPartName === 'torso' ? pose.core : undefined}
           grapplerAnatomy={bodyPartName === 'torso' ? anatomy : undefined}
         />
       </>

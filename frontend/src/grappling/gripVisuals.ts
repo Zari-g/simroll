@@ -19,12 +19,12 @@ export const gripVisuals: Readonly<Record<string, GripVisualDefinition>> = {
         appliesTo: 'playerA',
         priority: 10,
         segmentOverrides: {
-          rightUpperArm: { rotation: -122, length: 72 },
+          rightUpperArm: { rotation: -78.599, length: 82 },
           rightForearm: {
-            x: 483.65,
-            y: 232.58,
-            rotation: -150,
-            length: 40,
+            x: 514.212,
+            y: 364.574,
+            rotation: -94.313,
+            length: 82,
           },
         },
         contact: {
@@ -52,12 +52,12 @@ export const gripVisuals: Readonly<Record<string, GripVisualDefinition>> = {
         appliesTo: 'playerA',
         priority: 20,
         segmentOverrides: {
-          leftUpperArm: { rotation: -47, length: 82 },
+          leftUpperArm: { rotation: -90.051, length: 84 },
           leftForearm: {
-            x: 537,
-            y: 250,
-            rotation: -37,
-            length: 53,
+            x: 531.09,
+            y: 338.588,
+            rotation: -76.184,
+            length: 84,
           },
         },
         contact: {
@@ -85,12 +85,12 @@ export const gripVisuals: Readonly<Record<string, GripVisualDefinition>> = {
         appliesTo: 'playerA',
         priority: 30,
         segmentOverrides: {
-          leftUpperArm: { rotation: -164, length: 73 },
+          leftUpperArm: { rotation: -168.933, length: 50 },
           leftForearm: {
-            x: 410,
-            y: 230,
-            rotation: -18,
-            length: 63,
+            x: 464.691,
+            y: 182.535,
+            rotation: 93.619,
+            length: 50,
           },
         },
         contact: {

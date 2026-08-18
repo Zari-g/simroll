@@ -188,6 +188,20 @@ export function skeletonToGrapplerPose(
       x: resolved.joints.head.x,
       y: resolved.joints.head.y,
     },
+    core: {
+      pelvis: {
+        x: resolved.joints.pelvis.x,
+        y: resolved.joints.pelvis.y,
+      },
+      spine: {
+        x: resolved.joints.spine.x,
+        y: resolved.joints.spine.y,
+      },
+      chest: {
+        x: resolved.joints.chest.x,
+        y: resolved.joints.chest.y,
+      },
+    },
     segments: deriveSkeletonSegments(resolved),
   }
 }

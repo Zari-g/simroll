@@ -233,10 +233,14 @@ data.
 
 Authored local skeleton transforms are authoritative. Forward kinematics
 produces world joints, a resolved core description, and renderer-compatible
-`GrapplerPose` segments. The visible torso remains a simple pelvis-to-chest
-chord for compatibility with the existing SVG body path, but that chord and
-all limb segments are derived rather than separately authored. No kinematic
-calculation occurs in React or SVG components.
+`GrapplerPose` segments. `GrapplerPose` also carries optional renderer-facing
+pelvis, spine, and chest points derived from those world joints. The SVG torso
+uses them to build a lightweight curved silhouette with anatomy-driven waist,
+midsection, and shoulder cross-sections; apparel details reuse the same
+landmarks. The pelvis-to-chest chord remains available for legacy poses,
+contacts, and transition compatibility. All visible geometry is derived rather
+than separately authored, and no forward-kinematic calculation occurs in React
+or SVG components.
 
 Before forward kinematics, skeleton-backed poses pass through a reusable local
 constraint boundary:
@@ -260,15 +264,15 @@ Development diagnostics run once when articulated position visuals are created,
 not on animation frames. These ranges are deliberately approximate visual
 guardrails for a 2D grappler, not medical-grade biomechanics or physics.
 
-Iterations 10A and 10B retain an incremental migration boundary. A pure
+Iterations 10A through 10D retain an incremental migration boundary. A pure
 legacy-pose adapter can normalize existing independently positioned segments
 into a connected skeleton, while the anatomy-backed articulated authoring path
 builds new local skeletons directly. A second adapter converts either resolved
 skeleton path to the existing renderer contract. Closed Guard, Mount, and Side
-Control top/bottom figures now use the articulated path; future visuals can
-migrate gradually. Both paths still reach the same grip, contact,
-interpolation, apparel, and rendering contracts, including exact source and
-destination animation frames.
+Control top/bottom figures use the articulated path and expose their resolved
+core curvature to the torso renderer; future visuals can migrate gradually.
+Both paths still reach the same grip, contact, interpolation, apparel, and
+rendering contracts, including exact source and destination animation frames.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an
