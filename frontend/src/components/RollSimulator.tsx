@@ -11,6 +11,7 @@ import {
   displayStateFromResponse,
   resolveGrapplingDisplayState,
 } from '../grappling/displayState'
+import { resolvePositionContacts } from '../grappling/contacts'
 import { getPositionVisual } from '../grappling/positionVisuals'
 import { resolveVisualPose } from '../grappling/resolveVisualPose'
 import { usePoseAnimation } from '../hooks/usePoseAnimation'
@@ -56,12 +57,13 @@ function isAbortError(error: unknown) {
 
 function resolveStateVisual(state: GrapplingStateResponse) {
   const visual = getPositionVisual(state.position_id)
-  return visual
-    ? {
-        displayState: displayStateFromResponse(state),
-        poses: resolveVisualPose(visual, state.active_grips).poses,
-      }
-    : null
+  if (!visual) return null
+  const resolved = resolveVisualPose(visual, state.active_grips)
+  return {
+    displayState: displayStateFromResponse(state),
+    poses: resolved.poses,
+    contacts: [...resolvePositionContacts(visual), ...resolved.gripContacts],
+  }
 }
 
 function statesMatch(
@@ -434,6 +436,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           endPoses: endVisual.poses,
           startState: startVisual.displayState,
           endState: endVisual.displayState,
+          startContacts: startVisual.contacts,
+          endContacts: endVisual.contacts,
         })
       }
 
@@ -523,6 +527,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
               endPoses: endVisual.poses,
               startState: startVisual.displayState,
               endState: endVisual.displayState,
+              startContacts: startVisual.contacts,
+              endContacts: endVisual.contacts,
             })
           }
 
@@ -682,6 +688,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         endPoses: endVisual.poses,
         startState: startVisual.displayState,
         endState: endVisual.displayState,
+        startContacts: startVisual.contacts,
+        endContacts: endVisual.contacts,
       })
     }
 

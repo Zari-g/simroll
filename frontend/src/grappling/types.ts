@@ -89,6 +89,8 @@ export interface GripContact extends GrapplingContactBase {
   type: 'grip'
 }
 
+export type GrapplingContact = PositionContact | GripContact
+
 export interface BodyPartReference {
   grapplerId: GrapplerId
   bodyPart: GrapplerBodyPartName
@@ -148,5 +150,16 @@ export interface TransitionVisualKeyframe {
 export interface TransitionVisualDefinition {
   transitionId: string
   durationMs: number
+  /** Small local phase offsets; positive values lag and negative values lead. */
+  timing?: Readonly<
+    Partial<Record<GrapplerId, Readonly<Partial<Record<MotionTimingGroup, number>>>>>
+  >
   keyframes: readonly TransitionVisualKeyframe[]
+}
+
+export type MotionTimingGroup = 'hips' | 'torso' | 'arms' | 'head'
+
+export interface TransitionContactContext {
+  readonly startContacts: readonly GrapplingContact[]
+  readonly endContacts: readonly GrapplingContact[]
 }

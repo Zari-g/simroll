@@ -4,6 +4,10 @@ export const transitionVisuals: Readonly<Record<string, TransitionVisualDefiniti
   hip_bump_sweep: {
     transitionId: 'hip_bump_sweep',
     durationMs: 1180,
+    timing: {
+      playerA: { hips: -0.05, torso: -0.02, arms: 0.07, head: 0.1 },
+      playerB: { hips: 0.03, torso: 0.06, arms: 0.1, head: 0.12 },
+    },
     keyframes: [
       { progress: 0.24, baseProgress: 0.06, playerA: { primitives: [
         { type: 'sitUp', amount: 30, drive: 16 },
@@ -35,6 +39,10 @@ export const transitionVisuals: Readonly<Record<string, TransitionVisualDefiniti
   flower_sweep: {
     transitionId: 'flower_sweep',
     durationMs: 1320,
+    timing: {
+      playerA: { hips: -0.08, torso: 0.01, arms: 0.07, head: 0.1 },
+      playerB: { hips: 0.04, torso: 0.07, arms: 0.1, head: 0.12 },
+    },
     keyframes: [
       { progress: 0.2, baseProgress: 0.05, playerA: { primitives: [
         { type: 'hipShift', forward: 4, lateral: 12 },
@@ -55,6 +63,10 @@ export const transitionVisuals: Readonly<Record<string, TransitionVisualDefiniti
   elbow_escape: {
     transitionId: 'elbow_escape',
     durationMs: 1450,
+    timing: {
+      playerA: { hips: 0.04, torso: 0.01, arms: 0.07, head: 0.1 },
+      playerB: { hips: -0.07, torso: -0.02, arms: 0.06, head: 0.09 },
+    },
     keyframes: [
       { progress: 0.2, baseProgress: 0.04, playerA: { primitives: [{ type: 'weightShift', forward: 8, lateral: -5, torso: 8 }] }, playerB: { primitives: [
         { type: 'bridge', lift: 16, extension: 15 },
@@ -74,6 +86,10 @@ export const transitionVisuals: Readonly<Record<string, TransitionVisualDefiniti
   mount_to_side_control: {
     transitionId: 'mount_to_side_control',
     durationMs: 1080,
+    timing: {
+      playerA: { hips: -0.05, torso: 0.01, arms: 0.08, head: 0.1 },
+      playerB: { hips: 0.04, torso: 0.07, arms: 0.1, head: 0.12 },
+    },
     keyframes: [
       { progress: 0.25, baseProgress: 0.08, playerA: { primitives: [
         { type: 'postHand', side: 'left', shoulder: 30, elbow: -22 },
