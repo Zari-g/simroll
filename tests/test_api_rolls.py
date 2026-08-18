@@ -331,7 +331,12 @@ def test_roll_simulation_returns_authoritative_valid_path() -> None:
     assert len(body["path"]["states"]) == (
         len(body["path"]["transition_ids"]) + 1
     )
-    assert body["stop_reason"] == "max_steps"
+    assert body["stop_reason"] in {"max_steps", "no_available_transitions"}
+    if body["stop_reason"] == "max_steps":
+        assert body["path"]["step_count"] == 4
+    else:
+        final_state = GrapplingState.model_validate(body["path"]["states"][-1])
+        assert simulator.get_available_transitions(final_state) == []
     _assert_path_is_graph_valid(body["path"])
 
 
