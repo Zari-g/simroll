@@ -14,6 +14,11 @@ import type {
 import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
 import { composeMotionPrimitives } from './motionPrimitives.ts'
 import { constrainSkeletonPose } from './poseValidation.ts'
+import {
+  correctSkeletonContacts,
+  type ContactCorrectionTarget,
+} from './contactCorrection.ts'
+import type { MotionTimingGroup, TransitionContactContext } from './types.ts'
 
 export type GrapplerPosePair = Record<GrapplerId, GrapplerPose>
 
@@ -154,6 +159,58 @@ function interpolateSkeletonPose(
   }
 }
 
+/** Offset a phase without changing its exact local endpoints. */
+export function offsetPhaseProgress(progress: number, offset = 0) {
+  const clampedProgress = Math.max(0, Math.min(1, progress))
+  const clampedOffset = Math.max(-0.35, Math.min(0.35, offset))
+  if (clampedProgress === 0 || clampedProgress === 1 || clampedOffset === 0) {
+    return clampedProgress
+  }
+  return clampedOffset > 0
+    ? Math.max(0, (clampedProgress - clampedOffset) / (1 - clampedOffset))
+    : Math.min(1, clampedProgress / (1 + clampedOffset))
+}
+
+const jointTimingGroups: Readonly<Record<GrapplerChildJointName, MotionTimingGroup>> = {
+  spine: 'torso', chest: 'torso', neck: 'head', head: 'head',
+  leftShoulder: 'arms', leftElbow: 'arms', leftWrist: 'arms',
+  rightShoulder: 'arms', rightElbow: 'arms', rightWrist: 'arms',
+  leftHip: 'hips', leftKnee: 'hips', leftAnkle: 'hips',
+  rightHip: 'hips', rightKnee: 'hips', rightAnkle: 'hips',
+}
+
+function interpolateTimedSkeletonPose(
+  start: GrapplerSkeletonPose,
+  end: GrapplerSkeletonPose,
+  progress: number,
+  timing: Readonly<Partial<Record<MotionTimingGroup, number>>> = {},
+): GrapplerSkeletonPose {
+  const groupProgress = (group: MotionTimingGroup) =>
+    easeInOutCubic(offsetPhaseProgress(progress, timing[group]))
+  const rootProgress = groupProgress('hips')
+  return constrainSkeletonPose({
+    root: {
+      position: {
+        x: lerpNumber(start.root.position.x, end.root.position.x, rootProgress),
+        y: lerpNumber(start.root.position.y, end.root.position.y, rootProgress),
+      },
+      rotation: interpolateAngle(start.root.rotation, end.root.rotation, rootProgress),
+    },
+    joints: Object.fromEntries(
+      Object.entries(start.joints).map(([name, transform]) => {
+        const jointName = name as GrapplerChildJointName
+        const target = end.joints[jointName]
+        const jointProgress = groupProgress(jointTimingGroups[jointName])
+        return [jointName, {
+          x: lerpNumber(transform.x, target.x, jointProgress),
+          y: lerpNumber(transform.y, target.y, jointProgress),
+          rotation: interpolateAngle(transform.rotation, target.rotation, jointProgress),
+        }]
+      }),
+    ) as Record<GrapplerChildJointName, LocalJointTransform>,
+  })
+}
+
 function applySkeletonOverride(
   pose: GrapplerSkeletonPose,
   override?: SkeletonPoseOverride,
@@ -187,18 +244,36 @@ function resolveChoreographedSkeleton(
 interface CompiledTransitionFrame {
   readonly progress: number
   readonly poses: GrapplerPosePair
-  readonly skeletons?: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>
+  readonly skeletons: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>
 }
 
 const compiledTransitionCache = new WeakMap<
   TransitionVisualDefinition,
-  WeakMap<GrapplerPosePair, WeakMap<GrapplerPosePair, readonly CompiledTransitionFrame[]>>
+  WeakMap<GrapplerPosePair, WeakMap<GrapplerPosePair, WeakMap<TransitionContactContext, readonly CompiledTransitionFrame[]>>>
 >()
+
+const emptyContactContext: TransitionContactContext = {
+  startContacts: [],
+  endContacts: [],
+}
+
+function contactTargets(
+  context: TransitionContactContext,
+  baseProgress: number,
+): readonly ContactCorrectionTarget[] {
+  const sourceStrength = Math.max(0, Math.min(1, 1 - baseProgress / 0.72))
+  const destinationStrength = Math.max(0, Math.min(1, (baseProgress - 0.28) / 0.72))
+  return [
+    ...context.startContacts.map((contact) => ({ contact, strength: sourceStrength })),
+    ...context.endContacts.map((contact) => ({ contact, strength: destinationStrength })),
+  ]
+}
 
 function compileTransitionFrames(
   definition: TransitionVisualDefinition,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
+  contactContext: TransitionContactContext,
 ): readonly CompiledTransitionFrame[] {
   const startSkeletons = {
     playerA: grapplerPoseToSkeleton(start.playerA),
@@ -210,12 +285,12 @@ function compileTransitionFrames(
   }
 
   return [
-    { progress: 0, poses: { playerA: cloneGrapplerPose(start.playerA), playerB: cloneGrapplerPose(start.playerB) } },
+    { progress: 0, skeletons: startSkeletons, poses: { playerA: cloneGrapplerPose(start.playerA), playerB: cloneGrapplerPose(start.playerB) } },
     ...definition.keyframes
       .filter((phase) => phase.progress > 0 && phase.progress < 1)
       .map((phase) => {
         const baseProgress = phase.baseProgress ?? phase.progress
-        const skeletons = {
+        const constrainedSkeletons = {
           playerA: resolveChoreographedSkeleton(
             startSkeletons.playerA,
             endSkeletons.playerA,
@@ -229,6 +304,10 @@ function compileTransitionFrames(
             phase.playerB,
           ),
         }
+        const skeletons = correctSkeletonContacts(
+          constrainedSkeletons,
+          contactTargets(contactContext, baseProgress),
+        )
         return {
           progress: phase.progress,
           skeletons,
@@ -238,7 +317,7 @@ function compileTransitionFrames(
           },
         }
       }),
-    { progress: 1, poses: { playerA: cloneGrapplerPose(end.playerA), playerB: cloneGrapplerPose(end.playerB) } },
+    { progress: 1, skeletons: endSkeletons, poses: { playerA: cloneGrapplerPose(end.playerA), playerB: cloneGrapplerPose(end.playerB) } },
   ].sort((left, right) => left.progress - right.progress)
 }
 
@@ -246,6 +325,7 @@ function getCompiledTransitionFrames(
   definition: TransitionVisualDefinition,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
+  contactContext: TransitionContactContext = emptyContactContext,
 ) {
   let byStart = compiledTransitionCache.get(definition)
   if (!byStart) {
@@ -257,10 +337,15 @@ function getCompiledTransitionFrames(
     byEnd = new WeakMap()
     byStart.set(start, byEnd)
   }
-  let frames = byEnd.get(end)
+  let byContacts = byEnd.get(end)
+  if (!byContacts) {
+    byContacts = new WeakMap()
+    byEnd.set(end, byContacts)
+  }
+  let frames = byContacts.get(contactContext)
   if (!frames) {
-    frames = compileTransitionFrames(definition, start, end)
-    byEnd.set(end, frames)
+    frames = compileTransitionFrames(definition, start, end, contactContext)
+    byContacts.set(contactContext, frames)
   }
   return frames
 }
@@ -270,10 +355,11 @@ export function resolveTransitionSkeletonKeyframes(
   definition: TransitionVisualDefinition,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
+  contactContext: TransitionContactContext = emptyContactContext,
 ) {
-  return getCompiledTransitionFrames(definition, start, end)
-    .filter((frame) => frame.skeletons)
-    .map((frame) => ({ progress: frame.progress, skeletons: frame.skeletons! }))
+  return getCompiledTransitionFrames(definition, start, end, contactContext)
+    .filter((frame) => frame.progress > 0 && frame.progress < 1)
+    .map((frame) => ({ progress: frame.progress, skeletons: frame.skeletons }))
 }
 
 export function resolveTransitionPoses(
@@ -281,6 +367,7 @@ export function resolveTransitionPoses(
   start: GrapplerPosePair,
   end: GrapplerPosePair,
   progress: number,
+  contactContext: TransitionContactContext = emptyContactContext,
 ): GrapplerPosePair {
   if (progress <= 0) return {
     playerA: cloneGrapplerPose(start.playerA),
@@ -291,26 +378,29 @@ export function resolveTransitionPoses(
     playerB: cloneGrapplerPose(end.playerB),
   }
 
-  const frames = getCompiledTransitionFrames(definition, start, end)
+  const frames = getCompiledTransitionFrames(definition, start, end, contactContext)
 
   const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
   const leftFrame = frames[rightIndex - 1]
   const rightFrame = frames[rightIndex]
-  const localProgress = easeInOutCubic(
-    (progress - leftFrame.progress) /
-      (rightFrame.progress - leftFrame.progress),
+  const localProgress = (progress - leftFrame.progress) /
+    (rightFrame.progress - leftFrame.progress)
+
+  const playerASkeleton = interpolateTimedSkeletonPose(
+    leftFrame.skeletons.playerA,
+    rightFrame.skeletons.playerA,
+    localProgress,
+    definition.timing?.playerA,
+  )
+  const playerBSkeleton = interpolateTimedSkeletonPose(
+    leftFrame.skeletons.playerB,
+    rightFrame.skeletons.playerB,
+    localProgress,
+    definition.timing?.playerB,
   )
 
   return {
-    playerA: interpolateGrapplerPose(
-      leftFrame.poses.playerA,
-      rightFrame.poses.playerA,
-      localProgress,
-    ),
-    playerB: interpolateGrapplerPose(
-      leftFrame.poses.playerB,
-      rightFrame.poses.playerB,
-      localProgress,
-    ),
+    playerA: skeletonToGrapplerPose(playerASkeleton),
+    playerB: skeletonToGrapplerPose(playerBSkeleton),
   }
 }

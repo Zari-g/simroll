@@ -278,21 +278,30 @@ Transition choreography stays on the same skeleton boundary. Reusable pure
 motion primitives apply pelvis-rooted shifts and local joint rotation deltas to
 intermediate skeleton blends; optional authored local overrides handle the few
 action-specific silhouettes that primitives cannot express cleanly. Generated
-phases are constrained once and cached for each source/destination pose pair,
-then the existing transition interpolator samples those renderer-ready
-keyframes:
+phases are constrained, then a lightweight contact pass reuses the position and
+grip contact model to apply capped root-space corrections for the strongest
+anchors. Grip and hook contacts outrank pressure and broad control contacts, and
+only a small number are corrected at once. Per-grappler phase offsets then let
+hips, torso, arms, and head lead or follow by small amounts before the existing
+interpolator produces connected renderer geometry:
 
 ```text
 source skeleton
     -> primitive-driven motion phases + local authored overrides
     -> constrained skeleton keyframes
-    -> existing eased keyframe interpolation
+    -> prioritized contact correction
+    -> grouped timing + eased keyframe interpolation
     -> renderer
 ```
 
-This is authored choreography rather than physics, collision handling, or IK.
-Source and destination frames bypass intermediate generation so their resolved
-poses remain exact, including grip-modified endpoints.
+Contact correction translates a contacted grappler as a bounded whole and does
+not rotate joints, solve limb chains, or attempt to satisfy every declaration.
+It is deterministic and immutable, and preserves already-valid local joint
+constraints. This remains authored choreography rather than physics, collision
+handling, or general IK. Source and destination frames bypass intermediate
+generation so their resolved poses remain exact, including grip-modified
+endpoints. Missing transition choreography still uses the existing safe
+fallback.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an
@@ -309,8 +318,9 @@ position visual + resolved pose + anatomy + appearance
 
 Contacts derive their anchors from the displayed pose, so live transitions,
 Auto Roll steps, and historical replay use the same moving geometry. Transition
-start and end frames use their exact source and destination display states;
-advanced intermediate choreography remains deferred to Iteration 10.
+start and end frames use their exact source and destination display states. The
+same source/destination contact sets feed authored intermediate correction in
+manual steps, Auto Roll, and historical replay.
 
 The static core position registry currently covers all backend position IDs:
 Closed Guard Bottom, Mount Top, and Side Control Top. Closely related positions

@@ -264,11 +264,33 @@ Complete
 10D Status:
 Complete
 
-Remaining Iteration 10 work will build transition choreography on this safer
-kinematic foundation.
+## 10E — Motion Primitives & Authored Choreography
+
+- [x] Add reusable immutable grappling motion primitives at the local skeleton
+  boundary.
+- [x] Author transition-specific phases for all four transitions in the current
+  graph while preserving exact endpoints and the safe unsupported fallback.
+- [x] Keep generated phases inside the existing joint constraint profile.
+
+10E Status:
+Complete
+
+## 10F — Contact-Aware Motion & Animation Polish
+
+- [x] Reuse position and grip contacts for deterministic, bounded correction of
+  the highest-value anchors after keyframe constraints.
+- [x] Add per-grappler timing offsets for hips, torso, arms, and head plus
+  restrained anticipation, weight shift, follow-through, and settling.
+- [x] Improve the full current transition set across guard reversals, mount
+  escape, and the mount-to-side-control pass without changing playback.
+- [x] Verify manual stepping, Auto Roll, and history replay visually with stable
+  contacts and no observed snapping or jitter.
+
+10F Status:
+Complete
 
 Iteration 10 Status:
-In Progress
+Complete
 
 ---
 
