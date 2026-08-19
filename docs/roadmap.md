@@ -294,13 +294,44 @@ Complete
 
 ---
 
-# Iteration 11 — Responsive Web & Touch UX
+# Iteration 11 — Curated Dataset Integration
 
 Goal:
-Adapt the desktop simulator for responsive layouts and touch interaction.
+Safely integrate the curated 20-position BJJ MVP through explicit contracts
+before changing runtime grappling behavior.
 
-Status:
+## 11A — Dataset Contract & Import Pipeline
+
+- [x] Stage the authoritative curated JSON and provenance report separately
+  from runtime YAML.
+- [x] Add a strict versioned import-layer Pydantic contract.
+- [x] Generate one deterministic canonical normalized JSON artifact.
+- [x] Validate IDs, references, review queues, exact baseline counts, and graph
+  topology.
+- [x] Preserve the current three-position starter runtime graph.
+
+11A Status:
+Complete
+
+## 11B — Player-Owned Control Architecture
+
+Planned: define player-owned control instances, ownership resolution, and
+control lifecycle semantics without silently relabeling controls across role
+changes.
+
+11B Status:
 Future
+
+## 11C — Expanded Runtime Graph
+
+Planned: adapt the normalized positions and positional transitions into the
+runtime graph after the 11B ownership boundary is complete.
+
+11C Status:
+Future
+
+Iteration 11 Status:
+In progress
 
 ---
 

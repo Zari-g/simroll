@@ -278,6 +278,29 @@ This dataset will be enough to:
 
 The dataset will expand gradually during later iterations.
 
+## 9.1 Curated MVP import boundary
+
+Iteration 11A introduces `simroll_bjj_mvp_v1` without replacing the starter
+YAML. The source JSON is validated through dedicated Pydantic import models and
+normalized into one canonical generated JSON artifact. Original positions and
+transitions remain distinct from five parameterized control-change templates.
+
+This import contract preserves data that current runtime models cannot yet
+represent, including two-player roles, control ownership templates, optional
+and preserved controls, mode classifications, review queues, confidence, and
+source evidence. See `docs/dataset-contract.md` for the complete mapping.
+
+The active runtime remains:
+
+```text
+simroll/data/positions.yaml
+simroll/data/transitions.yaml
+simroll/data/grips.yaml
+```
+
+Player-owned controls are deferred to 11B and full graph replacement is
+deferred to 11C.
+
 ---
 
 # 10. Future Database Possibilities
