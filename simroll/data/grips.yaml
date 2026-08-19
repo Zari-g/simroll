@@ -1,32 +1,387 @@
+- id: ankle_control
+  name: Ankle Control
+  grip_type: limb_control
+  category: limb_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent ankle
+  dominant_hand: either
+  tags:
+  - limb_control
+  player_relationship: owner controls opponent ankle
+  owner_role_constraint: any_engaged_player
+  description: Direct ankle connection used in basic open-guard sweeps and passing.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+- id: arm_isolation
+  name: Arm Isolation
+  grip_type: limb_control
+  category: limb_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner isolates opponent arm
+  dominant_hand: either
+  tags:
+  - limb_control
+  player_relationship: owner isolates opponent arm
+  owner_role_constraint: any_engaged_player
+  description: Outcome-level arm isolation for kimura, Americana, armbar, triangle and gift-wrap entries; not a specific grip shape.
+  confidence: high
+  evidence_basis: submission mechanics sourced; representation normalized
+  source_ids:
+  - GU_FOUNDATIONS
+  - IBJJF_SUBS
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: belt_grip
+  name: Belt Grip
+  grip_type: garment_grip
+  category: garment_grip
+  gi_allowed: true
+  no_gi_allowed: false
+  gi_required: true
+  control_target: owner grips opponent belt
+  dominant_hand: either
+  tags:
+  - garment_grip
+  player_relationship: owner grips opponent belt
+  owner_role_constraint: any_engaged_player
+  description: Canonical external belt grip; fingers-inside and other detailed foul checks remain rules-engine concerns.
+  confidence: medium
+  evidence_basis: garment existence sourced; semantic collapse is conventional
+  source_ids:
+  - IBJJF_RULES
+  - IBJJF_UNIFORM
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/books-videos
+  - https://ibjjf.com/uniform
+- id: body_lock
+  name: Body Lock
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner encircles opponent torso
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner encircles opponent torso
+  owner_role_constraint: any_engaged_player
+  description: Torso-closing connection; hand-clasp type and high/low placement are omitted.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: collar_grip
+  name: Collar Grip
+  grip_type: garment_grip
+  category: garment_grip
+  gi_allowed: true
+  no_gi_allowed: false
+  gi_required: true
+  control_target: owner grips opponent Gi collar
+  dominant_hand: either
+  tags:
+  - garment_grip
+  player_relationship: owner grips opponent Gi collar
+  owner_role_constraint: any_engaged_player
+  description: Canonical grip on the opponent's Gi collar; collar height and hand orientation are deliberately omitted.
+  confidence: high
+  evidence_basis: sourced garment plus SimRoll collapse
+  source_ids:
+  - IBJJF_GI_EXAMPLE
+  - IBJJF_UNIFORM
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+  - https://ibjjf.com/uniform
+- id: crossface
+  name: Crossface
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent head/shoulder alignment
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner controls opponent head/shoulder alignment
+  owner_role_constraint: top_or_controller_or_headlock_attacker
+  description: Head-and-shoulder turning pressure used by a top/controller role.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - GU_HALF_GUARD
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/__FriendlyUrls_SwitchView?ReturnUrl=%2FPages%2FPublic%2Flesson%3Fenc%3D8ytnsPgRRcZ%252F8EPpLmCg0bwPL4EmLEAnhDVLS41Ffdo%253D
+- id: head_and_arm_control
+  name: Head-and-Arm Control
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent head plus one arm
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner controls opponent head plus one arm
+  owner_role_constraint: top_or_controller_or_guard_attacker_or_headlock_attacker
+  description: Combined head/arm enclosure for arm-triangle and D'Arce families.
+  confidence: high
+  evidence_basis: submission mechanics sourced; canonicalized control
+  source_ids:
+  - GM
+  - IBJJF_SUBS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+- id: head_control
+  name: Head Control
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent head/neck line
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner controls opponent head/neck line
+  owner_role_constraint: top_or_controller_or_guard_attacker_or_headlock_attacker
+  description: Broad head control for front-headlock and guillotine availability when head-and-arm precision is unnecessary.
+  confidence: high
+  evidence_basis: common BJJ convention plus broad normalization
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: lapel_grip
+  name: Lapel Grip
+  grip_type: garment_grip
+  category: garment_grip
+  gi_allowed: true
+  no_gi_allowed: false
+  gi_required: true
+  control_target: owner grips opponent Gi lapel or skirt
+  dominant_hand: either
+  tags:
+  - garment_grip
+  player_relationship: owner grips opponent Gi lapel or skirt
+  owner_role_constraint: any_engaged_player
+  description: Canonical lapel/skirt grip; lapel-wrapping systems are deferred.
+  confidence: high
+  evidence_basis: sourced garment plus SimRoll normalization
+  source_ids:
+  - IBJJF_UNIFORM
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/uniform
+- id: leg_control
+  name: Leg Control
+  grip_type: limb_control
+  category: limb_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent leg above the ankle
+  dominant_hand: either
+  tags:
+  - limb_control
+  player_relationship: owner controls opponent leg above the ankle
+  owner_role_constraint: any_engaged_player
+  description: Broad leg connection for takedowns and passes when ankle-level precision would be false.
+  confidence: high
+  evidence_basis: common BJJ convention plus conservative normalization
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: overhook
+  name: Overhook
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner's arm controls over opponent arm
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner's arm controls over opponent arm
+  owner_role_constraint: any_engaged_player
+  description: Canonical overhook/whizzer-level control without side or depth detail.
+  confidence: high
+  evidence_basis: common BJJ/wrestling convention
+  source_ids:
+  - GM
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+- id: pants_grip
+  name: Pants Grip
+  grip_type: garment_grip
+  category: garment_grip
+  gi_allowed: true
+  no_gi_allowed: false
+  gi_required: true
+  control_target: owner grips opponent Gi pants material
+  dominant_hand: either
+  tags:
+  - garment_grip
+  player_relationship: owner grips opponent Gi pants material
+  owner_role_constraint: any_engaged_player
+  description: Canonical pants-material grip used chiefly around open-guard passing and sweeping; cuff/inside-grip legality is not encoded here.
+  confidence: high
+  evidence_basis: garment existence sourced; technique applicability normalized
+  source_ids:
+  - IBJJF_RULES
+  - IBJJF_UNIFORM
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/books-videos
+  - https://ibjjf.com/uniform
+- id: seatbelt
+  name: Seatbelt
+  grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent from behind with over-under upper-body connection
+  dominant_hand: either
+  tags:
+  - body_control
+  player_relationship: owner controls opponent from behind with over-under upper-body connection
+  owner_role_constraint: back_controller_or_top_rider
+  description: Canonical back/turtle upper-body control; choking-arm side is omitted.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
 - id: sleeve_grip
   name: Sleeve Grip
-  grip_type: sleeve
+  grip_type: garment_grip
+  category: garment_grip
+  gi_allowed: true
+  no_gi_allowed: false
   gi_required: true
-  control_target: arm
+  control_target: owner grips opponent Gi sleeve
   dominant_hand: either
   tags:
-    - gi
-    - sleeve
-    - arm_control
-
-- id: wrist_control
-  name: Wrist Control
-  grip_type: wrist
+  - garment_grip
+  player_relationship: owner grips opponent Gi sleeve
+  owner_role_constraint: any_engaged_player
+  description: Canonical sleeve-material grip; same-side, cross, pistol and pocket variants are collapsed.
+  confidence: high
+  evidence_basis: sourced garment plus SimRoll collapse
+  source_ids:
+  - IBJJF_GI_EXAMPLE
+  - IBJJF_UNIFORM
+  - SIMROLL
+  source_references:
+  - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+  - https://ibjjf.com/uniform
+- id: two_on_one
+  name: Two-on-One
+  grip_type: limb_control
+  category: limb_control
+  gi_allowed: true
+  no_gi_allowed: true
   gi_required: false
-  control_target: arm
+  control_target: owner uses two arms against one opponent arm
   dominant_hand: either
   tags:
-    - no_gi
-    - wrist
-    - arm_control
-
+  - limb_control
+  player_relationship: owner uses two arms against one opponent arm
+  owner_role_constraint: any_engaged_player
+  description: Canonical two-on-one arm control, including basic arm-drag connections.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
 - id: underhook
   name: Underhook
   grip_type: body_control
+  category: body_control
+  gi_allowed: true
+  no_gi_allowed: true
   gi_required: false
-  control_target: upper_body
+  control_target: owner's arm passes under opponent arm/torso
   dominant_hand: either
   tags:
-    - underhook
-    - upper_body
-    - positional_control
+  - body_control
+  player_relationship: owner's arm passes under opponent arm/torso
+  owner_role_constraint: any_engaged_player
+  description: Canonical underhook; single/double and depth variants are omitted.
+  confidence: high
+  evidence_basis: direct instructional terminology plus normalization
+  source_ids:
+  - GM
+  - GU_HALF_GUARD
+  - GU_UNDERHOOK_PASS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Lesson.aspx?se=293&sh=2088
+  - https://www.gracieuniversity.com/__FriendlyUrls_SwitchView?ReturnUrl=%2FPages%2FPublic%2Flesson%3Fenc%3D8ytnsPgRRcZ%252F8EPpLmCg0bwPL4EmLEAnhDVLS41Ffdo%253D
+- id: wrist_control
+  name: Wrist Control
+  grip_type: limb_control
+  category: limb_control
+  gi_allowed: true
+  no_gi_allowed: true
+  gi_required: false
+  control_target: owner controls opponent wrist
+  dominant_hand: either
+  tags:
+  - limb_control
+  player_relationship: owner controls opponent wrist
+  owner_role_constraint: any_engaged_player
+  description: One-on-one wrist connection without garment dependency.
+  confidence: high
+  evidence_basis: common BJJ convention
+  source_ids:
+  - GM
+  - GU_FOUNDATIONS
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293

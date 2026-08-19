@@ -3,7 +3,7 @@ from collections.abc import Iterable
 import pytest
 
 from simroll.engine import GrapplingGraph, GrapplingPathfinder
-from simroll.engine.control_semantics import starter_controls
+from simroll.engine.control_semantics import owned_controls
 from simroll.models import GrapplingState, Grip, Position, Transition
 
 
@@ -175,7 +175,7 @@ def test_shortest_path_uses_created_grip_for_later_transition() -> None:
 
     assert path is not None
     assert path.transition_ids == ("create_control", "use_control")
-    assert path.states[1].active_controls == starter_controls({"control"})
+    assert path.states[1].active_controls == owned_controls({"control"})
 
 
 def test_shortest_path_distinguishes_same_position_with_different_grips() -> None:
@@ -206,7 +206,7 @@ def test_shortest_path_distinguishes_same_position_with_different_grips() -> Non
     assert path.transition_ids == ("setup", "technique")
     assert path.states[0].position_id == path.states[1].position_id
     assert path.states[0].active_controls == frozenset()
-    assert path.states[1].active_controls == starter_controls({"setup_grip"})
+    assert path.states[1].active_controls == owned_controls({"setup_grip"})
 
 
 def test_shortest_path_respects_gi_and_no_gi_transition_rules() -> None:
@@ -273,7 +273,7 @@ def test_grip_removal_blocks_later_transition() -> None:
     path = GrapplingPathfinder(graph).find_shortest_path(start, "target")
 
     assert path is None
-    assert start.active_controls == starter_controls({"control"})
+    assert start.active_controls == owned_controls({"control"})
 
 
 def test_path_states_exactly_match_graph_transition_execution() -> None:
@@ -574,13 +574,15 @@ def test_default_graph_finds_hip_bump_sweep() -> None:
     start = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_controls=starter_controls(["wrist_control"]),
+        active_controls=owned_controls(["wrist_control"]),
     )
 
     path = GrapplingPathfinder(graph).find_shortest_path(start, "mount_top")
 
     assert path is not None
-    assert path.transition_ids == ("hip_bump_sweep",)
+    assert path.transition_ids == (
+        "closed_guard_bottom_hip_bump_to_mount_top",
+    )
     assert path.final_state.position_id == "mount_top"
 
 
@@ -700,5 +702,5 @@ def _state(
     return GrapplingState(
         position_id=position_id,
         mode=mode,  # type: ignore[arg-type]
-        active_controls=starter_controls(active_control_ids),
+        active_controls=owned_controls(active_control_ids),
     )

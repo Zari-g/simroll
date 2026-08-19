@@ -42,14 +42,16 @@ def test_get_position_returns_correct_position(graph: GrapplingGraph) -> None:
     position = graph.get_position("closed_guard_bottom")
 
     assert position.id == "closed_guard_bottom"
-    assert position.name == "Closed Guard Bottom"
+    assert position.name == "Closed Guard — Player A Bottom"
 
 
 def test_get_transition_returns_correct_transition(graph: GrapplingGraph) -> None:
-    transition = graph.get_transition("flower_sweep")
+    transition = graph.get_transition(
+        "closed_guard_bottom_hip_bump_to_mount_top"
+    )
 
-    assert transition.id == "flower_sweep"
-    assert transition.name == "Flower Sweep"
+    assert transition.id == "closed_guard_bottom_hip_bump_to_mount_top"
+    assert transition.name == "Hip-Bump Sweep to Mount"
 
 
 def test_get_grip_returns_correct_grip(graph: GrapplingGraph) -> None:
@@ -71,9 +73,12 @@ def test_closed_guard_bottom_returns_expected_transitions(
 ) -> None:
     transitions = graph.get_transitions_from("closed_guard_bottom")
 
-    assert [transition.name for transition in transitions] == [
-        "Flower Sweep",
-        "Hip Bump Sweep",
+    assert [transition.id for transition in transitions] == [
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_kimura_submission",
+        "closed_guard_bottom_triangle_submission",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
 
 
@@ -88,7 +93,12 @@ def test_duplicate_destination_positions_are_removed(
 ) -> None:
     reachable_positions = graph.get_reachable_positions("closed_guard_bottom")
 
-    assert [position.id for position in reachable_positions] == ["mount_top"]
+    assert [position.id for position in reachable_positions] == [
+        "back_control_top",
+        "mount_top",
+        "submission_terminal",
+        "open_guard_bottom",
+    ]
 
 
 @pytest.mark.parametrize("method_name", ["get_transitions_from", "get_reachable_positions"])
@@ -121,7 +131,7 @@ def test_unknown_grip_id_raises_clear_key_error(graph: GrapplingGraph) -> None:
 def test_valid_position_without_outgoing_transitions_returns_empty_list(
     graph: GrapplingGraph,
 ) -> None:
-    assert graph.get_transitions_from("side_control_top") == []
+    assert graph.get_transitions_from("submission_terminal") == []
 
 
 def test_graph_accepts_valid_grip_definitions() -> None:

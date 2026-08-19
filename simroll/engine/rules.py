@@ -2,7 +2,7 @@
 
 from collections.abc import Collection
 
-from simroll.engine.control_semantics import starter_controls
+from simroll.engine.control_semantics import owned_controls, requirements_are_satisfied
 from simroll.models import ActiveControl, GrapplingMode, Transition
 from simroll.models.state import validate_grappling_mode
 
@@ -23,8 +23,12 @@ def is_transition_available(
     mode: GrapplingMode,
     active_controls: Collection[ActiveControl],
 ) -> bool:
-    """Return whether a transition's starter controls are owned and active."""
+    """Return whether mode and owned-control requirements are satisfied."""
 
-    return is_transition_allowed_in_mode(
-        transition, mode
-    ) and starter_controls(transition.required_grips).issubset(active_controls)
+    if not is_transition_allowed_in_mode(transition, mode):
+        return False
+    if transition.required_controls:
+        return requirements_are_satisfied(
+            transition.required_controls, mode, active_controls
+        )
+    return owned_controls(transition.required_grips).issubset(active_controls)

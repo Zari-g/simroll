@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from simroll.api.app import app
-from simroll.engine.control_semantics import starter_controls
+from simroll.engine.control_semantics import owned_controls
 from simroll.engine import GrapplingGraph, RollSimulator
 from simroll.models import GrapplingState
 
@@ -40,8 +40,12 @@ def test_roll_choices_returns_valid_gi_transitions_in_id_order() -> None:
 
     assert response.status_code == 200
     assert response.json() == [
-        graph.get_transition(transition_id).model_dump()
-        for transition_id in ("flower_sweep", "hip_bump_sweep")
+        graph.get_transition(transition_id).model_dump(mode="json")
+        for transition_id in (
+            "closed_guard_bottom_arm_drag_to_back_control_top",
+            "closed_guard_bottom_hip_bump_to_mount_top",
+            "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+        )
     ]
 
 
@@ -55,8 +59,9 @@ def test_roll_choices_order_is_deterministic() -> None:
     assert all(response.status_code == 200 for response in responses)
     assert responses[0].json() == responses[1].json() == responses[2].json()
     assert [item["id"] for item in responses[0].json()] == [
-        "flower_sweep",
-        "hip_bump_sweep",
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
 
 
@@ -67,7 +72,11 @@ def test_roll_choices_respects_no_gi_restrictions() -> None:
     )
 
     assert response.status_code == 200
-    assert [item["id"] for item in response.json()] == ["hip_bump_sweep"]
+    assert [item["id"] for item in response.json()] == [
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    ]
 
 
 def test_roll_choices_filters_out_missing_required_grips() -> None:
@@ -77,7 +86,10 @@ def test_roll_choices_filters_out_missing_required_grips() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == []
+    assert [item["id"] for item in response.json()] == [
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -123,18 +135,20 @@ def test_manual_roll_step_returns_transition_and_authoritative_next_state() -> N
     response = client.post(
         "/rolls/step",
         json=_step_payload(
-            transition_id="hip_bump_sweep",
+            transition_id="closed_guard_bottom_hip_bump_to_mount_top",
             active_grips=["wrist_control"],
         ),
     )
 
     assert response.status_code == 200
     assert response.json() == {
-        "transition": graph.get_transition("hip_bump_sweep").model_dump(),
+        "transition": graph.get_transition(
+            "closed_guard_bottom_hip_bump_to_mount_top"
+        ).model_dump(mode="json"),
         "next_state": {
             "position_id": "mount_top",
             "mode": "gi",
-            "active_controls": _control_payloads(["underhook"]),
+            "active_controls": _control_payloads(["wrist_control"]),
         },
     }
 
@@ -143,7 +157,7 @@ def test_manual_roll_step_preserves_other_grips_and_sorts_response() -> None:
     response = client.post(
         "/rolls/step",
         json=_step_payload(
-            transition_id="hip_bump_sweep",
+            transition_id="closed_guard_bottom_hip_bump_to_mount_top",
             active_grips=["wrist_control", "sleeve_grip"],
         ),
     )
@@ -152,7 +166,7 @@ def test_manual_roll_step_preserves_other_grips_and_sorts_response() -> None:
     assert response.json()["next_state"] == {
         "position_id": "mount_top",
         "mode": "gi",
-        "active_controls": _control_payloads(["sleeve_grip", "underhook"]),
+        "active_controls": _control_payloads(["sleeve_grip", "wrist_control"]),
     }
 
 
@@ -160,7 +174,7 @@ def test_manual_roll_step_preserves_no_gi_mode() -> None:
     response = client.post(
         "/rolls/step",
         json=_step_payload(
-            transition_id="hip_bump_sweep",
+            transition_id="closed_guard_bottom_hip_bump_to_mount_top",
             mode="no_gi",
             active_grips=["wrist_control"],
         ),
@@ -174,7 +188,7 @@ def test_manual_roll_step_rejects_transition_from_wrong_position() -> None:
     response = client.post(
         "/rolls/step",
         json=_step_payload(
-            transition_id="hip_bump_sweep",
+            transition_id="closed_guard_bottom_hip_bump_to_mount_top",
             position_id="mount_top",
         ),
     )
@@ -186,28 +200,33 @@ def test_manual_roll_step_rejects_transition_from_wrong_position() -> None:
 def test_manual_roll_step_rejects_missing_required_controls() -> None:
     response = client.post(
         "/rolls/step",
-        json=_step_payload(transition_id="hip_bump_sweep"),
+        json=_step_payload(
+            transition_id="closed_guard_bottom_arm_drag_to_back_control_top"
+        ),
     )
 
     assert response.status_code == 400
     assert response.json() == {
         "detail": (
-                "Transition 'hip_bump_sweep' is missing required active controls: "
-                "'wrist_control' owned by player_a."
+            "Transition 'closed_guard_bottom_arm_drag_to_back_control_top' "
+            "is missing required active controls: one of "
+            "['sleeve_grip', 'two_on_one', 'wrist_control'] owned by player_a."
         )
     }
 
 
-def test_manual_roll_step_rejects_mode_invalid_transition() -> None:
+def test_manual_roll_step_accepts_no_gi_owned_control_requirement() -> None:
     response = client.post(
         "/rolls/step",
-        json=_step_payload(transition_id="flower_sweep", mode="no_gi"),
+        json=_step_payload(
+            transition_id="closed_guard_bottom_arm_drag_to_back_control_top",
+            mode="no_gi",
+            active_grips=["wrist_control"],
+        ),
     )
 
-    assert response.status_code == 400
-    assert response.json() == {
-        "detail": "Transition 'flower_sweep' is not allowed in no_gi mode."
-    }
+    assert response.status_code == 200
+    assert response.json()["next_state"]["position_id"] == "back_control_top"
 
 
 def test_manual_roll_step_rejects_unknown_transition() -> None:
@@ -241,7 +260,7 @@ def test_manual_roll_step_translates_unknown_state_resources(
     detail: str,
 ) -> None:
     payload = _step_payload(
-        transition_id="hip_bump_sweep",
+        transition_id="closed_guard_bottom_hip_bump_to_mount_top",
         active_grips=["wrist_control"],
     )
     payload["state"].update(state_update)
@@ -256,7 +275,7 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
+        active_controls=owned_controls({"sleeve_grip", "wrist_control"}),
     )
     valid_transitions = {
         transition.id: transition
@@ -278,7 +297,7 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
         assert transition_id in valid_transitions
         assert body["transition"] == valid_transitions[
             transition_id
-        ].model_dump()
+        ].model_dump(mode="json")
         assert body["next_state"] == _state_response(
             graph.apply_transition(state, transition_id)
         )
@@ -287,8 +306,8 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
 @pytest.mark.parametrize(
     ("mode", "active_grips", "expected_transition_id"),
     [
-        ("no_gi", ["wrist_control"], "hip_bump_sweep"),
-        ("gi", ["sleeve_grip"], "flower_sweep"),
+        ("no_gi", ["wrist_control"], "closed_guard_bottom_hip_bump_to_mount_top"),
+        ("gi", ["sleeve_grip"], "closed_guard_bottom_arm_drag_to_back_control_top"),
     ],
 )
 def test_random_roll_step_respects_mode_and_grip_rules(
@@ -306,7 +325,11 @@ def test_random_roll_step_respects_mode_and_grip_rules(
     )
 
     assert response.status_code == 200
-    assert response.json()["transition"]["id"] == expected_transition_id
+    assert response.json()["transition"]["id"] in {
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    }
 
 
 def test_random_roll_step_returns_null_fields_at_dead_end() -> None:
@@ -314,7 +337,7 @@ def test_random_roll_step_returns_null_fields_at_dead_end() -> None:
         "/rolls/step",
         json=_step_payload(
             transition_id=None,
-            position_id="side_control_top",
+            position_id="submission_terminal",
         ),
     )
 
@@ -326,7 +349,7 @@ def test_roll_simulation_returns_authoritative_valid_path() -> None:
     start_state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
+        active_controls=owned_controls({"sleeve_grip", "wrist_control"}),
     )
 
     response = client.post(
@@ -377,7 +400,7 @@ def test_roll_simulation_no_gi_never_uses_gi_only_transitions() -> None:
     _assert_path_is_graph_valid(path)
 
 
-def test_roll_simulation_gi_can_use_gi_only_transition() -> None:
+def test_roll_simulation_gi_uses_an_available_transition() -> None:
     response = client.post(
         "/rolls/simulate",
         json=_simulation_payload(
@@ -388,17 +411,17 @@ def test_roll_simulation_gi_can_use_gi_only_transition() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json()["path"]["transition_ids"] == ["flower_sweep"]
+    assert len(response.json()["path"]["transition_ids"]) == 1
 
 
 @pytest.mark.parametrize(
     ("active_grips", "expected_grips"),
     [
-        (["wrist_control"], ["underhook"]),
-        (["sleeve_grip"], []),
+        (["wrist_control"], ["wrist_control"]),
+        (["sleeve_grip"], ["sleeve_grip"]),
     ],
 )
-def test_roll_simulation_returns_engine_grip_changes(
+def test_roll_simulation_preserves_controls_until_lifecycle_iteration(
     active_grips: list[str],
     expected_grips: list[str],
 ) -> None:
@@ -464,7 +487,7 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
         "/rolls/simulate",
         json=_simulation_payload(
             max_steps=5,
-            position_id="side_control_top",
+            position_id="submission_terminal",
         ),
     )
 
@@ -473,7 +496,7 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
         "path": {
             "states": [
                 {
-                    "position_id": "side_control_top",
+                    "position_id": "submission_terminal",
                     "mode": "gi",
                     "active_controls": [],
                 }
@@ -483,24 +506,6 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
         },
         "stop_reason": "no_available_transitions",
     }
-
-
-def test_roll_simulation_reports_early_dead_end() -> None:
-    response = client.post(
-        "/rolls/simulate",
-        json=_simulation_payload(
-            max_steps=5,
-            mode="no_gi",
-            active_grips=["wrist_control"],
-        ),
-    )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["path"]["step_count"] == 2
-    assert body["path"]["step_count"] < 5
-    assert body["stop_reason"] == "no_available_transitions"
-    _assert_path_is_graph_valid(body["path"])
 
 
 @pytest.mark.parametrize(

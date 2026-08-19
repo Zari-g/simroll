@@ -261,13 +261,13 @@ def test_committed_artifact_matches_importer(tmp_path: Path) -> None:
     load_normalized_dataset(NORMALIZED_PATH)
 
 
-def test_starter_runtime_graph_remains_active() -> None:
+def test_normalized_mvp_runtime_graph_is_active() -> None:
     graph = GrapplingGraph.from_default_data()
 
-    assert len(graph.positions) == 3
-    assert len(graph.transitions) == 4
-    assert len(graph.grips) == 3
-    assert "submission_terminal" not in graph.positions
+    assert len(graph.positions) == 20
+    assert len(graph.transitions) == 65
+    assert len(graph.grips) == 17
+    assert "submission_terminal" in graph.positions
 
 
 def _raw_source() -> dict[str, object]:

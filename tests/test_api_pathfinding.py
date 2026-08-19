@@ -40,8 +40,9 @@ def test_available_transitions_returns_valid_gi_transitions_in_id_order() -> Non
 
     assert response.status_code == 200
     assert [transition["id"] for transition in response.json()] == [
-        "flower_sweep",
-        "hip_bump_sweep",
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
 
 
@@ -57,7 +58,9 @@ def test_available_transitions_respects_no_gi_mode() -> None:
 
     assert response.status_code == 200
     assert [transition["id"] for transition in response.json()] == [
-        "hip_bump_sweep"
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
 
 
@@ -72,7 +75,10 @@ def test_available_transitions_omits_transition_without_required_grip() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == []
+    assert [transition["id"] for transition in response.json()] == [
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    ]
 
 
 def test_available_transitions_rejects_unknown_position() -> None:
@@ -138,8 +144,9 @@ def test_available_transitions_are_deterministic_and_ignore_duplicate_grips() ->
     assert all(response.status_code == 200 for response in responses)
     assert responses[0].json() == responses[1].json() == responses[2].json()
     assert [transition["id"] for transition in responses[0].json()] == [
-        "flower_sweep",
-        "hip_bump_sweep",
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
 
 
@@ -168,10 +175,12 @@ def test_shortest_path_returns_direct_default_path() -> None:
                 {
                     "position_id": "mount_top",
                     "mode": "gi",
-                    "active_controls": _controls("underhook"),
+                    "active_controls": _controls("wrist_control"),
                 },
             ],
-            "transition_ids": ["hip_bump_sweep"],
+            "transition_ids": [
+                "closed_guard_bottom_hip_bump_to_mount_top"
+            ],
             "step_count": 1,
         }
     }

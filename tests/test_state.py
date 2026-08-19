@@ -120,13 +120,13 @@ def test_apply_transition_updates_position_and_controls_without_mutation(
         mode="gi",
         active_controls=input_controls,
     )
-    original_transition = graph.get_transition("hip_bump_sweep").model_dump()
+    original_transition = graph.get_transition("closed_guard_bottom_hip_bump_to_mount_top").model_dump()
 
-    result = graph.apply_transition(state, "hip_bump_sweep")
+    result = graph.apply_transition(state, "closed_guard_bottom_hip_bump_to_mount_top")
 
     assert result.position_id == "mount_top"
     assert result.active_controls == frozenset(
-        {_control("underhook"), _control("sleeve_grip")}
+        {_control("wrist_control"), _control("sleeve_grip")}
     )
     assert result is not state
     assert state.position_id == "closed_guard_bottom"
@@ -135,7 +135,7 @@ def test_apply_transition_updates_position_and_controls_without_mutation(
     )
     assert input_controls == original_input
     assert (
-        graph.get_transition("hip_bump_sweep").model_dump()
+        graph.get_transition("closed_guard_bottom_hip_bump_to_mount_top").model_dump()
         == original_transition
     )
 
@@ -152,11 +152,11 @@ def test_apply_transition_rejects_wrong_starting_position(
     with pytest.raises(
         ValueError,
         match=(
-            "Transition 'flower_sweep' starts at 'closed_guard_bottom', "
+            "Transition 'closed_guard_bottom_arm_drag_to_back_control_top' starts at 'closed_guard_bottom', "
             "but the state is at 'mount_top'"
         ),
     ):
-        graph.apply_transition(state, "flower_sweep")
+        graph.apply_transition(state, "closed_guard_bottom_arm_drag_to_back_control_top")
 
 
 def test_apply_transition_rejects_missing_required_controls(
@@ -167,23 +167,27 @@ def test_apply_transition_rejects_missing_required_controls(
     with pytest.raises(
         ValueError,
         match=(
-            "Transition 'flower_sweep' is missing required active controls: "
-            "'sleeve_grip' owned by player_a"
+            "Transition 'closed_guard_bottom_arm_drag_to_back_control_top' is missing required active controls: "
+                "one of .* owned by player_a"
         ),
     ):
-        graph.apply_transition(state, "flower_sweep")
+        graph.apply_transition(state, "closed_guard_bottom_arm_drag_to_back_control_top")
 
 
-def test_apply_transition_rejects_gi_only_transition_in_no_gi(
+def test_apply_transition_accepts_no_gi_owned_control_requirement(
     graph: GrapplingGraph,
 ) -> None:
-    state = GrapplingState(position_id="closed_guard_bottom", mode="no_gi")
+    state = GrapplingState(
+        position_id="closed_guard_bottom",
+        mode="no_gi",
+        active_controls={_control("wrist_control")},
+    )
 
-    with pytest.raises(
-        ValueError,
-        match="Transition 'flower_sweep' is not allowed in no_gi mode",
-    ):
-        graph.apply_transition(state, "flower_sweep")
+    result = graph.apply_transition(
+        state, "closed_guard_bottom_arm_drag_to_back_control_top"
+    )
+
+    assert result.position_id == "back_control_top"
 
 
 def test_apply_transition_rejects_unknown_transition(graph: GrapplingGraph) -> None:
@@ -202,9 +206,9 @@ def test_apply_transition_with_no_grip_changes_preserves_grips(
         active_controls=[_control("underhook")],
     )
 
-    result = graph.apply_transition(state, "elbow_escape")
+    result = graph.apply_transition(state, "mount_top_opponent_elbow_knee_to_half_guard_top")
 
-    assert result.position_id == "closed_guard_bottom"
+    assert result.position_id == "half_guard_top"
     assert result.active_controls == frozenset({_control("underhook")})
     assert state.position_id == "mount_top"
     assert state.active_controls == frozenset({_control("underhook")})
@@ -217,9 +221,12 @@ def test_transition_requires_correct_owner_control(graph: GrapplingGraph) -> Non
         active_controls={_control("wrist_control")},
     )
 
-    result = graph.apply_transition(state, "hip_bump_sweep")
+    result = graph.apply_transition(
+        state, "closed_guard_bottom_arm_drag_to_back_control_top"
+    )
 
-    assert _control("underhook") in result.active_controls
+    assert result.position_id == "back_control_top"
+    assert _control("wrist_control") in result.active_controls
 
 
 def test_wrong_owner_does_not_satisfy_transition(graph: GrapplingGraph) -> None:
@@ -230,10 +237,12 @@ def test_wrong_owner_does_not_satisfy_transition(graph: GrapplingGraph) -> None:
     )
 
     with pytest.raises(ValueError, match="owned by player_a"):
-        graph.apply_transition(state, "hip_bump_sweep")
+        graph.apply_transition(
+            state, "closed_guard_bottom_arm_drag_to_back_control_top"
+        )
 
 
-def test_removed_control_only_removes_matching_owner(graph: GrapplingGraph) -> None:
+def test_runtime_control_lifecycle_is_deferred(graph: GrapplingGraph) -> None:
     player_b_control = _control("wrist_control", owner="player_b")
     state = GrapplingState(
         position_id="closed_guard_bottom",
@@ -241,10 +250,10 @@ def test_removed_control_only_removes_matching_owner(graph: GrapplingGraph) -> N
         active_controls={_control("wrist_control"), player_b_control},
     )
 
-    result = graph.apply_transition(state, "hip_bump_sweep")
+    result = graph.apply_transition(state, "closed_guard_bottom_hip_bump_to_mount_top")
 
     assert player_b_control in result.active_controls
-    assert _control("wrist_control") not in result.active_controls
+    assert _control("wrist_control") in result.active_controls
 
 
 @pytest.fixture
