@@ -48,19 +48,21 @@ pathfinding, roll execution, and grappling rules remain backend-owned.
 
 The data layer stores positions, transitions, grips, and technique information.
 
-The active starter data is stored in YAML files and loaded into validated
-runtime domain models. Iteration 11A also adds a separate curated-data boundary:
+The active curated MVP data is stored in YAML files and loaded into validated
+runtime domain models. The curated-data boundary is:
 
 ```text
 external curated JSON
     -> strict import contract and validation
     -> canonical normalized JSON
-    -> future runtime integration
+    -> human-readable runtime YAML
+    -> runtime domain models and graph
 ```
 
-The importer and normalized artifact do not feed
-`GrapplingGraph.from_default_data()` yet. The three starter positions, four
-transitions, and three grips remain the only active runtime graph during 11A.
+Iteration 11C derives the runtime YAML from the canonical normalized artifact.
+`GrapplingGraph.from_default_data()` now loads 20 positions, 65 positional and
+submission transitions, and 17 controls. The five control-change templates
+remain outside the runtime graph.
 
 Example data:
 
@@ -97,6 +99,11 @@ valid sequence of those complete states. Player identity is stable; positional
 roles are derived from the current position and may change after a sweep or
 reversal. Roll simulation reuses these models without adding simulation
 behavior to them.
+
+Runtime transition requirements resolve normalized `actor` / `opponent`
+templates to stable player IDs before graph loading. Normalized created,
+removed, optional, and preserved-control intent is retained on transitions but
+is not executed in 11C; control lifecycle behavior remains deferred.
 
 ---
 

@@ -1,35 +1,824 @@
+- id: back_control_bottom
+  name: Back Control — Player A Defending
+  category: back_control
+  player_role: back_defender
+  player_a_role: back_defender
+  player_b_role: back_controller
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Seated and side back-control variants are collapsed; hook/seatbelt details live in controls.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - seatbelt
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - seatbelt
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: back_control_top
+  name: Back Control — Player A Attacking
+  category: back_control
+  player_role: back_controller
+  player_a_role: back_controller
+  player_b_role: back_defender
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Canonical back control with sufficient rotational control; body-triangle variant deferred.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - seatbelt
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - seatbelt
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
 - id: closed_guard_bottom
-  name: Closed Guard Bottom
-  category: guard
-  player_role: bottom
+  name: Closed Guard — Player A Bottom
+  category: closed_guard
+  player_role: bottom_guard
+  player_a_role: bottom_guard
+  player_b_role: top_inside_guard
   gi_allowed: true
   no_gi_allowed: true
-  tags:
-    - guard
-    - bottom
-    - closed_guard
-  description: Bottom player controls the opponent with legs closed around the waist.
-
+  terminal: false
+  tags: []
+  description: Role-specific canonical state; posture and overhook/underhook variants are intentionally collapsed.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - collar_grip
+  - overhook
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: closed_guard_top
+  name: Closed Guard — Player A Top
+  category: closed_guard
+  player_role: top_inside_guard
+  player_a_role: top_inside_guard
+  player_b_role: bottom_guard
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Mirror role state needed so opponent sweeps and Player A guard openings remain explicit.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - collar_grip
+  - overhook
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: front_headlock_bottom
+  name: Front Headlock — Player A Defending
+  category: front_headlock
+  player_role: headlock_defender
+  player_a_role: headlock_defender
+  player_b_role: headlock_attacker
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: No-Gi-relevant control state added for turtle/standing connectivity; not treated as an IBJJF scoring position.
+  allowed_controls:
+  - arm_isolation
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: front_headlock_top
+  name: Front Headlock — Player A Attacking
+  category: front_headlock
+  player_role: headlock_attacker
+  player_a_role: headlock_attacker
+  player_b_role: headlock_defender
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Collapses standing and kneeling front-headlock variants.
+  allowed_controls:
+  - arm_isolation
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: half_guard_bottom
+  name: Half Guard — Player A Bottom
+  category: half_guard
+  player_role: bottom_guard
+  player_a_role: bottom_guard
+  player_b_role: top_passer
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Collapses knee-shield, flat half, and basic underhook variants; deep half and lockdown deferred.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - crossface
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: half_guard_top
+  name: Half Guard — Player A Top
+  category: half_guard
+  player_role: top_passer
+  player_a_role: top_passer
+  player_b_role: bottom_guard
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Canonical top-half passing state; pressure and standing variations collapsed.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - crossface
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: knee_on_belly_bottom
+  name: Knee-on-Belly — Player A Bottom
+  category: knee_on_belly
+  player_role: bottom_pinned
+  player_a_role: bottom_pinned
+  player_b_role: top_controller
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Kept separate from side control because it adds useful mount/back/escape branching.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - pants_grip
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: knee_on_belly_top
+  name: Knee-on-Belly — Player A Top
+  category: knee_on_belly
+  player_role: top_controller
+  player_a_role: top_controller
+  player_b_role: bottom_pinned
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Dynamic pin retained as a distinct hub despite ViCoS grouping it with side control.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - pants_grip
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: mount_bottom
+  name: Mount — Player A Bottom
+  category: mount
+  player_role: bottom_mounted
+  player_a_role: bottom_mounted
+  player_b_role: top_mounter
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Low, middle, and high mount are collapsed for the MVP.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - lapel_grip
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
 - id: mount_top
-  name: Mount Top
-  category: dominant
-  player_role: top
+  name: Mount — Player A Top
+  category: mount
+  player_role: top_mounter
+  player_a_role: top_mounter
+  player_b_role: bottom_mounted
   gi_allowed: true
   no_gi_allowed: true
-  tags:
-    - mount
-    - top
-    - dominant
-  description: Top player controls the opponent while straddling their torso.
-
+  terminal: false
+  tags: []
+  description: Dominant mount state; technical mount and S-mount are deferred.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - lapel_grip
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: open_guard_bottom
+  name: Open Guard — Player A Bottom
+  category: open_guard
+  player_role: bottom_guard
+  player_a_role: bottom_guard
+  player_b_role: top_passer
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Umbrella state for seated, supine, butterfly, and basic hook-based open guards; advanced named guards deferred.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: open_guard_top
+  name: Open Guard — Player A Top
+  category: open_guard
+  player_role: top_passer
+  player_a_role: top_passer
+  player_b_role: bottom_guard
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Canonical passing state against open guard; stance and passing headquarters variants collapsed.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: side_control_bottom
+  name: Side Control — Player A Bottom
+  category: side_control
+  player_role: bottom_pinned
+  player_a_role: bottom_pinned
+  player_b_role: top_controller
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: North-south and scarf-hold remain deferred instead of being hidden inside this state.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
 - id: side_control_top
-  name: Side Control Top
-  category: dominant
-  player_role: top
+  name: Side Control — Player A Top
+  category: side_control
+  player_role: top_controller
+  player_a_role: top_controller
+  player_b_role: bottom_pinned
   gi_allowed: true
   no_gi_allowed: true
-  tags:
-    - side_control
-    - top
-    - dominant
-  description: Top player controls the opponent from across their torso.
+  terminal: false
+  tags: []
+  description: Canonical chest-to-chest side control; crossface/underhook details are optional controls, not separate positions.
+  allowed_controls:
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - overhook
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - arm_isolation
+  - collar_grip
+  - crossface
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: standing_neutral
+  name: Standing — Neutral
+  category: standing
+  player_role: standing
+  player_a_role: standing
+  player_b_role: standing
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Collapses stance, distance, and grip-fighting variants into one neutral standing state.
+  allowed_controls:
+  - ankle_control
+  - body_lock
+  - collar_grip
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - body_lock
+  - collar_grip
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - IBJJF_RULES
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://ibjjf.com/books-videos
+  - https://vicos.si/resources/jiujitsu/
+- id: submission_terminal
+  name: Submission — Roll Ended
+  category: terminal
+  player_role: winner_or_loser_recorded_on_transition
+  player_a_role: winner_or_loser_recorded_on_transition
+  player_b_role: winner_or_loser_recorded_on_transition
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: true
+  tags: []
+  description: Shared absorbing terminal node. Submission identity and attacking player remain on the incoming transition.
+  allowed_controls: []
+  common_controls: []
+  control_compatibility_note: Terminal state permits no controls.
+  source_ids:
+  - SIMROLL
+  source_references: []
+- id: turtle_bottom
+  name: Turtle — Player A Bottom
+  category: turtle
+  player_role: bottom_turtled
+  player_a_role: bottom_turtled
+  player_b_role: top_rider
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Compact defensive turtle; referee-position and quadpod variants collapsed.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - seatbelt
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - belt_grip
+  - body_lock
+  - head_control
+  - seatbelt
+  - underhook
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+- id: turtle_top
+  name: Turtle — Player A Top
+  category: turtle
+  player_role: top_rider
+  player_a_role: top_rider
+  player_b_role: bottom_turtled
+  gi_allowed: true
+  no_gi_allowed: true
+  terminal: false
+  tags: []
+  description: Canonical top ride around a turtled opponent.
+  allowed_controls:
+  - ankle_control
+  - arm_isolation
+  - belt_grip
+  - body_lock
+  - collar_grip
+  - crossface
+  - head_and_arm_control
+  - head_control
+  - lapel_grip
+  - leg_control
+  - overhook
+  - pants_grip
+  - seatbelt
+  - sleeve_grip
+  - two_on_one
+  - underhook
+  - wrist_control
+  common_controls:
+  - belt_grip
+  - body_lock
+  - head_control
+  - seatbelt
+  - underhook
+  control_compatibility_note: allowed_controls is a mode-agnostic superset; filter by control vocabulary mode flags and owner_role_constraint at runtime.
+  source_ids:
+  - GM
+  - GU
+  - SIMROLL
+  - VICOS
+  source_references:
+  - https://github.com/Eelis/GrappleMap
+  - https://vicos.si/resources/jiujitsu/
+  - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293

@@ -1,71 +1,3697 @@
-- id: flower_sweep
-  name: Flower Sweep
-  from_position: closed_guard_bottom
-  to_position: mount_top
-  transition_type: sweep
-  required_grips:
-    - sleeve_grip
-  created_grips: []
-  removed_grips:
-    - sleeve_grip
-  gi_allowed: true
-  no_gi_allowed: false
-  difficulty: beginner
-  tags:
-    - sweep
-    - closed_guard
-  notes: Uses sleeve control to reverse the top player into mount.
-
-- id: hip_bump_sweep
-  name: Hip Bump Sweep
-  from_position: closed_guard_bottom
-  to_position: mount_top
-  transition_type: sweep
-  required_grips:
-    - wrist_control
-  created_grips:
-    - underhook
-  removed_grips:
-    - wrist_control
-  gi_allowed: true
-  no_gi_allowed: true
-  difficulty: beginner
-  tags:
-    - sweep
-    - closed_guard
-  notes: Traps the posting wrist and establishes an underhook while sweeping.
-
-- id: elbow_escape
-  name: Elbow Escape
-  from_position: mount_top
-  to_position: closed_guard_bottom
-  transition_type: escape
+- id: back_control_bottom_opponent_transitions_to_mount_bottom
+  name: Opponent Transitions Back Control to Mount
+  from_position: back_control_bottom
+  to_position: mount_bottom
+  transition_type: positional_advance
+  actor_player: player_b
   required_grips: []
   created_grips: []
   removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
   gi_allowed: true
   no_gi_allowed: true
-  difficulty: beginner
+  difficulty: high
   tags:
-    - escape
-    - mount
-  notes: Recovers guard by creating space and trapping a leg.
-
-- id: mount_to_side_control
-  name: Mount to Side Control
-  from_position: mount_top
-  to_position: side_control_top
-  transition_type: pass
-  required_grips:
-    - underhook
-  created_grips:
-    - underhook
+  - positional_advance
+  notes: Common control-preserving fallback when back control is lost.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_controller
+    player_a_role_before: back_defender
+    player_a_role_after: bottom_mounted
+    player_b_role_before: back_controller
+    player_b_role_after: top_mounter
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: mount for Player B
+- id: back_control_bottom_scrape_off_to_turtle
+  name: Scrape-Off Escape to Turtle
+  from_position: back_control_bottom
+  to_position: turtle_bottom
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
   removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
   gi_allowed: true
   no_gi_allowed: true
-  difficulty: beginner
+  difficulty: medium
   tags:
-    - mount
-    - side_control
-    - transition
-  notes: Posts, shifts weight, and pummels the near knee through to settle in side control.
+  - escape
+  notes: Wall/mat-specific details omitted.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_defender
+    player_a_role_before: back_defender
+    player_a_role_after: bottom_turtled
+    player_b_role_before: back_controller
+    player_b_role_after: top_rider
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: clear upper-body control
+      resulting_control_or_grip: defensive turtle
+- id: back_control_bottom_turn_in_to_half_guard_top
+  name: Shoulder-to-Mat Turn-In Escape
+  from_position: back_control_bottom
+  to_position: half_guard_top
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Successful turn-in is normalized to top half guard.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_defender
+    player_a_role_before: back_defender
+    player_a_role_after: top_passer
+    player_b_role_before: back_controller
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: clear choking arm and lower hook
+      resulting_control_or_grip: top half guard
+- id: back_control_top_opponent_turn_in_to_half_guard_bottom
+  name: Opponent Turn-In Escape
+  from_position: back_control_top
+  to_position: half_guard_bottom
+  transition_type: escape
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Player A becomes bottom half guard after the opponent turns in.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_defender
+    player_a_role_before: back_controller
+    player_a_role_after: bottom_guard
+    player_b_role_before: back_defender
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: clear choking arm and lower hook
+      resulting_control_or_grip: Player B top half guard
+- id: back_control_top_rear_naked_choke_submission
+  name: Rear-Naked Choke
+  from_position: back_control_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  - control_id: wrist_control
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_controller
+    player_a_role_before: back_controller
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: back_defender
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: seatbelt and exposed neck
+      resulting_control_or_grip: 'submission: rear-naked choke'
+- id: back_control_top_rear_triangle_submission
+  name: Rear Triangle Choke
+  from_position: back_control_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: arm_isolation
+    owner: player_a
+    target: player_b
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - submission
+  notes: Less fundamental than RNC but still a maintainable second submission branch.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: back_controller
+    player_a_role_before: back_controller
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: back_defender
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: isolated arm and head
+      resulting_control_or_grip: 'submission: rear triangle'
+- id: closed_guard_bottom_arm_drag_to_back_control_top
+  name: Closed-Guard Arm Drag to Back Control
+  from_position: closed_guard_bottom
+  to_position: back_control_top
+  transition_type: back_take
+  actor_player: player_a
+  required_grips:
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  created_grips:
+  - seatbelt
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - sleeve_grip
+    - two_on_one
+    - wrist_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls:
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - back_take
+  notes: Intermediate side-climb frames are collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: back_controller
+    player_b_role_before: top_inside_guard
+    player_b_role_after: back_defender
+    role_change: true
+    role_effect: actor_becomes_back_controller
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: arm drag control
+      resulting_control_or_grip: seatbelt/back control
+- id: closed_guard_bottom_hip_bump_to_mount_top
+  name: Hip-Bump Sweep to Mount
+  from_position: closed_guard_bottom
+  to_position: mount_top
+  transition_type: sweep
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: overhook
+    owner: player_a
+    target: player_b
+  - control_id: wrist_control
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Canonical successful finish is normalized to mount top.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: top_mounter
+    player_b_role_before: top_inside_guard
+    player_b_role_after: bottom_mounted
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: opponent posture available
+      resulting_control_or_grip: mount
+- id: closed_guard_bottom_kimura_submission
+  name: Closed-Guard Kimura
+  from_position: closed_guard_bottom
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge; finish mechanics are out of scope.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: top_inside_guard
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: figure-four arm control
+      resulting_control_or_grip: 'submission: kimura'
+- id: closed_guard_bottom_opponent_stand_open_to_open_guard_bottom
+  name: Opponent Stands and Opens Guard
+  from_position: closed_guard_bottom
+  to_position: open_guard_bottom
+  transition_type: guard_opening
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: pants_grip
+    owner: player_b
+    target: player_a
+  - control_id: sleeve_grip
+    owner: player_b
+    target: player_a
+  - control_id: wrist_control
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_opening
+  notes: Guard-opening variants collapse into open guard.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: top_inside_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_inside_guard
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: posture and inside position
+      resulting_control_or_grip: open guard
+- id: closed_guard_bottom_triangle_submission
+  name: Closed-Guard Triangle Choke
+  from_position: closed_guard_bottom
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: top_inside_guard
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: isolated arm and head
+      resulting_control_or_grip: 'submission: triangle choke'
+- id: closed_guard_top_opponent_arm_drag_to_back_control_bottom
+  name: Opponent Arm Drag to Back Control
+  from_position: closed_guard_top
+  to_position: back_control_bottom
+  transition_type: back_take
+  actor_player: player_b
+  required_grips:
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  created_grips:
+  - seatbelt
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - sleeve_grip
+    - two_on_one
+    - wrist_control
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  created_controls:
+  - control_id: seatbelt
+    owner: player_b
+    target: player_a
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - back_take
+  notes: Intermediate side-climb frames are collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: top_inside_guard
+    player_a_role_after: back_defender
+    player_b_role_before: bottom_guard
+    player_b_role_after: back_controller
+    role_change: true
+    role_effect: actor_becomes_back_controller
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: arm drag control
+      resulting_control_or_grip: back control for Player B
+- id: closed_guard_top_opponent_hip_bump_to_mount_bottom
+  name: Opponent Hip-Bump Sweep
+  from_position: closed_guard_top
+  to_position: mount_bottom
+  transition_type: sweep
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: overhook
+    owner: player_b
+    target: player_a
+  - control_id: wrist_control
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Mirrors the Player A hip-bump outcome.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: top_inside_guard
+    player_a_role_after: bottom_mounted
+    player_b_role_before: bottom_guard
+    player_b_role_after: top_mounter
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: Player A posture available
+      resulting_control_or_grip: mount for Player B
+- id: closed_guard_top_stand_open_to_open_guard_top
+  name: Stand and Open Closed Guard
+  from_position: closed_guard_top
+  to_position: open_guard_top
+  transition_type: guard_opening
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: pants_grip
+    owner: player_a
+    target: player_b
+  - control_id: sleeve_grip
+    owner: player_a
+    target: player_b
+  - control_id: wrist_control
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_opening
+  notes: No clothing grip required.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: top_inside_guard
+    player_a_role_before: top_inside_guard
+    player_a_role_after: top_passer
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: posture and inside position
+      resulting_control_or_grip: open guard passing position
+- id: front_headlock_bottom_guard_pull_to_closed_guard
+  name: Guard Pull from Front Headlock
+  from_position: front_headlock_bottom
+  to_position: closed_guard_bottom
+  transition_type: guard_pull
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - guard_pull
+  notes: Defensive guard pull retained as a connectivity option.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_defender
+    player_a_role_before: headlock_defender
+    player_a_role_after: bottom_guard
+    player_b_role_before: headlock_attacker
+    player_b_role_after: top_inside_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: body connection
+      resulting_control_or_grip: closed guard
+- id: front_headlock_bottom_peek_out_to_turtle_top
+  name: Peek-Out to Top Turtle
+  from_position: front_headlock_bottom
+  to_position: turtle_top
+  transition_type: reversal
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - reversal
+  notes: Go-behind intermediate is collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_defender
+    player_a_role_before: headlock_defender
+    player_a_role_after: top_rider
+    player_b_role_before: headlock_attacker
+    player_b_role_after: bottom_turtled
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside arm position
+      resulting_control_or_grip: top turtle ride
+- id: front_headlock_bottom_sit_out_to_standing
+  name: Sit-Out from Front Headlock
+  from_position: front_headlock_bottom
+  to_position: standing_neutral
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Successful disengagement normalized to neutral standing.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_defender
+    player_a_role_before: headlock_defender
+    player_a_role_after: standing
+    player_b_role_before: headlock_attacker
+    player_b_role_after: standing
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside hand position
+      resulting_control_or_grip: neutral standing
+- id: front_headlock_top_darce_submission
+  name: D'Arce Choke
+  from_position: front_headlock_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - head_and_arm_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - head_and_arm_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_attacker
+    player_a_role_before: headlock_attacker
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: headlock_defender
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: arm-in headlock
+      resulting_control_or_grip: 'submission: d''arce choke'
+- id: front_headlock_top_go_behind_to_turtle_top
+  name: Go-Behind to Top Turtle
+  from_position: front_headlock_top
+  to_position: turtle_top
+  transition_type: positional_advance
+  actor_player: player_a
+  required_grips:
+  - head_and_arm_control
+  - head_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - head_and_arm_control
+    - head_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Canonical control conversion.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_attacker
+    player_a_role_before: headlock_attacker
+    player_a_role_after: top_rider
+    player_b_role_before: headlock_defender
+    player_b_role_after: bottom_turtled
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: head-and-arm connection
+      resulting_control_or_grip: top turtle ride
+- id: front_headlock_top_guillotine_submission
+  name: Guillotine Choke
+  from_position: front_headlock_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - head_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - head_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_attacker
+    player_a_role_before: headlock_attacker
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: headlock_defender
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: neck and chin-line control
+      resulting_control_or_grip: 'submission: guillotine'
+- id: front_headlock_top_release_to_standing
+  name: Release to Standing
+  from_position: front_headlock_top
+  to_position: standing_neutral
+  transition_type: disengagement
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - disengagement
+  notes: Explicit reset edge prevents forced terminal progression.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: headlock_attacker
+    player_a_role_before: headlock_attacker
+    player_a_role_after: standing
+    player_b_role_before: headlock_defender
+    player_b_role_after: standing
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: ''
+      resulting_control_or_grip: neutral standing
+- id: half_guard_bottom_old_school_sweep_to_side_control_top
+  name: Old-School Sweep to Side Control
+  from_position: half_guard_bottom
+  to_position: side_control_top
+  transition_type: sweep
+  actor_player: player_a
+  required_grips:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  - underhook
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - underhook
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    - pants_grip
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    owner: player_a
+    target: player_b
+    modes:
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid:
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - sweep
+  notes: Successful finish normalized directly to side control.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: E
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: top_controller
+    player_b_role_before: top_passer
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes, but the grip realization differs enough to consider separate variants after practitioner review.
+    split_variant_recommendation: manual_review_before_split
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: underhook and far-leg control
+      resulting_control_or_grip: side control
+- id: half_guard_bottom_opponent_knee_slice_to_side_control_bottom
+  name: Opponent Knee-Slice Pass
+  from_position: half_guard_bottom
+  to_position: side_control_bottom
+  transition_type: guard_pass
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_b
+    target: player_a
+  - control_id: underhook
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_pass
+  notes: Represents guard concession from Player A perspective.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_passer
+    player_a_role_before: bottom_guard
+    player_a_role_after: bottom_pinned
+    player_b_role_before: top_passer
+    player_b_role_after: top_controller
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: crossface or upper-body control
+      resulting_control_or_grip: side control for Player B
+- id: half_guard_bottom_recover_closed_guard
+  name: Recover Closed Guard from Half Guard
+  from_position: half_guard_bottom
+  to_position: closed_guard_bottom
+  transition_type: guard_recovery
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  - control_id: wrist_control
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_recovery
+  notes: Intermediate open-guard frame omitted.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_passer
+    player_b_role_after: top_inside_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside leg recovery
+      resulting_control_or_grip: closed guard
+- id: half_guard_bottom_underhook_knee_tap_sweep
+  name: Underhook Knee-Tap Sweep
+  from_position: half_guard_bottom
+  to_position: half_guard_top
+  transition_type: sweep
+  actor_player: player_a
+  required_grips:
+  - underhook
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - underhook
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid:
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Dogfight intermediate is collapsed for MVP scope.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: top_passer
+    player_b_role_before: top_passer
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: underhook and knee connection
+      resulting_control_or_grip: top half guard
+- id: half_guard_top_knee_slice_to_side_control_top
+  name: Knee-Slice Pass from Half Guard
+  from_position: half_guard_top
+  to_position: side_control_top
+  transition_type: guard_pass
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_a
+    target: player_b
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_pass
+  notes: Canonical fundamental half-guard pass.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_passer
+    player_a_role_before: top_passer
+    player_a_role_after: top_controller
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: crossface or upper-body control
+      resulting_control_or_grip: side control
+- id: half_guard_top_opponent_recovers_closed_guard
+  name: Opponent Recovers Closed Guard
+  from_position: half_guard_top
+  to_position: closed_guard_top
+  transition_type: guard_recovery
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: underhook
+    owner: player_b
+    target: player_a
+  - control_id: wrist_control
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_recovery
+  notes: Player A remains the top player inside closed guard.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: top_passer
+    player_a_role_after: top_inside_guard
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside leg recovery
+      resulting_control_or_grip: closed guard for Player B
+- id: half_guard_top_opponent_underhook_sweep
+  name: Opponent Underhook Sweep
+  from_position: half_guard_top
+  to_position: half_guard_bottom
+  transition_type: sweep
+  actor_player: player_b
+  required_grips:
+  - underhook
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - underhook
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid:
+  - control_id: underhook
+    owner: player_b
+    target: player_a
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Role-mirrored sweep.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: top_passer
+    player_a_role_after: bottom_guard
+    player_b_role_before: bottom_guard
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: underhook and knee connection
+      resulting_control_or_grip: Player B top half guard
+- id: knee_on_belly_bottom_elbow_escape_to_open_guard
+  name: Elbow Escape to Open Guard
+  from_position: knee_on_belly_bottom
+  to_position: open_guard_bottom
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Guard type is normalized to open guard.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_pinned
+    player_a_role_before: bottom_pinned
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_controller
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: frames and hip movement
+      resulting_control_or_grip: open guard
+- id: knee_on_belly_bottom_opponent_slides_to_mount_bottom
+  name: Opponent Slides to Mount
+  from_position: knee_on_belly_bottom
+  to_position: mount_bottom
+  transition_type: positional_advance
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: collar_grip
+    owner: player_b
+    target: player_a
+  - control_id: crossface
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Opponent advancement.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: bottom_pinned
+    player_a_role_after: bottom_mounted
+    player_b_role_before: top_controller
+    player_b_role_after: top_mounter
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: mount for Player B
+- id: knee_on_belly_top_far_side_armbar_submission
+  name: Far-Side Armbar from Knee-on-Belly
+  from_position: knee_on_belly_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - submission
+  notes: Terminal edge; kept as the sole knee-on-belly submission branch.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: top_controller
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: bottom_pinned
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: isolated far arm
+      resulting_control_or_grip: 'submission: far-side armbar'
+- id: knee_on_belly_top_opponent_shrimp_to_half_guard_top
+  name: Opponent Shrimp Escape to Half Guard
+  from_position: knee_on_belly_top
+  to_position: half_guard_top
+  transition_type: escape
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Player A remains the top player.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_pinned
+    player_a_role_before: top_controller
+    player_a_role_after: top_passer
+    player_b_role_before: bottom_pinned
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: frames and hip movement
+      resulting_control_or_grip: Player B bottom half guard
+- id: knee_on_belly_top_slide_to_mount
+  name: Slide to Mount
+  from_position: knee_on_belly_top
+  to_position: mount_top
+  transition_type: positional_advance
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: collar_grip
+    owner: player_a
+    target: player_b
+  - control_id: crossface
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Canonical advancement.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: top_controller
+    player_a_role_after: top_mounter
+    player_b_role_before: bottom_pinned
+    player_b_role_after: bottom_mounted
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: mount
+- id: mount_bottom_elbow_knee_escape_to_half_guard
+  name: Elbow-Knee Escape to Half Guard
+  from_position: mount_bottom
+  to_position: half_guard_bottom
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Fundamental mount escape.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_mounted
+    player_a_role_before: bottom_mounted
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_mounter
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside elbow-knee frame
+      resulting_control_or_grip: bottom half guard
+- id: mount_bottom_opponent_gift_wrap_to_back_control_bottom
+  name: Opponent Gift-Wrap Back Take
+  from_position: mount_bottom
+  to_position: back_control_bottom
+  transition_type: back_take
+  actor_player: player_b
+  required_grips:
+  - arm_isolation
+  created_grips:
+  - seatbelt
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  created_controls:
+  - control_id: seatbelt
+    owner: player_b
+    target: player_a
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - back_take
+  notes: Technical-mount intermediate is collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_mounter
+    player_a_role_before: bottom_mounted
+    player_a_role_after: back_defender
+    player_b_role_before: top_mounter
+    player_b_role_after: back_controller
+    role_change: true
+    role_effect: actor_becomes_back_controller
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: gift-wrap control
+      resulting_control_or_grip: back control for Player B
+- id: mount_bottom_trap_roll_to_closed_guard_top
+  name: Trap-and-Roll Reversal
+  from_position: mount_bottom
+  to_position: closed_guard_top
+  transition_type: reversal
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - reversal
+  notes: Opponent is normalized as closing guard after the roll.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_mounted
+    player_a_role_before: bottom_mounted
+    player_a_role_after: top_inside_guard
+    player_b_role_before: top_mounter
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: trapped arm and foot
+      resulting_control_or_grip: top inside closed guard
+- id: mount_top_arm_triangle_submission
+  name: Mounted Arm-Triangle Choke
+  from_position: mount_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - head_and_arm_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - head_and_arm_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_mounter
+    player_a_role_before: top_mounter
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: bottom_mounted
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: head-and-arm control
+      resulting_control_or_grip: 'submission: arm triangle'
+- id: mount_top_armbar_submission
+  name: Mounted Armbar
+  from_position: mount_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_mounter
+    player_a_role_before: top_mounter
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: bottom_mounted
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: isolated arm
+      resulting_control_or_grip: 'submission: mounted armbar'
+- id: mount_top_gift_wrap_to_back_control
+  name: Gift-Wrap Back Take
+  from_position: mount_top
+  to_position: back_control_top
+  transition_type: back_take
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips:
+  - seatbelt
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls:
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - back_take
+  notes: Technical-mount intermediate is collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_mounter
+    player_a_role_before: top_mounter
+    player_a_role_after: back_controller
+    player_b_role_before: bottom_mounted
+    player_b_role_after: back_defender
+    role_change: true
+    role_effect: actor_becomes_back_controller
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: gift-wrap control
+      resulting_control_or_grip: seatbelt/back control
+- id: mount_top_opponent_elbow_knee_to_half_guard_top
+  name: Opponent Elbow-Knee Escape
+  from_position: mount_top
+  to_position: half_guard_top
+  transition_type: escape
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Player A remains on top.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_mounted
+    player_a_role_before: top_mounter
+    player_a_role_after: top_passer
+    player_b_role_before: bottom_mounted
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside elbow-knee frame
+      resulting_control_or_grip: Player B bottom half guard
+- id: open_guard_bottom_butterfly_sweep_to_side_control_top
+  name: Butterfly Sweep to Side Control
+  from_position: open_guard_bottom
+  to_position: side_control_top
+  transition_type: sweep
+  actor_player: player_a
+  required_grips:
+  - body_lock
+  - underhook
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - body_lock
+    - underhook
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Butterfly/seated variants are collapsed into open guard.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: top_controller
+    player_b_role_before: top_passer
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: underhook and butterfly hook
+      resulting_control_or_grip: side control
+- id: open_guard_bottom_recover_closed_guard
+  name: Recover Closed Guard
+  from_position: open_guard_bottom
+  to_position: closed_guard_bottom
+  transition_type: guard_recovery
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_recovery
+  notes: Basic guard consolidation.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_passer
+    player_b_role_after: top_inside_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: hip and leg connection
+      resulting_control_or_grip: closed guard
+- id: open_guard_bottom_technical_stand_to_standing
+  name: Technical Stand-Up
+  from_position: open_guard_bottom
+  to_position: standing_neutral
+  transition_type: technical_escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - technical_escape
+  notes: Resets to neutral rather than encoding transient disengagement distance.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: standing
+    player_b_role_before: top_passer
+    player_b_role_after: standing
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: safe distance
+      resulting_control_or_grip: neutral standing
+- id: open_guard_bottom_tripod_sweep_to_open_guard_top
+  name: Tripod Sweep to Top Open Guard
+  from_position: open_guard_bottom
+  to_position: open_guard_top
+  transition_type: sweep
+  actor_player: player_a
+  required_grips:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    - pants_grip
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  - match: any_of
+    control_ids:
+    - sleeve_grip
+    - two_on_one
+    - wrist_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Opponent remains unpassed after the sweep, so destination is top open guard.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: bottom_guard
+    player_a_role_after: top_passer
+    player_b_role_before: top_passer
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: ankle and hip-line control
+      resulting_control_or_grip: top open guard
+- id: open_guard_top_force_half_guard
+  name: Force Half Guard
+  from_position: open_guard_top
+  to_position: half_guard_top
+  transition_type: control_transition
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - control_transition
+  notes: Represents a common intermediate passing result rather than a completed pass.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_passer
+    player_a_role_before: top_passer
+    player_a_role_after: top_passer
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside position
+      resulting_control_or_grip: top half guard
+- id: open_guard_top_knee_cut_to_side_control_top
+  name: Knee-Cut Pass to Side Control
+  from_position: open_guard_top
+  to_position: side_control_top
+  transition_type: guard_pass
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_a
+    target: player_b
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_pass
+  notes: Knee-cut and knee-slice naming normalized.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_passer
+    player_a_role_before: top_passer
+    player_a_role_after: top_controller
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside knee line
+      resulting_control_or_grip: crossface/underhook optional
+- id: open_guard_top_opponent_tripod_sweep
+  name: Opponent Tripod Sweep
+  from_position: open_guard_top
+  to_position: open_guard_bottom
+  transition_type: sweep
+  actor_player: player_b
+  required_grips:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  - sleeve_grip
+  - two_on_one
+  - wrist_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    - pants_grip
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  - match: any_of
+    control_ids:
+    - sleeve_grip
+    - two_on_one
+    - wrist_control
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - sweep
+  notes: Role-mirrored sweep creates a deliberate cycle.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: bottom_guard
+    player_a_role_before: top_passer
+    player_a_role_after: bottom_guard
+    player_b_role_before: bottom_guard
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: top_bottom_ownership_changes
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: ankle and hip-line control
+      resulting_control_or_grip: Player B top open guard
+- id: open_guard_top_toreando_to_side_control_top
+  name: Toreando Pass to Side Control
+  from_position: open_guard_top
+  to_position: side_control_top
+  transition_type: guard_pass
+  actor_player: player_a
+  required_grips:
+  - ankle_control
+  - leg_control
+  - pants_grip
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    - pants_grip
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    owner: player_a
+    target: player_b
+    modes:
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - guard_pass
+  notes: Name normalized to common BJJ usage; detailed finish side is omitted.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: E
+  metadata:
+    actor_role: top_passer
+    player_a_role_before: top_passer
+    player_a_role_after: top_controller
+    player_b_role_before: bottom_guard
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes, but the grip realization differs enough to consider separate variants after practitioner review.
+    split_variant_recommendation: manual_review_before_split
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: leg-line control
+      resulting_control_or_grip: side control
+- id: side_control_bottom_elbow_escape_to_closed_guard
+  name: Elbow Escape to Closed Guard
+  from_position: side_control_bottom
+  to_position: closed_guard_bottom
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Guard-recovery variants are collapsed to a stable closed guard endpoint.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_pinned
+    player_a_role_before: bottom_pinned
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_controller
+    player_b_role_after: top_inside_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: frames and hip movement
+      resulting_control_or_grip: closed guard
+- id: side_control_bottom_opponent_to_knee_on_belly_bottom
+  name: Opponent Moves to Knee-on-Belly
+  from_position: side_control_bottom
+  to_position: knee_on_belly_bottom
+  transition_type: positional_advance
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_b
+    target: player_a
+  - control_id: pants_grip
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Mirrors the top-side advancement and makes the defensive knee-on-belly state reachable.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: bottom_pinned
+    player_a_role_after: bottom_pinned
+    player_b_role_before: top_controller
+    player_b_role_after: top_controller
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: knee-on-belly for Player B
+- id: side_control_bottom_underhook_escape_to_turtle
+  name: Underhook Escape to Turtle
+  from_position: side_control_bottom
+  to_position: turtle_bottom
+  transition_type: escape
+  actor_player: player_a
+  required_grips:
+  - underhook
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - underhook
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid:
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Common no-gi escape route; exposure between states is not modeled.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_pinned
+    player_a_role_before: bottom_pinned
+    player_a_role_after: bottom_turtled
+    player_b_role_before: top_controller
+    player_b_role_after: top_rider
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: near-side underhook
+      resulting_control_or_grip: defensive turtle
+- id: side_control_top_americana_submission
+  name: Americana from Side Control
+  from_position: side_control_top
+  to_position: submission_terminal
+  transition_type: submission
+  actor_player: player_a
+  required_grips:
+  - arm_isolation
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - arm_isolation
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - submission
+  notes: Terminal edge.
+  submission: true
+  terminal: true
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: top_controller
+    player_a_role_after: winner_or_loser_recorded_on_transition
+    player_b_role_before: bottom_pinned
+    player_b_role_after: winner_or_loser_recorded_on_transition
+    role_change: true
+    role_effect: terminal_outcome
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_SUBS
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/the-most-effective-submissions-in-jiu-jitsu
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: isolated bent arm
+      resulting_control_or_grip: 'submission: americana'
+- id: side_control_top_opponent_elbow_escape_to_closed_guard_top
+  name: Opponent Elbow Escape to Closed Guard
+  from_position: side_control_top
+  to_position: closed_guard_top
+  transition_type: escape
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - escape
+  notes: Player A remains on top inside the recovered guard.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_pinned
+    player_a_role_before: top_controller
+    player_a_role_after: top_inside_guard
+    player_b_role_before: bottom_pinned
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: frames and hip movement
+      resulting_control_or_grip: Player B closed guard
+- id: side_control_top_step_over_to_mount
+  name: Step Over to Mount
+  from_position: side_control_top
+  to_position: mount_top
+  transition_type: positional_advance
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_a
+    target: player_b
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Collapses knee-slide and windshield-wiper mount entries.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: top_controller
+    player_a_role_after: top_mounter
+    player_b_role_before: bottom_pinned
+    player_b_role_after: bottom_mounted
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: mount
+- id: side_control_top_to_knee_on_belly
+  name: Move to Knee-on-Belly
+  from_position: side_control_top
+  to_position: knee_on_belly_top
+  transition_type: positional_advance
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: crossface
+    owner: player_a
+    target: player_b
+  - control_id: pants_grip
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - positional_advance
+  notes: Dynamic pin retained as its own node.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_controller
+    player_a_role_before: top_controller
+    player_a_role_after: top_controller
+    player_b_role_before: bottom_pinned
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body control
+      resulting_control_or_grip: knee-on-belly
+- id: standing_guard_pull_conceded_to_closed_guard_top
+  name: Opponent Pulls Closed Guard
+  from_position: standing_neutral
+  to_position: closed_guard_top
+  transition_type: guard_pull
+  actor_player: player_b
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: body_lock
+    owner: player_b
+    target: player_a
+  - control_id: collar_grip
+    owner: player_b
+    target: player_a
+  - control_id: sleeve_grip
+    owner: player_b
+    target: player_a
+  - control_id: wrist_control
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_pull
+  notes: Mirrored guard pull.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: standing_attacker
+    player_a_role_before: standing
+    player_a_role_after: top_inside_guard
+    player_b_role_before: standing
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body connection
+      resulting_control_or_grip: closed guard for Player B
+- id: standing_guard_pull_to_closed_guard_bottom
+  name: Pull Closed Guard
+  from_position: standing_neutral
+  to_position: closed_guard_bottom
+  transition_type: guard_pull
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: body_lock
+    owner: player_a
+    target: player_b
+  - control_id: collar_grip
+    owner: player_a
+    target: player_b
+  - control_id: sleeve_grip
+    owner: player_a
+    target: player_b
+  - control_id: wrist_control
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_pull
+  notes: Normalized direct guard pull; detailed grips are omitted for No-Gi priority.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: standing_attacker
+    player_a_role_before: standing
+    player_a_role_after: bottom_guard
+    player_b_role_before: standing
+    player_b_role_after: top_inside_guard
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: upper-body connection
+      resulting_control_or_grip: closed guard
+- id: standing_single_leg_conceded_to_half_guard_bottom
+  name: Opponent Single-Leg to Bottom Half Guard
+  from_position: standing_neutral
+  to_position: half_guard_bottom
+  transition_type: takedown
+  actor_player: player_b
+  required_grips:
+  - ankle_control
+  - leg_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    owner: player_b
+    target: player_a
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: body_lock
+    owner: player_b
+    target: player_a
+  - control_id: two_on_one
+    owner: player_b
+    target: player_a
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - takedown
+  notes: Mirrored opponent action makes agency explicit without a second physical animation definition.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: standing_attacker
+    player_a_role_before: standing
+    player_a_role_after: bottom_guard
+    player_b_role_before: standing
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: standing_roles_become_destination_roles
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: basic leg connection
+      resulting_control_or_grip: top half guard for Player B
+- id: standing_single_leg_to_half_guard_top
+  name: Single-Leg Takedown to Top Half Guard
+  from_position: standing_neutral
+  to_position: half_guard_top
+  transition_type: takedown
+  actor_player: player_a
+  required_grips:
+  - ankle_control
+  - leg_control
+  created_grips: []
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - ankle_control
+    - leg_control
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: body_lock
+    owner: player_a
+    target: player_b
+  - control_id: two_on_one
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - takedown
+  notes: Many takedown finishes are collapsed to a common top-half outcome.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: standing_attacker
+    player_a_role_before: standing
+    player_a_role_after: top_passer
+    player_b_role_before: standing
+    player_b_role_after: bottom_guard
+    role_change: true
+    role_effect: standing_roles_become_destination_roles
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - IBJJF_RULES
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/books-videos
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: basic leg connection
+      resulting_control_or_grip: top half guard
+- id: turtle_bottom_granby_to_open_guard
+  name: Granby Roll to Open Guard
+  from_position: turtle_bottom
+  to_position: open_guard_bottom
+  transition_type: guard_recovery
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - guard_recovery
+  notes: Canonical guard-recovery result.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_turtled
+    player_a_role_before: bottom_turtled
+    player_a_role_after: bottom_guard
+    player_b_role_before: top_rider
+    player_b_role_after: top_passer
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: rolling space
+      resulting_control_or_grip: open guard
+- id: turtle_bottom_opponent_front_headlock
+  name: Opponent Secures Front Headlock
+  from_position: turtle_bottom
+  to_position: front_headlock_bottom
+  transition_type: control_transition
+  actor_player: player_b
+  required_grips: []
+  created_grips:
+  - head_and_arm_control
+  removed_grips: []
+  required_controls: []
+  created_controls:
+  - control_id: head_and_arm_control
+    owner: player_b
+    target: player_a
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - control_transition
+  notes: Mirrors the top-turtle entry and makes the defensive front-headlock state reachable.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_rider
+    player_a_role_before: bottom_turtled
+    player_a_role_after: headlock_defender
+    player_b_role_before: top_rider
+    player_b_role_after: headlock_attacker
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: head-and-arm connection
+      resulting_control_or_grip: front headlock for Player B
+- id: turtle_bottom_sit_out_to_standing
+  name: Sit-Out Escape to Standing
+  from_position: turtle_bottom
+  to_position: standing_neutral
+  transition_type: escape
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - escape
+  notes: Multiple sit-out/go-behind outcomes are collapsed to neutral.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: bottom_turtled
+    player_a_role_before: bottom_turtled
+    player_a_role_after: standing
+    player_b_role_before: top_rider
+    player_b_role_after: standing
+    role_change: true
+    role_effect: roles_reassigned_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: inside position
+      resulting_control_or_grip: neutral standing
+- id: turtle_top_seatbelt_back_take
+  name: Seatbelt Back Take
+  from_position: turtle_top
+  to_position: back_control_top
+  transition_type: back_take
+  actor_player: player_a
+  required_grips:
+  - seatbelt
+  created_grips:
+  - seatbelt
+  removed_grips: []
+  required_controls:
+  - match: any_of
+    control_ids:
+    - seatbelt
+    owner: player_a
+    target: player_b
+    modes:
+    - gi
+    - no_gi
+  created_controls:
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid:
+  - control_id: seatbelt
+    owner: player_a
+    target: player_b
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - back_take
+  notes: Hook-acquisition frames are collapsed.
+  submission: false
+  terminal: false
+  ownership_review_required: true
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_rider
+    player_a_role_before: top_rider
+    player_a_role_after: back_controller
+    player_b_role_before: bottom_turtled
+    player_b_role_after: back_defender
+    role_change: true
+    role_effect: actor_becomes_back_controller
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: seatbelt control
+      resulting_control_or_grip: back control
+- id: turtle_top_spiral_ride_to_side_control
+  name: Spiral-Ride Breakdown to Side Control
+  from_position: turtle_top
+  to_position: side_control_top
+  transition_type: positional_advance
+  actor_player: player_a
+  required_grips: []
+  created_grips: []
+  removed_grips: []
+  required_controls: []
+  created_controls: []
+  removed_controls: []
+  optional_controls:
+  - control_id: belt_grip
+    owner: player_a
+    target: player_b
+  - control_id: body_lock
+    owner: player_a
+    target: player_b
+  - control_id: lapel_grip
+    owner: player_a
+    target: player_b
+  - control_id: underhook
+    owner: player_a
+    target: player_b
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: medium
+  tags:
+  - positional_advance
+  notes: Ride variants normalized to a side-control finish.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: B
+  metadata:
+    actor_role: top_rider
+    player_a_role_before: top_rider
+    player_a_role_after: top_controller
+    player_b_role_before: bottom_turtled
+    player_b_role_after: bottom_pinned
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Available in both modes; common Gi garment grips differ from No-Gi wrist/limb/body controls.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://ibjjf.com/news/ibjjf-absolute-gp-recap-kaynan-wins-gp-as-atos-goes-unde
+    - https://ibjjf.com/uniform
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: hip and far-side control
+      resulting_control_or_grip: side control
+- id: turtle_top_to_front_headlock
+  name: Front Headlock from Turtle
+  from_position: turtle_top
+  to_position: front_headlock_top
+  transition_type: control_transition
+  actor_player: player_a
+  required_grips: []
+  created_grips:
+  - head_and_arm_control
+  removed_grips: []
+  required_controls: []
+  created_controls:
+  - control_id: head_and_arm_control
+    owner: player_a
+    target: player_b
+  removed_controls: []
+  optional_controls: []
+  controls_preserved_if_valid: []
+  reset_controls: true
+  gi_allowed: true
+  no_gi_allowed: true
+  difficulty: high
+  tags:
+  - control_transition
+  notes: Creates a No-Gi front-headlock hub.
+  submission: false
+  terminal: false
+  ownership_review_required: false
+  control_owner_resolution: Resolve actor/opponent to concrete player IDs before changing position or roles.
+  mode_classification: A
+  metadata:
+    actor_role: top_rider
+    player_a_role_before: top_rider
+    player_a_role_after: headlock_attacker
+    player_b_role_before: bottom_turtled
+    player_b_role_after: headlock_defender
+    role_change: true
+    role_effect: roles_updated_from_destination_position
+    garment_grip_required: false
+    mode_specific_notes: Same canonical technique in Gi and No-Gi. Garment grips may be incidental but are not required.
+    split_variant_recommendation: keep_unified
+    source_ids:
+    - GM
+    - GU
+    - SIMROLL
+    source_references:
+    - https://github.com/Eelis/GrappleMap
+    - https://www.gracieuniversity.com/Pages/Public/Course.aspx?se=293
+    evidence_status: curated_and_normalized
+    source_legacy_metadata:
+      required_control_or_grip: head-and-arm connection
+      resulting_control_or_grip: front headlock

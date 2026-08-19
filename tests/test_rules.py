@@ -1,13 +1,8 @@
 import pytest
 
-from simroll.engine import (
-    GrapplingGraph,
-    GrapplingMode,
-    is_transition_available,
-)
-from simroll.engine.control_semantics import starter_controls
+from simroll.engine import GrapplingGraph, is_transition_available
+from simroll.engine.control_semantics import owned_controls
 from simroll.models import ActiveControl
-from simroll.models import Transition
 
 
 @pytest.fixture
@@ -15,162 +10,85 @@ def graph() -> GrapplingGraph:
     return GrapplingGraph.from_default_data()
 
 
-@pytest.fixture
-def flower_sweep(graph: GrapplingGraph) -> Transition:
-    return graph.get_transition("flower_sweep")
-
-
-@pytest.fixture
-def hip_bump_sweep(graph: GrapplingGraph) -> Transition:
-    return graph.get_transition("hip_bump_sweep")
-
-
-def test_flower_sweep_is_available_in_gi_with_sleeve_grip(
-    flower_sweep: Transition,
-) -> None:
-    assert is_transition_available(flower_sweep, "gi", _controls("sleeve_grip"))
-
-
-def test_flower_sweep_is_unavailable_in_no_gi(
-    flower_sweep: Transition,
-) -> None:
-    assert not is_transition_available(
-        flower_sweep, "no_gi", _controls("sleeve_grip")
+def test_any_of_owned_control_requirement(graph: GrapplingGraph) -> None:
+    transition = graph.get_transition(
+        "closed_guard_bottom_arm_drag_to_back_control_top"
     )
 
-
-def test_flower_sweep_is_unavailable_without_sleeve_grip(
-    flower_sweep: Transition,
-) -> None:
-    assert not is_transition_available(flower_sweep, "gi", [])
-
-
-@pytest.mark.parametrize("mode", ["gi", "no_gi"])
-def test_hip_bump_sweep_is_available_in_both_modes_with_wrist_control(
-    hip_bump_sweep: Transition,
-    mode: GrapplingMode,
-) -> None:
     assert is_transition_available(
-        hip_bump_sweep, mode, _controls("wrist_control")
+        transition, "gi", owned_controls(["sleeve_grip"])
     )
-
-
-def test_hip_bump_sweep_is_unavailable_without_wrist_control(
-    hip_bump_sweep: Transition,
-) -> None:
-    assert not is_transition_available(hip_bump_sweep, "gi", [])
-
-
-def test_extra_active_grips_do_not_block_a_transition(
-    flower_sweep: Transition,
-) -> None:
-    active_controls = _controls("underhook", "sleeve_grip", "wrist_control")
-
-    assert is_transition_available(flower_sweep, "gi", active_controls)
-
-
-def test_transition_without_required_grips_is_available_in_allowed_mode(
-    graph: GrapplingGraph,
-) -> None:
-    elbow_escape = graph.get_transition("elbow_escape")
-
-    assert is_transition_available(elbow_escape, "no_gi", [])
-
-
-@pytest.mark.parametrize(
-    ("mode", "active_control_ids", "expected_transition_ids"),
-    [
-        ("gi", ["sleeve_grip", "wrist_control"], ["flower_sweep", "hip_bump_sweep"]),
-        ("gi", ["sleeve_grip"], ["flower_sweep"]),
-        ("no_gi", ["wrist_control"], ["hip_bump_sweep"]),
-        ("no_gi", [], []),
-    ],
-)
-def test_get_available_transitions_filters_by_mode_and_grips(
-    graph: GrapplingGraph,
-    mode: GrapplingMode,
-    active_control_ids: list[str],
-    expected_transition_ids: list[str],
-) -> None:
-    transitions = graph.get_available_transitions(
-        "closed_guard_bottom", mode, starter_controls(active_control_ids)
+    assert is_transition_available(
+        transition, "no_gi", owned_controls(["wrist_control"])
     )
-
-    assert [transition.id for transition in transitions] == expected_transition_ids
-
-
-def test_get_available_transitions_rejects_unknown_position(
-    graph: GrapplingGraph,
-) -> None:
-    with pytest.raises(KeyError, match="Unknown position ID 'missing_position'"):
-        graph.get_available_transitions("missing_position", "gi", [])
-
-
-def test_get_available_transitions_does_not_modify_active_controls(
-    graph: GrapplingGraph,
-) -> None:
-    active_controls = list(_controls("sleeve_grip", "wrist_control"))
-    original_active_controls = active_controls.copy()
-
-    graph.get_available_transitions(
-        "closed_guard_bottom", "gi", active_controls
-    )
-
-    assert active_controls == original_active_controls
-
-
-def test_get_available_transitions_does_not_modify_transitions(
-    graph: GrapplingGraph,
-) -> None:
-    transitions = graph.get_transitions_from("closed_guard_bottom")
-    original_transition_data = [transition.model_dump() for transition in transitions]
-
-    graph.get_available_transitions(
-        "closed_guard_bottom", "gi", _controls("sleeve_grip", "wrist_control")
-    )
-
-    assert [transition.model_dump() for transition in transitions] == (
-        original_transition_data
-    )
-
-
-def test_unsupported_mode_raises_clear_value_error(
-    flower_sweep: Transition,
-) -> None:
-    with pytest.raises(
-        ValueError, match="Unsupported grappling mode 'submission_only'"
-    ):
-        is_transition_available(
-            flower_sweep,
-            "submission_only",  # type: ignore[arg-type]
-            _controls("sleeve_grip"),
-        )
-
-
-def test_get_available_transitions_rejects_unsupported_mode_without_outgoing_edges(
-    graph: GrapplingGraph,
-) -> None:
-    with pytest.raises(
-        ValueError, match="Unsupported grappling mode 'submission_only'"
-    ):
-        graph.get_available_transitions(
-            "side_control_top",
-            "submission_only",  # type: ignore[arg-type]
-            [],
-        )
+    assert not is_transition_available(transition, "gi", [])
 
 
 def test_wrong_owner_does_not_satisfy_requirement(
-    flower_sweep: Transition,
+    graph: GrapplingGraph,
 ) -> None:
-    wrong_owner = ActiveControl(
-        control_id="sleeve_grip",
-        owner="player_b",
-        target="player_a",
+    transition = graph.get_transition(
+        "closed_guard_top_opponent_arm_drag_to_back_control_bottom"
+    )
+    player_a_control = ActiveControl(
+        control_id="wrist_control", owner="player_a", target="player_b"
+    )
+    player_b_control = ActiveControl(
+        control_id="wrist_control", owner="player_b", target="player_a"
     )
 
-    assert not is_transition_available(flower_sweep, "gi", [wrong_owner])
+    assert not is_transition_available(transition, "no_gi", [player_a_control])
+    assert is_transition_available(transition, "no_gi", [player_b_control])
 
 
-def _controls(*control_ids: str) -> frozenset[ActiveControl]:
-    return starter_controls(control_ids)
+def test_mode_scoped_requirement_options_are_conservative(
+    graph: GrapplingGraph,
+) -> None:
+    transition = graph.get_transition(
+        "half_guard_bottom_old_school_sweep_to_side_control_top"
+    )
+    gi_controls = owned_controls(["underhook", "pants_grip"])
+    no_gi_controls = owned_controls(["underhook", "leg_control"])
+
+    assert is_transition_available(transition, "gi", gi_controls)
+    assert not is_transition_available(transition, "no_gi", gi_controls)
+    assert is_transition_available(transition, "no_gi", no_gi_controls)
+
+
+def test_transition_without_requirements_is_available(graph: GrapplingGraph) -> None:
+    transition = graph.get_transition(
+        "closed_guard_bottom_hip_bump_to_mount_top"
+    )
+
+    assert is_transition_available(transition, "gi", [])
+    assert is_transition_available(transition, "no_gi", [])
+
+
+def test_available_transitions_are_deterministic_and_state_aware(
+    graph: GrapplingGraph,
+) -> None:
+    without_controls = graph.get_available_transitions(
+        "closed_guard_bottom", "no_gi", []
+    )
+    with_control = graph.get_available_transitions(
+        "closed_guard_bottom", "no_gi", owned_controls(["wrist_control"])
+    )
+
+    assert [item.id for item in without_controls] == [
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    ]
+    assert [item.id for item in with_control] == [
+        "closed_guard_bottom_arm_drag_to_back_control_top",
+        "closed_guard_bottom_hip_bump_to_mount_top",
+        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    ]
+
+
+def test_available_transitions_reject_invalid_inputs(graph: GrapplingGraph) -> None:
+    with pytest.raises(KeyError, match="Unknown position ID 'missing_position'"):
+        graph.get_available_transitions("missing_position", "gi", [])
+    with pytest.raises(ValueError, match="Unsupported grappling mode"):
+        graph.get_available_transitions(
+            "submission_terminal", "invalid", []  # type: ignore[arg-type]
+        )

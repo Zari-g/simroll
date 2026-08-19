@@ -138,11 +138,12 @@ Each transition should contain:
 * tags
 * notes
 
-The starter runtime keeps the legacy `required_grips`, `created_grips`, and
-`removed_grips` field names temporarily. At execution time, these IDs pass
-through the Iteration 11B compatibility adapter and represent controls owned by
-`player_a` over `player_b`. This convention applies only to the existing four
-starter transitions; normalized ownership semantics remain deferred to 11C+.
+The runtime retains `required_grips`, `created_grips`, and `removed_grips` as
+compatibility projections for existing API/frontend consumers. Authoritative
+requirements use `required_controls`, whose any-of clauses carry concrete
+`player_a` / `player_b` owner and target identities plus applicable modes.
+Created, removed, optional, reset, and preserved-control fields retain the
+normalized lifecycle intent but are data-only in 11C.
 
 Example:
 
@@ -290,10 +291,11 @@ The dataset will expand gradually during later iterations.
 
 ## 9.1 Curated MVP import boundary
 
-Iteration 11A introduces `simroll_bjj_mvp_v1` without replacing the starter
-YAML. The source JSON is validated through dedicated Pydantic import models and
-normalized into one canonical generated JSON artifact. Original positions and
-transitions remain distinct from five parameterized control-change templates.
+Iteration 11A introduced `simroll_bjj_mvp_v1` through dedicated Pydantic import
+models and one canonical generated JSON artifact. Iteration 11C makes runtime
+YAML a deterministic, human-readable projection of that artifact. Original
+positions and positional/submission transitions remain distinct from five
+parameterized control-change templates.
 
 This import contract preserves data that current runtime models cannot yet
 represent, including two-player roles, control ownership templates, optional
@@ -308,8 +310,11 @@ simroll/data/transitions.yaml
 simroll/data/grips.yaml
 ```
 
-Player-owned controls are deferred to 11B and full graph replacement is
-deferred to 11C.
+The active runtime contains 20 positions (19 live plus
+`submission_terminal`), 65 positional/submission transitions (including 10
+submissions), and 17 controls. All live positions form one strongly connected
+component. Control-change templates and advanced control lifecycle execution
+remain deferred to later Iteration 11 work.
 
 ---
 

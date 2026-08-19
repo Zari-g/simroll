@@ -331,11 +331,19 @@ Complete
 
 ## 11C — Expanded Runtime Graph
 
-Planned: adapt the normalized positions and positional transitions into the
-runtime graph after the 11B ownership boundary is complete.
+- [x] Derive the human-readable runtime YAML from the canonical normalized
+  artifact while preserving reviewed IDs.
+- [x] Activate 20 positions, 65 positional/submission transitions, and 17
+  controls without loading the five control-change templates.
+- [x] Resolve deterministic actor/opponent requirements to player-owned
+  controls and preserve unresolved lifecycle/review metadata.
+- [x] Load `submission_terminal` and all 10 submission transitions without
+  adding a new simulator stop reason.
+- [x] Validate runtime references, modes, ownership mappings, terminal edges,
+  counts, live-node reachability, and SCC invariants.
 
 11C Status:
-Future
+Complete
 
 Iteration 11 Status:
 In progress

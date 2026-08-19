@@ -1,27 +1,56 @@
-"""Temporary ownership semantics for the starter transition vocabulary.
+"""Owned-control requirement semantics for runtime transitions."""
 
-The starter graph predates player-owned controls, so its grip lists contain
-only IDs. During Iteration 11B those IDs describe controls held by player A
-over player B. Later dataset iterations can replace this adapter with
-ownership encoded directly in normalized transition data.
-"""
+from collections.abc import Collection, Iterable
 
-from collections.abc import Iterable
+from simroll.models import (
+    ActiveControl,
+    GrapplingMode,
+    OwnedControlRequirement,
+    PlayerId,
+)
 
-from simroll.models import ActiveControl
 
+def owned_controls(
+    control_ids: Iterable[str],
+    owner: PlayerId = "player_a",
+) -> frozenset[ActiveControl]:
+    """Build controls held by one stable player over the other player."""
 
-def starter_control(control_id: str) -> ActiveControl:
-    """Return the owned-control form of one legacy starter grip ID."""
-
-    return ActiveControl(
-        control_id=control_id,
-        owner="player_a",
-        target="player_b",
+    target: PlayerId = "player_b" if owner == "player_a" else "player_a"
+    return frozenset(
+        ActiveControl(control_id=control_id, owner=owner, target=target)
+        for control_id in control_ids
     )
 
 
-def starter_controls(control_ids: Iterable[str]) -> frozenset[ActiveControl]:
-    """Convert legacy starter grip IDs to immutable owned controls."""
+def requirement_is_satisfied(
+    requirement: OwnedControlRequirement,
+    mode: GrapplingMode,
+    active_controls: Collection[ActiveControl],
+) -> bool:
+    """Return whether one applicable any-of requirement is satisfied."""
 
-    return frozenset(starter_control(control_id) for control_id in control_ids)
+    if mode not in requirement.modes:
+        return True
+    return any(
+        ActiveControl(
+            control_id=control_id,
+            owner=requirement.owner,
+            target=requirement.target,
+        )
+        in active_controls
+        for control_id in requirement.control_ids
+    )
+
+
+def requirements_are_satisfied(
+    requirements: Collection[OwnedControlRequirement],
+    mode: GrapplingMode,
+    active_controls: Collection[ActiveControl],
+) -> bool:
+    """Return whether every requirement applicable to ``mode`` is satisfied."""
+
+    return all(
+        requirement_is_satisfied(requirement, mode, active_controls)
+        for requirement in requirements
+    )

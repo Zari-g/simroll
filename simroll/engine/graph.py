@@ -6,7 +6,7 @@ from types import MappingProxyType
 import networkx as nx
 
 from simroll.data import load_grips, load_positions, load_transitions
-from simroll.engine.control_semantics import starter_controls
+from simroll.engine.control_semantics import owned_controls, requirement_is_satisfied
 from simroll.engine.rules import (
     is_transition_allowed_in_mode,
     is_transition_available,
@@ -47,7 +47,7 @@ class GrapplingGraph:
 
     @classmethod
     def from_default_data(cls) -> "GrapplingGraph":
-        """Build a graph from SimRoll's starter YAML data."""
+        """Build a graph from SimRoll's curated MVP runtime YAML data."""
 
         positions = load_positions()
         grips = load_grips()
@@ -179,12 +179,32 @@ class GrapplingGraph:
                 f"{state.mode} mode."
             )
 
-        required_controls = starter_controls(transition.required_grips)
-        missing_controls = sorted(
-            required_controls.difference(state.active_controls),
-            key=lambda item: (item.control_id, item.owner, item.target),
-        )
-        if missing_controls:
+        missing_requirements = [
+            requirement
+            for requirement in transition.required_controls
+            if not requirement_is_satisfied(
+                requirement, state.mode, state.active_controls
+            )
+        ]
+        if missing_requirements:
+            missing_list = "; ".join(
+                f"one of {list(requirement.control_ids)!r} owned by "
+                f"{requirement.owner}"
+                for requirement in missing_requirements
+            )
+            raise ValueError(
+                f"Transition '{transition.id}' is missing required active "
+                f"controls: {missing_list}."
+            )
+
+        legacy_required = owned_controls(transition.required_grips)
+        if not transition.required_controls and not legacy_required.issubset(
+            state.active_controls
+        ):
+            missing_controls = sorted(
+                legacy_required.difference(state.active_controls),
+                key=lambda item: (item.control_id, item.owner, item.target),
+            )
             missing_list = ", ".join(
                 f"{control.control_id!r} owned by {control.owner}"
                 for control in missing_controls
@@ -194,13 +214,16 @@ class GrapplingGraph:
                 f"controls: {missing_list}."
             )
 
-        next_controls = (
-            state.active_controls.difference(
-                starter_controls(transition.removed_grips)
-            ).union(
-                starter_controls(transition.created_grips)
-            )
-        )
+        if _uses_runtime_control_schema(transition):
+            # 11C intentionally preserves the current owned-control state. The
+            # normalized add/remove/preserve intent is loaded on the transition,
+            # but executing that lifecycle belongs to 11D/11E.
+            next_controls = state.active_controls
+        else:
+            # Retain support for small legacy/custom graph fixtures.
+            next_controls = state.active_controls.difference(
+                owned_controls(transition.removed_grips)
+            ).union(owned_controls(transition.created_grips))
         next_state = GrapplingState(
             position_id=transition.to_position,
             mode=state.mode,
@@ -238,9 +261,44 @@ class GrapplingGraph:
                         f"grip '{grip_id}' in {field_name}."
                     )
 
+        for requirement in transition.required_controls:
+            for grip_id in requirement.control_ids:
+                if grip_id not in self._grips:
+                    raise ValueError(
+                        f"Transition '{transition.id}' references unknown "
+                        f"grip '{grip_id}' in required_controls."
+                    )
+
+        for field_name in (
+            "created_controls",
+            "removed_controls",
+            "optional_controls",
+            "controls_preserved_if_valid",
+        ):
+            for control in getattr(transition, field_name):
+                if control.control_id not in self._grips:
+                    raise ValueError(
+                        f"Transition '{transition.id}' references unknown "
+                        f"grip '{control.control_id}' in {field_name}."
+                    )
+
         self._graph.add_edge(
             transition.from_position,
             transition.to_position,
             key=transition.id,
             transition=transition,
         )
+
+
+def _uses_runtime_control_schema(transition: Transition) -> bool:
+    """Distinguish normalized runtime records from legacy custom fixtures."""
+
+    return bool(
+        transition.required_controls
+        or transition.created_controls
+        or transition.removed_controls
+        or transition.optional_controls
+        or transition.controls_preserved_if_valid
+        or transition.reset_controls
+        or transition.control_owner_resolution
+    )

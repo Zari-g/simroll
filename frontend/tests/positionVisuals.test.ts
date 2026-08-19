@@ -164,8 +164,8 @@ test('pose variants preserve the base pose and unchanged segments', () => {
   )
 })
 
-test('unknown future positions continue to use the visual fallback', () => {
-  assert.equal(getPositionVisual('future_position_without_visual'), null)
+test('expanded runtime positions without artwork use the visual fallback', () => {
+  assert.equal(getPositionVisual('half_guard_bottom'), null)
 })
 
 test('side control intentionally layers the top player over the bottom player', () => {
