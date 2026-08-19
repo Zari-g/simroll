@@ -92,18 +92,28 @@ Each Grip contains:
 
 ---
 
-## Player State
+## Active Control
 
-A Player State represents the current status of a grappler.
+An Active Control is an immutable control instance attached to stable player
+identity. It contains:
 
-Each Player State contains:
+- control_id
+- owner (`player_a` or `player_b`)
+- target (`player_a` or `player_b`)
 
-- current_position
-- active_grips
-- balance_state
-- posture_state
-- pressure_state
-- available_transitions
+Owner and target must differ. Player identity remains stable for the entire
+roll; top and bottom are positional roles derived from the current position.
+
+## Grappling State
+
+`GrapplingState` is an immutable, hashable snapshot containing:
+
+- position_id
+- mode
+- active_controls
+
+Two players may hold the same control type independently because ownership is
+part of control identity.
 
 ---
 

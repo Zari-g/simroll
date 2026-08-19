@@ -29,6 +29,11 @@ import {
   getInitialMode,
 } from '../utils/grapplingState'
 import { getHistoricalTransition } from '../utils/rollPlayback'
+import {
+  activeControlIds,
+  activeControlKey,
+  starterControls,
+} from '../utils/activeControls'
 import { AvailableMovesPanel } from './AvailableMovesPanel'
 import { GrapplingStage } from './GrapplingStage'
 import { RollControlPanel } from './RollControlPanel'
@@ -58,7 +63,10 @@ function isAbortError(error: unknown) {
 function resolveStateVisual(state: GrapplingStateResponse) {
   const visual = getPositionVisual(state.position_id)
   if (!visual) return null
-  const resolved = resolveVisualPose(visual, state.active_grips)
+  const resolved = resolveVisualPose(
+    visual,
+    activeControlIds(state.active_controls),
+  )
   return {
     displayState: displayStateFromResponse(state),
     poses: resolved.poses,
@@ -74,12 +82,12 @@ function statesMatch(
     return false
   }
 
-  const leftGrips = [...left.active_grips].sort()
-  const rightGrips = [...right.active_grips].sort()
+  const leftControls = left.active_controls.map(activeControlKey).sort()
+  const rightControls = right.active_controls.map(activeControlKey).sort()
 
   return (
-    leftGrips.length === rightGrips.length &&
-    leftGrips.every((gripId, index) => gripId === rightGrips[index])
+    leftControls.length === rightControls.length &&
+    leftControls.every((control, index) => control === rightControls[index])
   )
 }
 
@@ -109,8 +117,15 @@ function isValidSimulationResponse(
         state &&
         typeof state.position_id === 'string' &&
         (state.mode === 'gi' || state.mode === 'no_gi') &&
-        Array.isArray(state.active_grips) &&
-        state.active_grips.every((gripId) => typeof gripId === 'string'),
+        Array.isArray(state.active_controls) &&
+        state.active_controls.every(
+          (control) =>
+            control &&
+            typeof control.control_id === 'string' &&
+            (control.owner === 'player_a' || control.owner === 'player_b') &&
+            (control.target === 'player_a' || control.target === 'player_b') &&
+            control.owner !== control.target,
+        ),
     )
   ) {
     return false
@@ -363,7 +378,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     const startingState: GrapplingStateResponse = {
       position_id: selectedPosition.id,
       mode,
-      active_grips: [...selectedGripIds],
+      active_controls: starterControls(selectedGripIds),
     }
 
     rollVersion.current += 1

@@ -14,6 +14,7 @@ import type {
   ShortestPathRequest,
   Transition,
 } from '../types/api'
+import { starterControls } from '../utils/activeControls'
 import { formatReadable } from '../utils/format'
 import {
   filterGripIdsForMode,
@@ -255,7 +256,7 @@ export function Pathfinder({ positions, onShowOnMap }: PathfinderProps) {
       start_state: {
         position_id: startPosition.id,
         mode,
-        active_grips: [...selectedGripIds],
+        active_controls: starterControls(selectedGripIds),
       },
       target_position_id: targetPositionId,
       difficulties:

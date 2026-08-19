@@ -3,6 +3,7 @@ from collections.abc import Iterable
 import pytest
 
 from simroll.engine import GrapplingGraph, GrapplingPathfinder
+from simroll.engine.control_semantics import starter_controls
 from simroll.models import GrapplingState, Grip, Position, Transition
 
 
@@ -174,7 +175,7 @@ def test_shortest_path_uses_created_grip_for_later_transition() -> None:
 
     assert path is not None
     assert path.transition_ids == ("create_control", "use_control")
-    assert path.states[1].active_grips == frozenset({"control"})
+    assert path.states[1].active_controls == starter_controls({"control"})
 
 
 def test_shortest_path_distinguishes_same_position_with_different_grips() -> None:
@@ -204,8 +205,8 @@ def test_shortest_path_distinguishes_same_position_with_different_grips() -> Non
     assert path is not None
     assert path.transition_ids == ("setup", "technique")
     assert path.states[0].position_id == path.states[1].position_id
-    assert path.states[0].active_grips == frozenset()
-    assert path.states[1].active_grips == frozenset({"setup_grip"})
+    assert path.states[0].active_controls == frozenset()
+    assert path.states[1].active_controls == starter_controls({"setup_grip"})
 
 
 def test_shortest_path_respects_gi_and_no_gi_transition_rules() -> None:
@@ -242,7 +243,7 @@ def test_shortest_path_rejects_gi_required_grip_in_no_gi_start() -> None:
         match="Gi-required grip 'sleeve_grip' cannot be active in no_gi mode",
     ):
         GrapplingPathfinder(graph).find_shortest_path(
-            _state(mode="no_gi", active_grips=("sleeve_grip",)),
+            _state(mode="no_gi", active_control_ids=("sleeve_grip",)),
             "target",
         )
 
@@ -267,12 +268,12 @@ def test_grip_removal_blocks_later_transition() -> None:
         ],
         grips={control.id: control},
     )
-    start = _state(active_grips=("control",))
+    start = _state(active_control_ids=("control",))
 
     path = GrapplingPathfinder(graph).find_shortest_path(start, "target")
 
     assert path is None
-    assert start.active_grips == frozenset({"control"})
+    assert start.active_controls == starter_controls({"control"})
 
 
 def test_path_states_exactly_match_graph_transition_execution() -> None:
@@ -573,7 +574,7 @@ def test_default_graph_finds_hip_bump_sweep() -> None:
     start = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips=["wrist_control"],
+        active_controls=starter_controls(["wrist_control"]),
     )
 
     path = GrapplingPathfinder(graph).find_shortest_path(start, "mount_top")
@@ -694,10 +695,10 @@ def _state(
     position_id: str = "start",
     *,
     mode: str = "gi",
-    active_grips: tuple[str, ...] = (),
+    active_control_ids: tuple[str, ...] = (),
 ) -> GrapplingState:
     return GrapplingState(
         position_id=position_id,
         mode=mode,  # type: ignore[arg-type]
-        active_grips=active_grips,
+        active_controls=starter_controls(active_control_ids),
     )

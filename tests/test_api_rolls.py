@@ -4,12 +4,24 @@ import pytest
 from fastapi.testclient import TestClient
 
 from simroll.api.app import app
+from simroll.engine.control_semantics import starter_controls
 from simroll.engine import GrapplingGraph, RollSimulator
 from simroll.models import GrapplingState
 
 client = TestClient(app)
 graph = GrapplingGraph.from_default_data()
 simulator = RollSimulator(graph)
+
+
+def _control_payloads(control_ids: list[str]) -> list[dict[str, str]]:
+    return [
+        {
+            "control_id": control_id,
+            "owner": "player_a",
+            "target": "player_b",
+        }
+        for control_id in control_ids
+    ]
 
 
 @pytest.fixture(autouse=True)
@@ -73,7 +85,7 @@ def test_roll_choices_filters_out_missing_required_grips() -> None:
     [
         ({"position_id": "missing"}, "Unknown position ID 'missing'."),
         (
-            {"active_grips": ["missing"]},
+            {"active_controls": _control_payloads(["missing"])},
             "Unknown grip ID 'missing'.",
         ),
     ],
@@ -122,7 +134,7 @@ def test_manual_roll_step_returns_transition_and_authoritative_next_state() -> N
         "next_state": {
             "position_id": "mount_top",
             "mode": "gi",
-            "active_grips": ["underhook"],
+            "active_controls": _control_payloads(["underhook"]),
         },
     }
 
@@ -140,7 +152,7 @@ def test_manual_roll_step_preserves_other_grips_and_sorts_response() -> None:
     assert response.json()["next_state"] == {
         "position_id": "mount_top",
         "mode": "gi",
-        "active_grips": ["sleeve_grip", "underhook"],
+        "active_controls": _control_payloads(["sleeve_grip", "underhook"]),
     }
 
 
@@ -171,7 +183,7 @@ def test_manual_roll_step_rejects_transition_from_wrong_position() -> None:
     assert "starts at 'closed_guard_bottom'" in response.json()["detail"]
 
 
-def test_manual_roll_step_rejects_missing_required_grips() -> None:
+def test_manual_roll_step_rejects_missing_required_controls() -> None:
     response = client.post(
         "/rolls/step",
         json=_step_payload(transition_id="hip_bump_sweep"),
@@ -180,8 +192,8 @@ def test_manual_roll_step_rejects_missing_required_grips() -> None:
     assert response.status_code == 400
     assert response.json() == {
         "detail": (
-            "Transition 'hip_bump_sweep' is missing required active grips: "
-            "'wrist_control'."
+                "Transition 'hip_bump_sweep' is missing required active controls: "
+                "'wrist_control' owned by player_a."
         )
     }
 
@@ -215,7 +227,11 @@ def test_manual_roll_step_rejects_unknown_transition() -> None:
     [
         ({"position_id": "missing"}, "Unknown position ID 'missing'."),
         (
-            {"active_grips": ["wrist_control", "missing"]},
+            {
+                "active_controls": _control_payloads(
+                    ["wrist_control", "missing"]
+                )
+            },
             "Unknown grip ID 'missing'.",
         ),
     ],
@@ -240,7 +256,7 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"sleeve_grip", "wrist_control"},
+        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
     )
     valid_transitions = {
         transition.id: transition
@@ -310,7 +326,7 @@ def test_roll_simulation_returns_authoritative_valid_path() -> None:
     start_state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"sleeve_grip", "wrist_control"},
+        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
     )
 
     response = client.post(
@@ -396,8 +412,8 @@ def test_roll_simulation_returns_engine_grip_changes(
 
     assert response.status_code == 200
     assert response.json()["path"]["states"][1][
-        "active_grips"
-    ] == expected_grips
+        "active_controls"
+    ] == _control_payloads(expected_grips)
 
 
 def test_roll_simulation_zero_steps_returns_only_start_state() -> None:
@@ -415,7 +431,9 @@ def test_roll_simulation_zero_steps_returns_only_start_state() -> None:
                 {
                     "position_id": "closed_guard_bottom",
                     "mode": "gi",
-                    "active_grips": ["sleeve_grip", "wrist_control"],
+                    "active_controls": _control_payloads(
+                        ["sleeve_grip", "wrist_control"]
+                    ),
                 }
             ],
             "transition_ids": [],
@@ -457,7 +475,7 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
                 {
                     "position_id": "side_control_top",
                     "mode": "gi",
-                    "active_grips": [],
+                    "active_controls": [],
                 }
             ],
             "transition_ids": [],
@@ -489,7 +507,10 @@ def test_roll_simulation_reports_early_dead_end() -> None:
     ("state_update", "detail"),
     [
         ({"position_id": "missing"}, "Unknown position ID 'missing'."),
-        ({"active_grips": ["missing"]}, "Unknown grip ID 'missing'."),
+        (
+            {"active_controls": _control_payloads(["missing"])},
+            "Unknown grip ID 'missing'.",
+        ),
     ],
 )
 def test_roll_simulation_translates_unknown_state_resources(
@@ -615,6 +636,7 @@ def test_openapi_documents_roll_routes_and_schemas() -> None:
     assert "post" in document["paths"]["/rolls/step"]
     assert "post" in document["paths"]["/rolls/simulate"]
     assert {
+        "ActiveControl",
         "RollAvailableRequest",
         "RollSimulationRequest",
         "RollSimulationResponse",
@@ -633,7 +655,7 @@ def _available_payload(
         "state": {
             "position_id": position_id,
             "mode": mode,
-            "active_grips": active_grips or [],
+            "active_controls": _control_payloads(active_grips or []),
         }
     }
 
@@ -666,7 +688,7 @@ def _simulation_payload(
         "start_state": {
             "position_id": position_id,
             "mode": mode,
-            "active_grips": active_grips or [],
+            "active_controls": _control_payloads(active_grips or []),
         },
         "max_steps": max_steps,
     }
@@ -676,7 +698,13 @@ def _state_response(state: GrapplingState) -> dict[str, object]:
     return {
         "position_id": state.position_id,
         "mode": state.mode,
-        "active_grips": sorted(state.active_grips),
+        "active_controls": [
+            control.model_dump()
+            for control in sorted(
+                state.active_controls,
+                key=lambda item: (item.control_id, item.owner, item.target),
+            )
+        ],
     }
 
 

@@ -5,6 +5,7 @@ import type {
   Transition,
 } from '../types/api'
 import { formatReadable } from '../utils/format'
+import { activeControlIds } from '../utils/activeControls'
 
 interface PathResultProps {
   path: GrapplingPath
@@ -88,8 +89,10 @@ export function PathResult({
                   <p>{state.mode === 'gi' ? 'Gi' : 'No-Gi'}</p>
                   <p>
                     <strong>Active grips:</strong>{' '}
-                    {state.active_grips.length > 0
-                      ? state.active_grips.map(resolveGrip).join(', ')
+                    {state.active_controls.length > 0
+                      ? activeControlIds(state.active_controls)
+                          .map(resolveGrip)
+                          .join(', ')
                       : 'None'}
                   </p>
                 </div>

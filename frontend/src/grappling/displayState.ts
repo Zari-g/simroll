@@ -36,7 +36,7 @@ export function displayStateFromResponse(
   return createGrapplingDisplayState(
     state.position_id,
     state.mode,
-    state.active_grips,
+    [...new Set(state.active_controls.map((control) => control.control_id))],
   )
 }
 

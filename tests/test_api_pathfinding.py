@@ -11,6 +11,17 @@ from simroll.models import GrapplingState, Grip, Position, Transition
 client = TestClient(app)
 
 
+def _controls(*control_ids: str) -> list[dict[str, str]]:
+    return [
+        {
+            "control_id": control_id,
+            "owner": "player_a",
+            "target": "player_b",
+        }
+        for control_id in control_ids
+    ]
+
+
 @pytest.fixture(autouse=True)
 def restore_dependency_overrides() -> Iterator[None]:
     yield
@@ -23,7 +34,7 @@ def test_available_transitions_returns_valid_gi_transitions_in_id_order() -> Non
         json={
             "position_id": "closed_guard_bottom",
             "mode": "gi",
-            "active_grips": ["wrist_control", "sleeve_grip"],
+            "active_controls": _controls("wrist_control", "sleeve_grip"),
         },
     )
 
@@ -40,7 +51,7 @@ def test_available_transitions_respects_no_gi_mode() -> None:
         json={
             "position_id": "closed_guard_bottom",
             "mode": "no_gi",
-            "active_grips": ["wrist_control"],
+            "active_controls": _controls("wrist_control"),
         },
     )
 
@@ -56,7 +67,7 @@ def test_available_transitions_omits_transition_without_required_grip() -> None:
         json={
             "position_id": "closed_guard_bottom",
             "mode": "gi",
-            "active_grips": [],
+            "active_controls": [],
         },
     )
 
@@ -70,7 +81,7 @@ def test_available_transitions_rejects_unknown_position() -> None:
         json={
             "position_id": "missing",
             "mode": "gi",
-            "active_grips": [],
+            "active_controls": [],
         },
     )
 
@@ -84,7 +95,7 @@ def test_available_transitions_rejects_unknown_grip() -> None:
         json={
             "position_id": "closed_guard_bottom",
             "mode": "gi",
-            "active_grips": ["missing"],
+            "active_controls": _controls("missing"),
         },
     )
 
@@ -98,7 +109,7 @@ def test_available_transitions_rejects_gi_grip_in_no_gi_state() -> None:
         json={
             "position_id": "closed_guard_bottom",
             "mode": "no_gi",
-            "active_grips": ["sleeve_grip"],
+            "active_controls": _controls("sleeve_grip"),
         },
     )
 
@@ -114,7 +125,9 @@ def test_available_transitions_are_deterministic_and_ignore_duplicate_grips() ->
     payload = {
         "position_id": "closed_guard_bottom",
         "mode": "gi",
-        "active_grips": ["wrist_control", "sleeve_grip", "wrist_control"],
+        "active_controls": _controls(
+            "wrist_control", "sleeve_grip", "wrist_control"
+        ),
     }
 
     responses = [
@@ -137,7 +150,7 @@ def test_shortest_path_returns_direct_default_path() -> None:
             "start_state": {
                 "position_id": "closed_guard_bottom",
                 "mode": "gi",
-                "active_grips": ["wrist_control"],
+                "active_controls": _controls("wrist_control"),
             },
             "target_position_id": "mount_top",
         },
@@ -150,12 +163,12 @@ def test_shortest_path_returns_direct_default_path() -> None:
                 {
                     "position_id": "closed_guard_bottom",
                     "mode": "gi",
-                    "active_grips": ["wrist_control"],
+                    "active_controls": _controls("wrist_control"),
                 },
                 {
                     "position_id": "mount_top",
                     "mode": "gi",
-                    "active_grips": ["underhook"],
+                    "active_controls": _controls("underhook"),
                 },
             ],
             "transition_ids": ["hip_bump_sweep"],
@@ -178,17 +191,16 @@ def test_shortest_path_serializes_grips_in_sorted_order() -> None:
             "start_state": {
                 "position_id": "start",
                 "mode": "gi",
-                "active_grips": ["z_grip", "a_grip"],
+                "active_controls": _controls("z_grip", "a_grip"),
             },
             "target_position_id": "start",
         },
     )
 
     assert response.status_code == 200
-    assert response.json()["path"]["states"][0]["active_grips"] == [
-        "a_grip",
-        "z_grip",
-    ]
+    assert response.json()["path"]["states"][0]["active_controls"] == (
+        _controls("a_grip", "z_grip")
+    )
 
 
 def test_shortest_path_starting_at_target_returns_zero_step_path() -> None:
@@ -198,7 +210,7 @@ def test_shortest_path_starting_at_target_returns_zero_step_path() -> None:
             "start_state": {
                 "position_id": "mount_top",
                 "mode": "gi",
-                "active_grips": [],
+                "active_controls": [],
             },
             "target_position_id": "mount_top",
         },
@@ -210,7 +222,7 @@ def test_shortest_path_starting_at_target_returns_zero_step_path() -> None:
             {
                 "position_id": "mount_top",
                 "mode": "gi",
-                "active_grips": [],
+                "active_controls": [],
             }
         ],
         "transition_ids": [],
@@ -244,7 +256,7 @@ def test_shortest_path_returns_null_without_route() -> None:
                 "start_state": {
                     "position_id": "closed_guard_bottom",
                     "mode": "gi",
-                    "active_grips": ["missing"],
+                    "active_controls": _controls("missing"),
                 }
             },
             "Unknown grip ID 'missing'.",
@@ -259,7 +271,7 @@ def test_shortest_path_translates_unknown_domain_references(
         "start_state": {
             "position_id": "closed_guard_bottom",
             "mode": "gi",
-            "active_grips": [],
+            "active_controls": [],
         },
         "target_position_id": "mount_top",
     }
@@ -278,7 +290,7 @@ def test_shortest_path_rejects_invalid_grappling_state() -> None:
             "start_state": {
                 "position_id": "closed_guard_bottom",
                 "mode": "no_gi",
-                "active_grips": ["sleeve_grip"],
+                "active_controls": _controls("sleeve_grip"),
             },
             "target_position_id": "mount_top",
         },
@@ -444,7 +456,7 @@ def test_paths_starting_at_target_returns_one_zero_step_path() -> None:
                 {
                     "position_id": "start",
                     "mode": "gi",
-                    "active_grips": [],
+                    "active_controls": [],
                 }
             ],
             "transition_ids": [],
@@ -528,7 +540,7 @@ def _shortest_payload() -> dict[str, object]:
         "start_state": {
             "position_id": "start",
             "mode": "gi",
-            "active_grips": [],
+            "active_controls": [],
         },
         "target_position_id": "target",
     }

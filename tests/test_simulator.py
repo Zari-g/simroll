@@ -3,6 +3,7 @@ import random
 import pytest
 
 from simroll.engine import GrapplingGraph, RollSimulator
+from simroll.engine.control_semantics import starter_controls
 from simroll.models import (
     GrapplingPath,
     GrapplingState,
@@ -28,7 +29,7 @@ def test_step_applies_selected_transition_without_mutating_start_state(
     start = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"sleeve_grip", "wrist_control"},
+        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
     )
 
     result = simulator.step(start, "hip_bump_sweep")
@@ -36,11 +37,13 @@ def test_step_applies_selected_transition_without_mutating_start_state(
     assert result == GrapplingState(
         position_id="mount_top",
         mode="gi",
-        active_grips={"sleeve_grip", "underhook"},
+        active_controls=starter_controls({"sleeve_grip", "underhook"}),
     )
     assert result is not start
     assert start.position_id == "closed_guard_bottom"
-    assert start.active_grips == frozenset({"sleeve_grip", "wrist_control"})
+    assert start.active_controls == starter_controls(
+        {"sleeve_grip", "wrist_control"}
+    )
 
 
 def test_step_rejects_transition_from_wrong_position(
@@ -60,7 +63,7 @@ def test_step_rejects_missing_required_grip(simulator: RollSimulator) -> None:
 
     with pytest.raises(
         ValueError,
-        match="missing required active grips: 'sleeve_grip'",
+        match="missing required active controls: 'sleeve_grip' owned by player_a",
     ):
         simulator.step(state, "flower_sweep")
 
@@ -83,7 +86,7 @@ def test_available_transitions_include_only_valid_choices(
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"wrist_control"},
+        active_controls=starter_controls({"wrist_control"}),
     )
 
     transitions = simulator.get_available_transitions(state)
@@ -97,7 +100,7 @@ def test_available_transitions_exclude_invalid_mode(
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="no_gi",
-        active_grips={"wrist_control"},
+        active_controls=starter_controls({"wrist_control"}),
     )
 
     transitions = simulator.get_available_transitions(state)
@@ -119,7 +122,7 @@ def test_available_transitions_validate_complete_state(
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"missing_grip"},
+        active_controls=starter_controls({"missing_grip"}),
     )
 
     with pytest.raises(KeyError, match="Unknown grip ID 'missing_grip'"):
@@ -149,7 +152,7 @@ def test_random_step_selects_only_currently_valid_transitions(
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"sleeve_grip", "wrist_control"},
+        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
     )
     valid_ids = {
         transition.id
@@ -171,7 +174,7 @@ def test_random_step_is_repeatable_with_seeded_rng(
     state = GrapplingState(
         position_id="closed_guard_bottom",
         mode="gi",
-        active_grips={"sleeve_grip", "wrist_control"},
+        active_controls=starter_controls({"sleeve_grip", "wrist_control"}),
     )
 
     first = simulator.random_step(state, rng=random.Random(27))
@@ -190,7 +193,7 @@ def test_random_step_returns_none_at_dead_end(
 
 def test_simulate_returns_valid_path_with_graph_produced_states() -> None:
     graph = _grip_sequence_graph()
-    start = _state(active_grips={"initial_control"})
+    start = _state(active_control_ids={"initial_control"})
 
     path = RollSimulator(graph).simulate(
         start,
@@ -208,14 +211,14 @@ def test_simulate_returns_valid_path_with_graph_produced_states() -> None:
 
 def test_simulate_propagates_grip_changes_across_steps() -> None:
     graph = _grip_sequence_graph()
-    start = _state(active_grips={"initial_control"})
+    start = _state(active_control_ids={"initial_control"})
 
     path = RollSimulator(graph).simulate(start, max_steps=10)
 
     assert path.transition_ids == ("create_next", "finish")
-    assert path.states[0].active_grips == frozenset({"initial_control"})
-    assert path.states[1].active_grips == frozenset({"next_control"})
-    assert path.states[2].active_grips == frozenset()
+    assert path.states[0].active_controls == starter_controls({"initial_control"})
+    assert path.states[1].active_controls == starter_controls({"next_control"})
+    assert path.states[2].active_controls == frozenset()
 
 
 def test_simulate_never_exceeds_max_steps() -> None:
@@ -336,12 +339,12 @@ def _graph(
 def _state(
     *,
     position_id: str = "start",
-    active_grips: set[str] | None = None,
+    active_control_ids: set[str] | None = None,
 ) -> GrapplingState:
     return GrapplingState(
         position_id=position_id,
         mode="gi",
-        active_grips=active_grips or set(),
+        active_controls=starter_controls(active_control_ids or set()),
     )
 
 

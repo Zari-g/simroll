@@ -11,6 +11,7 @@ import type {
   Position,
   Transition,
 } from '../types/api'
+import { starterControls } from '../utils/activeControls'
 import { formatReadable } from '../utils/format'
 import {
   filterGripIdsForMode,
@@ -110,7 +111,7 @@ export function PositionDetail({
           {
             position_id: currentDetail.position.id,
             mode: currentMode,
-            active_grips: selectedGripIds,
+            active_controls: starterControls(selectedGripIds),
           },
           controller.signal,
         )

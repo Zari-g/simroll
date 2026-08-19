@@ -1,4 +1,5 @@
 import type { GrapplingStateResponse } from '../types/api'
+import { activeControlIds } from '../utils/activeControls'
 import { RollPlaybackControls } from './RollPlaybackControls'
 
 interface RollHistoryProps {
@@ -26,12 +27,14 @@ function getGripChanges(
   previous: GrapplingStateResponse,
   current: GrapplingStateResponse,
 ): GripChanges {
-  const previousGrips = new Set(previous.active_grips)
-  const currentGrips = new Set(current.active_grips)
+  const previousControlIds = activeControlIds(previous.active_controls)
+  const currentControlIds = activeControlIds(current.active_controls)
+  const previousGrips = new Set(previousControlIds)
+  const currentGrips = new Set(currentControlIds)
 
   return {
-    added: current.active_grips.filter((gripId) => !previousGrips.has(gripId)),
-    released: previous.active_grips.filter((gripId) => !currentGrips.has(gripId)),
+    added: currentControlIds.filter((gripId) => !previousGrips.has(gripId)),
+    released: previousControlIds.filter((gripId) => !currentGrips.has(gripId)),
   }
 }
 
@@ -152,8 +155,10 @@ export function RollHistory({
                   <div>
                     <dt>Grips</dt>
                     <dd>
-                      {state.active_grips.length > 0
-                        ? state.active_grips.map(resolveGripName).join(', ')
+                      {state.active_controls.length > 0
+                        ? activeControlIds(state.active_controls)
+                            .map(resolveGripName)
+                            .join(', ')
                         : 'None'}
                     </dd>
                   </div>

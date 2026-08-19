@@ -138,6 +138,12 @@ Each transition should contain:
 * tags
 * notes
 
+The starter runtime keeps the legacy `required_grips`, `created_grips`, and
+`removed_grips` field names temporarily. At execution time, these IDs pass
+through the Iteration 11B compatibility adapter and represent controls owned by
+`player_a` over `player_b`. This convention applies only to the existing four
+starter transitions; normalized ownership semantics remain deferred to 11C+.
+
 Example:
 
 ```yaml
@@ -182,6 +188,10 @@ Each grip should contain:
 * control_target
 * dominant_hand
 * tags
+
+Grip records define the control vocabulary. Runtime `ActiveControl` values add
+the stable `owner` and `target` player identities to a referenced control ID.
+Position roles such as top and bottom never replace those identities.
 
 Example:
 

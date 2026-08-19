@@ -10,6 +10,13 @@ export interface Position {
 }
 
 export type GrapplingMode = 'gi' | 'no_gi'
+export type PlayerId = 'player_a' | 'player_b'
+
+export interface ActiveControl {
+  control_id: string
+  owner: PlayerId
+  target: PlayerId
+}
 
 export interface Grip {
   id: string
@@ -40,13 +47,13 @@ export interface Transition {
 export interface AvailableTransitionsRequest {
   position_id: string
   mode: GrapplingMode
-  active_grips: string[]
+  active_controls: ActiveControl[]
 }
 
 export interface GrapplingStatePayload {
   position_id: string
   mode: GrapplingMode
-  active_grips: string[]
+  active_controls: ActiveControl[]
 }
 
 export interface ShortestPathRequest {
@@ -69,7 +76,7 @@ export interface PathsRequest {
 export interface GrapplingStateResponse {
   position_id: string
   mode: GrapplingMode
-  active_grips: string[]
+  active_controls: ActiveControl[]
 }
 
 export interface RollAvailableRequest {

@@ -83,12 +83,20 @@ Core models:
 * Position
 * Transition
 * Grip
+* ActiveControl
 * GrapplingState
 * GrapplingPath
 
 These models describe what the system understands about Brazilian Jiu-Jitsu.
 
-For example, a transition connects one position to another and may require specific grips. `GrapplingState` represents an immutable position, mode, and active-grip snapshot, while `GrapplingPath` represents a valid sequence of those states. Roll simulation reuses these models without adding simulation behavior to them.
+For example, a transition connects one position to another and may require
+specific controls. `ActiveControl` identifies a control, its owning player, and
+its target player. `GrapplingState` represents an immutable, hashable position,
+mode, and player-owned-control snapshot, while `GrapplingPath` represents a
+valid sequence of those complete states. Player identity is stable; positional
+roles are derived from the current position and may change after a sweep or
+reversal. Roll simulation reuses these models without adding simulation
+behavior to them.
 
 ---
 
@@ -99,7 +107,7 @@ The simulation engine contains the main logic of SimRoll.
 Responsibilities:
 
 * use `GrapplingGraph` to load data and represent positions and transitions
-* apply transition rules for gi/no-gi modes and grip requirements
+* apply transition rules for gi/no-gi modes and owned-control requirements
 * validate grappling states
 * execute transitions as immutable state updates
 * use `GrapplingPathfinder` for shortest and multiple path searches
