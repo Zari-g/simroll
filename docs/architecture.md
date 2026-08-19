@@ -48,7 +48,19 @@ pathfinding, roll execution, and grappling rules remain backend-owned.
 
 The data layer stores positions, transitions, grips, and technique information.
 
-The current starter data is stored in YAML files and loaded into validated domain models.
+The active starter data is stored in YAML files and loaded into validated
+runtime domain models. Iteration 11A also adds a separate curated-data boundary:
+
+```text
+external curated JSON
+    -> strict import contract and validation
+    -> canonical normalized JSON
+    -> future runtime integration
+```
+
+The importer and normalized artifact do not feed
+`GrapplingGraph.from_default_data()` yet. The three starter positions, four
+transitions, and three grips remain the only active runtime graph during 11A.
 
 Example data:
 
@@ -372,6 +384,11 @@ simroll/
 
 ---
 
+The import-layer models and importer live under `simroll/datasets/`. Curated
+source and generated integration artifacts live outside the runtime package
+under `data/curated/` and `data/generated/`. The repeatable entry point is
+`scripts/import_bjj_mvp.py`.
+
 ## 9. Design Principles
 
 SimRoll should be:
@@ -398,5 +415,6 @@ The current version focuses on:
 * adding grip constraints
 * building graph-based pathfinding
 * exposing the engine through a thin FastAPI layer
+* validating a richer curated dataset before runtime migration
 
 This keeps the project realistic and expandable.
