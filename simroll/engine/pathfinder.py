@@ -148,7 +148,7 @@ class GrapplingPathfinder:
         transitions = self._graph.get_available_transitions(
             state.position_id,
             state.mode,
-            state.active_grips,
+            state.active_controls,
         )
         return sorted(
             (

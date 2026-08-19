@@ -40,26 +40,36 @@ path.
 
 ## Grappling State
 
-`GrapplingState` is an immutable snapshot containing the current position,
-grappling mode, and active grip IDs. `GrapplingGraph.apply_transition()` checks
-the state and transition constraints, then returns a new state with the
-transition's grip removals and creations applied.
+`GrapplingState` is an immutable, hashable snapshot containing the current
+position, grappling mode, and player-owned controls. Player identities stay
+fixed as `player_a` and `player_b`; top and bottom are roles derived from the
+current position. `GrapplingGraph.apply_transition()` checks the state and
+transition constraints, then returns a new state with matching owned controls
+removed or created.
 
 ```python
 from simroll.engine import GrapplingGraph
-from simroll.models import GrapplingState
+from simroll.models import ActiveControl, GrapplingState
 
 graph = GrapplingGraph.from_default_data()
 state = GrapplingState(
     position_id="closed_guard_bottom",
     mode="gi",
-    active_grips=["wrist_control"],
+    active_controls=[
+        ActiveControl(
+            control_id="wrist_control",
+            owner="player_a",
+            target="player_b",
+        )
+    ],
 )
 
 next_state = graph.apply_transition(state, "hip_bump_sweep")
 
 assert next_state.position_id == "mount_top"
-assert next_state.active_grips == frozenset({"underhook"})
+assert {control.control_id for control in next_state.active_controls} == {
+    "underhook"
+}
 assert state.position_id == "closed_guard_bottom"
 ```
 
@@ -71,7 +81,7 @@ removing a grip, while still respecting gi/no-gi and transition requirements.
 
 ```python
 from simroll.engine import GrapplingGraph, GrapplingPathfinder
-from simroll.models import GrapplingState
+from simroll.models import ActiveControl, GrapplingState
 
 graph = GrapplingGraph.from_default_data()
 pathfinder = GrapplingPathfinder(graph)
@@ -79,7 +89,13 @@ pathfinder = GrapplingPathfinder(graph)
 start = GrapplingState(
     position_id="closed_guard_bottom",
     mode="gi",
-    active_grips=["wrist_control"],
+    active_controls=[
+        ActiveControl(
+            control_id="wrist_control",
+            owner="player_a",
+            target="player_b",
+        )
+    ],
 )
 
 path = pathfinder.find_shortest_path(start, "mount_top")
@@ -111,14 +127,20 @@ seeded `random.Random` makes random rolls repeatable.
 import random
 
 from simroll.engine import GrapplingGraph, RollSimulator
-from simroll.models import GrapplingState
+from simroll.models import ActiveControl, GrapplingState
 
 graph = GrapplingGraph.from_default_data()
 simulator = RollSimulator(graph)
 start = GrapplingState(
     position_id="closed_guard_bottom",
     mode="gi",
-    active_grips=["wrist_control"],
+    active_controls=[
+        ActiveControl(
+            control_id="wrist_control",
+            owner="player_a",
+            target="player_b",
+        )
+    ],
 )
 
 path = simulator.simulate(start, max_steps=4, rng=random.Random(7))
@@ -174,7 +196,13 @@ curl -X POST http://127.0.0.1:8000/paths/shortest \
     "start_state": {
       "position_id": "closed_guard_bottom",
       "mode": "gi",
-      "active_grips": ["wrist_control"]
+      "active_controls": [
+        {
+          "control_id": "wrist_control",
+          "owner": "player_a",
+          "target": "player_b"
+        }
+      ]
     },
     "target_position_id": "mount_top"
   }'

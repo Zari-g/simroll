@@ -128,14 +128,14 @@ def list_available_transitions(
     state = GrapplingState(
         position_id=request.position_id,
         mode=request.mode,
-        active_grips=request.active_grips,
+        active_controls=request.active_controls,
     )
     try:
         graph.validate_state(state)
         transitions = graph.get_available_transitions(
             state.position_id,
             state.mode,
-            state.active_grips,
+            state.active_controls,
         )
     except KeyError as error:
         _raise_not_found(error)

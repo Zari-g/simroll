@@ -61,7 +61,7 @@ test('recorded historical mode resolves the matching apparel', () => {
   const historicalState: GrapplingStateResponse = {
     position_id: 'mount_top',
     mode: 'no_gi',
-    active_grips: [],
+    active_controls: [],
   }
 
   const appearance = resolveGrapplerAppearance(

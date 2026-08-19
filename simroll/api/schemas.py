@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from simroll.models import (
+    ActiveControl,
     GrapplingMode,
     GrapplingPath,
     GrapplingState,
@@ -22,9 +23,9 @@ class AvailableTransitionsRequest(BaseModel):
         description="ID of the current grappling position.",
     )
     mode: GrapplingMode = Field(description="Grappling mode for the state.")
-    active_grips: list[str] = Field(
+    active_controls: list[ActiveControl] = Field(
         default_factory=list,
-        description="Grip IDs currently active in the state.",
+        description="Player-owned controls currently active in the state.",
     )
 
 
@@ -85,16 +86,19 @@ class GrapplingStateResponse(BaseModel):
 
     position_id: str
     mode: GrapplingMode
-    active_grips: list[str]
+    active_controls: list[ActiveControl]
 
     @classmethod
     def from_domain(cls, state: GrapplingState) -> "GrapplingStateResponse":
-        """Convert a domain state with deterministically ordered grips."""
+        """Convert a domain state with deterministically ordered controls."""
 
         return cls(
             position_id=state.position_id,
             mode=state.mode,
-            active_grips=sorted(state.active_grips),
+            active_controls=sorted(
+                state.active_controls,
+                key=lambda item: (item.control_id, item.owner, item.target),
+            ),
         )
 
 

@@ -101,12 +101,14 @@ test('configured, live, and playback state resolve through one display boundary'
   const liveResponse: GrapplingStateResponse = {
     position_id: 'mount_top',
     mode: 'gi',
-    active_grips: ['underhook'],
+    active_controls: [
+      { control_id: 'underhook', owner: 'player_a', target: 'player_b' },
+    ],
   }
   const playbackResponse: GrapplingStateResponse = {
     position_id: 'side_control_top',
     mode: 'no_gi',
-    active_grips: [],
+    active_controls: [],
   }
   const live = displayStateFromResponse(liveResponse)
   const playback = displayStateFromResponse(playbackResponse)
@@ -125,7 +127,11 @@ test('configured, live, and playback state resolve through one display boundary'
   assert.equal(live.mode, 'gi')
   assert.deepEqual(live.activeGripIds, ['underhook'])
 
-  liveResponse.active_grips.push('sleeve_grip')
+  liveResponse.active_controls.push({
+    control_id: 'sleeve_grip',
+    owner: 'player_a',
+    target: 'player_b',
+  })
   assert.deepEqual(live.activeGripIds, ['underhook'])
 })
 

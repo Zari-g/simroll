@@ -315,12 +315,19 @@ Complete
 
 ## 11B — Player-Owned Control Architecture
 
-Planned: define player-owned control instances, ownership resolution, and
-control lifecycle semantics without silently relabeling controls across role
-changes.
+- [x] Add stable `player_a` / `player_b` identifiers and immutable owned-control
+  instances.
+- [x] Migrate complete runtime states and API payloads from flat grip IDs to
+  player-owned controls.
+- [x] Preserve the three-position, four-transition starter runtime through a
+  narrow ownership compatibility adapter.
+- [x] Keep player identity stable while deriving top/bottom roles from the
+  current position.
+- [x] Preserve hashable pathfinding and simulator state behavior plus Gi/No-Gi
+  validation.
 
 11B Status:
-Future
+Complete
 
 ## 11C — Expanded Runtime Graph
 

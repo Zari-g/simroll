@@ -6,11 +6,13 @@ from types import MappingProxyType
 import networkx as nx
 
 from simroll.data import load_grips, load_positions, load_transitions
+from simroll.engine.control_semantics import starter_controls
 from simroll.engine.rules import (
     is_transition_allowed_in_mode,
     is_transition_available,
 )
 from simroll.models import (
+    ActiveControl,
     GrapplingMode,
     GrapplingState,
     Grip,
@@ -115,9 +117,9 @@ class GrapplingGraph:
         self,
         position_id: str,
         mode: GrapplingMode,
-        active_grips: Collection[str],
+        active_controls: Collection[ActiveControl],
     ) -> list[Transition]:
-        """Return outgoing transitions allowed by the mode and active grips."""
+        """Return outgoing transitions allowed by mode and owned controls."""
 
         transitions = self.get_transitions_from(position_id)
         validated_mode = validate_grappling_mode(mode)
@@ -125,7 +127,9 @@ class GrapplingGraph:
         return [
             transition
             for transition in transitions
-            if is_transition_available(transition, validated_mode, active_grips)
+            if is_transition_available(
+                transition, validated_mode, active_controls
+            )
         ]
 
     def validate_state(self, state: GrapplingState) -> None:
@@ -143,11 +147,15 @@ class GrapplingGraph:
                 f"Position '{position.id}' is not allowed in no_gi mode."
             )
 
-        for grip_id in sorted(state.active_grips):
-            grip = self.get_grip(grip_id)
+        for control in sorted(
+            state.active_controls,
+            key=lambda item: (item.control_id, item.owner, item.target),
+        ):
+            grip = self.get_grip(control.control_id)
             if mode == "no_gi" and grip.gi_required:
                 raise ValueError(
-                    f"Gi-required grip '{grip_id}' cannot be active in no_gi mode."
+                    f"Gi-required grip '{control.control_id}' cannot be active "
+                    "in no_gi mode."
                 )
 
     def apply_transition(
@@ -171,25 +179,32 @@ class GrapplingGraph:
                 f"{state.mode} mode."
             )
 
-        missing_grips = sorted(
-            set(transition.required_grips).difference(state.active_grips)
+        required_controls = starter_controls(transition.required_grips)
+        missing_controls = sorted(
+            required_controls.difference(state.active_controls),
+            key=lambda item: (item.control_id, item.owner, item.target),
         )
-        if missing_grips:
-            missing_list = ", ".join(repr(grip_id) for grip_id in missing_grips)
+        if missing_controls:
+            missing_list = ", ".join(
+                f"{control.control_id!r} owned by {control.owner}"
+                for control in missing_controls
+            )
             raise ValueError(
                 f"Transition '{transition.id}' is missing required active "
-                f"grips: {missing_list}."
+                f"controls: {missing_list}."
             )
 
-        next_grips = (
-            state.active_grips.difference(transition.removed_grips).union(
-                transition.created_grips
+        next_controls = (
+            state.active_controls.difference(
+                starter_controls(transition.removed_grips)
+            ).union(
+                starter_controls(transition.created_grips)
             )
         )
         next_state = GrapplingState(
             position_id=transition.to_position,
             mode=state.mode,
-            active_grips=next_grips,
+            active_controls=next_controls,
         )
         self.validate_state(next_state)
         return next_state
