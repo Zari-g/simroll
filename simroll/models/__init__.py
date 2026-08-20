@@ -6,15 +6,19 @@ from simroll.models.control import (
     OwnedControlRequirement,
     PlayerId,
 )
+from simroll.models.control_change import ControlChange, ControlChangeTemplate
 from simroll.models.grip import Grip
 from simroll.models.path import GrapplingPath
 from simroll.models.position import Position
 from simroll.models.state import GrapplingMode, GrapplingState
+from simroll.models.simulation import RollAction, RollSimulation
 from simroll.models.transition import Transition
 
 __all__ = [
     "ActiveControl",
     "ControlCategory",
+    "ControlChange",
+    "ControlChangeTemplate",
     "GrapplingMode",
     "GrapplingPath",
     "GrapplingState",
@@ -22,5 +26,7 @@ __all__ = [
     "Position",
     "OwnedControlRequirement",
     "PlayerId",
+    "RollAction",
+    "RollSimulation",
     "Transition",
 ]

@@ -3,7 +3,13 @@
 import random
 
 from simroll.engine.graph import GrapplingGraph
-from simroll.models import GrapplingPath, GrapplingState, Transition
+from simroll.models import (
+    ControlChange,
+    GrapplingState,
+    RollAction,
+    RollSimulation,
+    Transition,
+)
 
 
 class RollSimulator:
@@ -15,11 +21,13 @@ class RollSimulator:
     def step(
         self,
         state: GrapplingState,
-        transition_id: str,
+        action_id: str,
     ) -> GrapplingState:
         """Apply one selected transition and return the resulting state."""
 
-        return self._graph.apply_transition(state, transition_id)
+        if action_id in self._graph.transitions:
+            return self._graph.apply_transition(state, action_id)
+        return self._graph.apply_control_change(state, action_id)
 
     def get_available_transitions(
         self,
@@ -35,22 +43,44 @@ class RollSimulator:
         )
         return sorted(transitions, key=lambda transition: transition.id)
 
+    def get_available_actions(self, state: GrapplingState) -> list[RollAction]:
+        """Return positional and control actions in deterministic ID order."""
+
+        transitions: list[RollAction] = self.get_available_transitions(state)
+        actions = transitions + self._graph.get_available_control_changes(state)
+        return sorted(actions, key=lambda action: action.id)
+
+    def get_action(self, state: GrapplingState, action_id: str) -> RollAction:
+        """Return one currently legal action by ID."""
+
+        for action in self.get_available_actions(state):
+            if action.id == action_id:
+                return action
+        if action_id in self._graph.transitions:
+            return self._graph.get_transition(action_id)
+        raise KeyError(f"Unknown or unavailable action ID '{action_id}'.")
+
     def random_step(
         self,
         state: GrapplingState,
         *,
         rng: random.Random | None = None,
-    ) -> tuple[Transition, GrapplingState] | None:
-        """Apply one random valid transition, or return ``None`` at a dead end."""
+        excluded_action_id: str | None = None,
+    ) -> tuple[RollAction, GrapplingState] | None:
+        """Apply one random valid action, or return ``None`` at a dead end."""
 
-        transitions = self.get_available_transitions(state)
-        if not transitions:
+        actions = [
+            action
+            for action in self.get_available_actions(state)
+            if action.id != excluded_action_id
+        ]
+        if not actions:
             return None
 
         generator = rng if rng is not None else random.Random()
-        transition = generator.choice(transitions)
-        next_state = self._graph.apply_transition(state, transition.id)
-        return transition, next_state
+        action = generator.choice(actions)
+        next_state = self.step(state, action.id)
+        return action, next_state
 
     def simulate(
         self,
@@ -58,8 +88,8 @@ class RollSimulator:
         *,
         max_steps: int,
         rng: random.Random | None = None,
-    ) -> GrapplingPath:
-        """Simulate up to ``max_steps`` random transitions from a valid state."""
+    ) -> RollSimulation:
+        """Simulate up to ``max_steps`` random positional/control events."""
 
         if max_steps < 0:
             raise ValueError("max_steps must be zero or greater.")
@@ -67,18 +97,26 @@ class RollSimulator:
         self._graph.validate_state(start_state)
         generator = rng if rng is not None else random.Random()
         states = [start_state]
-        transition_ids: list[str] = []
+        actions: list[RollAction] = []
+        previous_control_action_id: str | None = None
 
         for _ in range(max_steps):
-            result = self.random_step(states[-1], rng=generator)
+            result = self.random_step(
+                states[-1],
+                rng=generator,
+                excluded_action_id=previous_control_action_id,
+            )
             if result is None:
                 break
 
-            transition, next_state = result
-            transition_ids.append(transition.id)
+            action, next_state = result
+            actions.append(action)
             states.append(next_state)
+            previous_control_action_id = (
+                action.id if isinstance(action, ControlChange) else None
+            )
 
-        return GrapplingPath(
+        return RollSimulation(
             states=tuple(states),
-            transition_ids=tuple(transition_ids),
+            actions=tuple(actions),
         )

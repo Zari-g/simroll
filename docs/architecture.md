@@ -449,4 +449,19 @@ The current version focuses on:
 * exposing the engine through a thin FastAPI layer
 * validating a richer curated dataset before runtime migration
 
+### Positional transitions and control changes
+
+Iteration 11E keeps two action kinds explicit. A positional `Transition` is a
+graph edge and may change `position_id`; a `ControlChange` is instantiated from
+one of five templates for a specific state and changes only owned controls.
+Both carry `action_type` in roll API payloads. Control changes preserve
+position, mode, and stable player identities.
+
+The simulator selects from the combined legal action set and reports
+`positional_steps`, `control_actions`, and `total_events`. Its existing
+`max_steps` limit bounds total events, and an identical control action is not
+selected twice consecutively. The pathfinder intentionally continues to
+enumerate positional graph edges only; same-position control changes are not
+part of BFS in 11E.
+
 This keeps the project realistic and expandable.

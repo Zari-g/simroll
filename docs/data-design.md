@@ -320,7 +320,13 @@ component. Position `allowed_controls` arrays, control mode flags, and the four
 normalized owner-role constraint forms provide the intentionally small
 destination compatibility layer. An omitted allowlist on a legacy/custom
 fixture remains unmodeled; runtime dataset positions always provide one.
-Control-change templates remain deferred to later Iteration 11 work.
+The five control-change templates are now loaded directly from the normalized
+11A artifact. They remain unexpanded at load time. Legal-action generation
+resolves `$control_id`, `$from_control_id`, actor, and opponent only for a
+specific validated state, filtering by mode, position allowlist, owner role,
+existing controls, and the 17-control vocabulary. These runtime actions remain
+separate from the 65 positional/submission transitions and are never inserted
+as graph edges.
 
 ---
 

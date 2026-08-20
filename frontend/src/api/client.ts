@@ -5,6 +5,7 @@ import type {
   PathsResponse,
   Position,
   RollAvailableRequest,
+  RollAction,
   RollSimulationRequest,
   RollSimulationResponse,
   RollStepRequest,
@@ -103,8 +104,8 @@ export function getAvailableTransitions(
 export function getRollAvailableTransitions(
   request: RollAvailableRequest,
   signal?: AbortSignal,
-): Promise<Transition[]> {
-  return requestJson<Transition[]>('/rolls/available', {
+): Promise<RollAction[]> {
+  return requestJson<RollAction[]>('/rolls/available', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

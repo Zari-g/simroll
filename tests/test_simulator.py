@@ -5,10 +5,10 @@ import pytest
 from simroll.engine import GrapplingGraph, RollSimulator
 from simroll.engine.control_semantics import owned_controls
 from simroll.models import (
-    GrapplingPath,
     GrapplingState,
     Grip,
     Position,
+    RollSimulation,
     Transition,
 )
 
@@ -174,7 +174,7 @@ def test_random_step_selects_only_currently_valid_transitions(
     )
     valid_ids = {
         transition.id
-        for transition in simulator.get_available_transitions(state)
+        for transition in simulator.get_available_actions(state)
     }
 
     for seed in range(10):
@@ -183,7 +183,7 @@ def test_random_step_selects_only_currently_valid_transitions(
         assert result is not None
         transition, next_state = result
         assert transition.id in valid_ids
-        assert next_state == graph.apply_transition(state, transition.id)
+        assert next_state == simulator.step(state, transition.id)
 
 
 def test_random_step_is_repeatable_with_seeded_rng(
@@ -219,7 +219,7 @@ def test_simulate_returns_valid_path_with_graph_produced_states() -> None:
         rng=random.Random(4),
     )
 
-    assert isinstance(path, GrapplingPath)
+    assert isinstance(path, RollSimulation)
     assert len(path.states) == len(path.transition_ids) + 1
     for index, transition_id in enumerate(path.transition_ids):
         assert path.states[index + 1] == graph.apply_transition(
@@ -268,7 +268,7 @@ def test_simulate_zero_steps_returns_only_validated_start_state() -> None:
 
     path = RollSimulator(graph).simulate(start, max_steps=0)
 
-    assert path == GrapplingPath(states=(start,))
+    assert path == RollSimulation(states=(start,))
 
 
 def test_simulate_zero_steps_still_rejects_invalid_start_state() -> None:

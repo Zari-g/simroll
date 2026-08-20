@@ -13,6 +13,7 @@ from simroll.api.schemas import (
     PathsResponse,
     RollAvailableRequest,
     RollSimulationRequest,
+    RollSimulationPathResponse,
     RollSimulationResponse,
     RollStepRequest,
     RollStepResponse,
@@ -20,7 +21,7 @@ from simroll.api.schemas import (
     ShortestPathResponse,
 )
 from simroll.engine import GrapplingGraph, GrapplingPathfinder, RollSimulator
-from simroll.models import GrapplingState, Grip, Position, Transition
+from simroll.models import GrapplingState, Grip, Position, RollAction, Transition
 
 app = FastAPI(
     title="SimRoll API",
@@ -222,17 +223,17 @@ def find_paths(
 
 @app.post(
     "/rolls/available",
-    response_model=list[Transition],
+    response_model=list[RollAction],
     summary="List valid choices for the next roll step",
 )
 def list_roll_choices(
     request: RollAvailableRequest,
     simulator: SimulatorDependency,
-) -> list[Transition]:
+) -> list[RollAction]:
     """Return simulator-validated transitions for the supplied state."""
 
     try:
-        return simulator.get_available_transitions(request.state)
+        return simulator.get_available_actions(request.state)
     except KeyError as error:
         _raise_not_found(error)
     except ValueError as error:
@@ -246,14 +247,15 @@ def list_roll_choices(
 )
 def perform_roll_step(
     request: RollStepRequest,
-    graph: GraphDependency,
     simulator: SimulatorDependency,
 ) -> RollStepResponse:
     """Apply one transition, or return null fields at a random dead end."""
 
     try:
-        if request.transition_id is not None:
-            transition = graph.get_transition(request.transition_id)
+        if request.selected_action_id is not None:
+            transition = simulator.get_action(
+                request.state, request.selected_action_id
+            )
             next_state = simulator.step(request.state, transition.id)
         else:
             result = simulator.random_step(request.state)
@@ -283,14 +285,15 @@ def simulate_roll(
     """Return a simulator-generated path and its deterministic stop reason."""
 
     try:
-        path = simulator.simulate(
+        simulation = simulator.simulate(
             request.start_state,
             max_steps=request.max_steps,
         )
-        if path.step_count == request.max_steps:
+        if simulation.total_events == request.max_steps:
             stop_reason = "max_steps"
         else:
-            if simulator.get_available_transitions(path.final_state):
+            final_state = simulation.states[-1]
+            if simulator.get_available_actions(final_state):
                 raise RuntimeError(
                     "Simulation stopped before max_steps despite available "
                     "transitions."
@@ -302,7 +305,7 @@ def simulate_roll(
         _raise_bad_request(error)
 
     return RollSimulationResponse(
-        path=GrapplingPathResponse.from_domain(path),
+        path=RollSimulationPathResponse.from_domain(simulation),
         stop_reason=stop_reason,
     )
 

@@ -2,14 +2,15 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from simroll.models import (
     ActiveControl,
     GrapplingMode,
     GrapplingPath,
     GrapplingState,
-    Transition,
+    RollAction,
+    RollSimulation,
 )
 
 
@@ -154,12 +155,27 @@ class RollStepRequest(BaseModel):
         min_length=1,
         description="Selected transition ID, or null to choose at random.",
     )
+    action_id: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Selected action ID; preferred over the legacy transition_id.",
+    )
+
+    @model_validator(mode="after")
+    def _one_selected_action(self) -> "RollStepRequest":
+        if self.action_id is not None and self.transition_id is not None:
+            raise ValueError("Supply action_id or transition_id, not both.")
+        return self
+
+    @property
+    def selected_action_id(self) -> str | None:
+        return self.action_id if self.action_id is not None else self.transition_id
 
 
 class RollStepResponse(BaseModel):
     """Outcome of one roll step; both fields are null at a dead end."""
 
-    transition: Transition | None
+    transition: RollAction | None
     next_state: GrapplingStateResponse | None
 
 
@@ -178,5 +194,36 @@ class RollSimulationRequest(BaseModel):
 class RollSimulationResponse(BaseModel):
     """Authoritative simulated path and the reason it stopped."""
 
-    path: GrapplingPathResponse
+    path: "RollSimulationPathResponse"
     stop_reason: Literal["max_steps", "no_available_transitions"]
+
+
+class RollSimulationPathResponse(BaseModel):
+    """Simulation states, typed events, and unambiguous event counters."""
+
+    states: list[GrapplingStateResponse]
+    actions: list[RollAction]
+    action_ids: list[str]
+    positional_steps: int
+    control_actions: int
+    total_events: int
+    transition_ids: list[str]
+    step_count: int
+
+    @classmethod
+    def from_domain(
+        cls, simulation: RollSimulation
+    ) -> "RollSimulationPathResponse":
+        return cls(
+            states=[
+                GrapplingStateResponse.from_domain(state)
+                for state in simulation.states
+            ],
+            actions=list(simulation.actions),
+            action_ids=list(simulation.action_ids),
+            positional_steps=simulation.positional_steps,
+            control_actions=simulation.control_actions,
+            total_events=simulation.total_events,
+            transition_ids=list(simulation.transition_ids),
+            step_count=simulation.step_count,
+        )

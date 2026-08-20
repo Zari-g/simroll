@@ -31,6 +31,7 @@ export interface Grip {
 export interface Transition {
   id: string
   name: string
+  action_type: 'transition'
   from_position: string
   to_position: string
   transition_type: string
@@ -49,6 +50,21 @@ export interface AvailableTransitionsRequest {
   mode: GrapplingMode
   active_controls: ActiveControl[]
 }
+
+export interface ControlChange {
+  id: string
+  name: string
+  action_type: 'control_change'
+  template_id: string
+  position_id: string
+  mode: GrapplingMode
+  actor_player: PlayerId
+  required_controls: ActiveControl[]
+  created_controls: ActiveControl[]
+  removed_controls: ActiveControl[]
+}
+
+export type RollAction = Transition | ControlChange
 
 export interface GrapplingStatePayload {
   position_id: string
@@ -85,11 +101,11 @@ export interface RollAvailableRequest {
 
 export interface RollStepRequest {
   state: GrapplingStatePayload
-  transition_id: string | null
+  action_id: string | null
 }
 
 export interface RollStepResponse {
-  transition: Transition | null
+  transition: RollAction | null
   next_state: GrapplingStateResponse | null
 }
 
@@ -108,8 +124,19 @@ export interface GrapplingPath {
   step_count: number
 }
 
+export interface RollSimulationPath {
+  states: GrapplingStateResponse[]
+  actions: RollAction[]
+  action_ids: string[]
+  positional_steps: number
+  control_actions: number
+  total_events: number
+  transition_ids: string[]
+  step_count: number
+}
+
 export interface RollSimulationResponse {
-  path: GrapplingPath
+  path: RollSimulationPath
   stop_reason: RollSimulationStopReason
 }
 

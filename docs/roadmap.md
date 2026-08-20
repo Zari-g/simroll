@@ -358,6 +358,20 @@ Complete
 11D Status:
 Complete
 
+## 11E — Control-Change Actions
+
+- [x] Load the five normalized parameterized templates without pre-expansion.
+- [x] Generate and execute legal same-position acquisition, release, and
+  switch actions while preserving mode, position, and player identity.
+- [x] Let bounded simulation mix positional transitions and control actions
+  with explicit positional/control/total event accounting.
+- [x] Expose typed actions to roll API and history consumers without adding
+  control animations.
+- [x] Keep pathfinding positional-only.
+
+11E Status:
+Complete
+
 Iteration 11 Status:
 In progress
 
