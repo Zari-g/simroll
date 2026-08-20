@@ -345,6 +345,19 @@ Complete
 11C Status:
 Complete
 
+## 11D â€” Control Lifecycle & State Validity
+
+- [x] Execute reset, exact removal/addition, and conservative explicit
+  preservation for positional transitions.
+- [x] Validate controls against destination allowlists, stable owner roles, and
+  Gi/No-Gi mode compatibility.
+- [x] Keep optional controls non-blocking and leave control-change templates
+  unexpanded.
+- [x] Preserve immutable complete-state simulator and pathfinder behavior.
+
+11D Status:
+Complete
+
 Iteration 11 Status:
 In progress
 

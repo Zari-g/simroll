@@ -172,10 +172,10 @@ def test_shortest_path_returns_direct_default_path() -> None:
                     "mode": "gi",
                     "active_controls": _controls("wrist_control"),
                 },
-                {
-                    "position_id": "mount_top",
-                    "mode": "gi",
-                    "active_controls": _controls("wrist_control"),
+                    {
+                        "position_id": "mount_top",
+                        "mode": "gi",
+                        "active_controls": [],
                 },
             ],
             "transition_ids": [

@@ -110,7 +110,7 @@ def test_validate_state_rejects_gi_required_grip_in_no_gi(
         graph.validate_state(state)
 
 
-def test_apply_transition_updates_position_and_controls_without_mutation(
+def test_apply_transition_resets_controls_without_mutation(
     graph: GrapplingGraph,
 ) -> None:
     input_controls = [_control("wrist_control"), _control("sleeve_grip")]
@@ -125,9 +125,7 @@ def test_apply_transition_updates_position_and_controls_without_mutation(
     result = graph.apply_transition(state, "closed_guard_bottom_hip_bump_to_mount_top")
 
     assert result.position_id == "mount_top"
-    assert result.active_controls == frozenset(
-        {_control("wrist_control"), _control("sleeve_grip")}
-    )
+    assert result.active_controls == frozenset()
     assert result is not state
     assert state.position_id == "closed_guard_bottom"
     assert state.active_controls == frozenset(
@@ -197,7 +195,7 @@ def test_apply_transition_rejects_unknown_transition(graph: GrapplingGraph) -> N
         graph.apply_transition(state, "missing_transition")
 
 
-def test_apply_transition_with_no_grip_changes_preserves_grips(
+def test_apply_transition_without_preservation_metadata_clears_controls(
     graph: GrapplingGraph,
 ) -> None:
     state = GrapplingState(
@@ -209,7 +207,7 @@ def test_apply_transition_with_no_grip_changes_preserves_grips(
     result = graph.apply_transition(state, "mount_top_opponent_elbow_knee_to_half_guard_top")
 
     assert result.position_id == "half_guard_top"
-    assert result.active_controls == frozenset({_control("underhook")})
+    assert result.active_controls == frozenset()
     assert state.position_id == "mount_top"
     assert state.active_controls == frozenset({_control("underhook")})
 
@@ -226,7 +224,7 @@ def test_transition_requires_correct_owner_control(graph: GrapplingGraph) -> Non
     )
 
     assert result.position_id == "back_control_top"
-    assert _control("wrist_control") in result.active_controls
+    assert result.active_controls == frozenset({_control("seatbelt")})
 
 
 def test_wrong_owner_does_not_satisfy_transition(graph: GrapplingGraph) -> None:
@@ -242,7 +240,9 @@ def test_wrong_owner_does_not_satisfy_transition(graph: GrapplingGraph) -> None:
         )
 
 
-def test_runtime_control_lifecycle_is_deferred(graph: GrapplingGraph) -> None:
+def test_runtime_control_lifecycle_clears_unlisted_controls(
+    graph: GrapplingGraph,
+) -> None:
     player_b_control = _control("wrist_control", owner="player_b")
     state = GrapplingState(
         position_id="closed_guard_bottom",
@@ -252,8 +252,7 @@ def test_runtime_control_lifecycle_is_deferred(graph: GrapplingGraph) -> None:
 
     result = graph.apply_transition(state, "closed_guard_bottom_hip_bump_to_mount_top")
 
-    assert player_b_control in result.active_controls
-    assert _control("wrist_control") in result.active_controls
+    assert result.active_controls == frozenset()
 
 
 @pytest.fixture
