@@ -5,7 +5,16 @@ from types import MappingProxyType
 
 import networkx as nx
 
-from simroll.data import load_grips, load_positions, load_transitions
+from simroll.data import (
+    load_control_change_templates,
+    load_grips,
+    load_positions,
+    load_transitions,
+)
+from simroll.engine.control_changes import (
+    apply_control_change,
+    generate_control_changes,
+)
 from simroll.engine.control_semantics import (
     apply_control_lifecycle,
     control_incompatibility_reason,
@@ -18,6 +27,8 @@ from simroll.engine.rules import (
 )
 from simroll.models import (
     ActiveControl,
+    ControlChange,
+    ControlChangeTemplate,
     GrapplingMode,
     GrapplingState,
     Grip,
@@ -35,13 +46,18 @@ class GrapplingGraph:
         positions: dict[str, Position],
         transitions: dict[str, Transition],
         grips: dict[str, Grip],
+        control_change_templates: dict[str, ControlChangeTemplate] | None = None,
     ) -> None:
         self._positions = dict(positions)
         self._transitions = dict(transitions)
         self._grips = dict(grips)
+        self._control_change_templates = dict(control_change_templates or {})
         self._positions_view = MappingProxyType(self._positions)
         self._transitions_view = MappingProxyType(self._transitions)
         self._grips_view = MappingProxyType(self._grips)
+        self._control_change_templates_view = MappingProxyType(
+            self._control_change_templates
+        )
         self._graph = nx.MultiDiGraph()
 
         for position_id, position in self._positions.items():
@@ -57,7 +73,8 @@ class GrapplingGraph:
         positions = load_positions()
         grips = load_grips()
         transitions = load_transitions(positions=positions, grips=grips)
-        return cls(positions, transitions, grips)
+        templates = load_control_change_templates(grips=grips)
+        return cls(positions, transitions, grips, templates)
 
     @property
     def positions(self) -> Mapping[str, Position]:
@@ -76,6 +93,12 @@ class GrapplingGraph:
         """Grip definitions in the graph, keyed by grip ID."""
 
         return self._grips_view
+
+    @property
+    def control_change_templates(self) -> Mapping[str, ControlChangeTemplate]:
+        """Unexpanded same-position action templates, keyed by template ID."""
+
+        return self._control_change_templates_view
 
     @property
     def graph(self) -> nx.MultiDiGraph:
@@ -199,6 +222,7 @@ class GrapplingGraph:
                 requirement, state.mode, state.active_controls
             )
         ]
+
         if missing_requirements:
             missing_list = "; ".join(
                 f"one of {list(requirement.control_ids)!r} owned by "
@@ -240,6 +264,42 @@ class GrapplingGraph:
             position_id=transition.to_position,
             mode=state.mode,
             active_controls=next_controls,
+        )
+        self.validate_state(next_state)
+        return next_state
+
+    def get_available_control_changes(
+        self, state: GrapplingState
+    ) -> list[ControlChange]:
+        """Instantiate legal same-position control actions for one state."""
+
+        self.validate_state(state)
+        return generate_control_changes(
+            state,
+            self.get_position(state.position_id),
+            self._grips,
+            self._control_change_templates,
+        )
+
+    def apply_control_change(
+        self, state: GrapplingState, action_id: str
+    ) -> GrapplingState:
+        """Resolve and execute a currently legal control-change action."""
+
+        self.validate_state(state)
+        actions = {
+            action.id: action
+            for action in self.get_available_control_changes(state)
+        }
+        try:
+            action = actions[action_id]
+        except KeyError:
+            raise ValueError(
+                f"Control change '{action_id}' is not available in the "
+                "current state."
+            ) from None
+        next_state = apply_control_change(
+            state, action, self.get_position(state.position_id), self._grips
         )
         self.validate_state(next_state)
         return next_state

@@ -1,15 +1,17 @@
-"""Load and validate SimRoll's human-readable runtime YAML data."""
+"""Load and validate SimRoll's curated runtime data."""
 
+import json
 from pathlib import Path
 from typing import Any, TypeVar
 
 import yaml
 from pydantic import BaseModel
 
-from simroll.models import Grip, Position, Transition
+from simroll.models import ControlChangeTemplate, Grip, Position, Transition
 
 
 DATA_DIR = Path(__file__).parent
+NORMALIZED_DATASET = DATA_DIR.parents[1] / "data" / "generated" / "simroll_bjj_mvp.normalized.json"
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -65,6 +67,42 @@ def load_transitions(
 
     _validate_transition_relationships(transitions, loaded_positions, loaded_grips)
     return transitions
+
+
+def load_control_change_templates(
+    path: Path | str = NORMALIZED_DATASET,
+    grips: dict[str, Grip] | None = None,
+) -> dict[str, ControlChangeTemplate]:
+    """Load the five unexpanded templates from the normalized 11A artifact."""
+
+    artifact_path = Path(path)
+    with artifact_path.open("r", encoding="utf-8") as file:
+        document = json.load(file)
+    raw_templates = document.get("control_change_templates")
+    if not isinstance(raw_templates, list):
+        raise ValueError(
+            f"Expected {artifact_path} to contain control_change_templates."
+        )
+    _reject_duplicate_ids(raw_templates, "control-change template", artifact_path)
+
+    templates = {
+        raw["id"]: ControlChangeTemplate.model_validate(raw)
+        for raw in raw_templates
+    }
+    if len(templates) != 5:
+        raise ValueError(
+            f"Expected exactly 5 control-change templates, found {len(templates)}."
+        )
+
+    loaded_grips = grips if grips is not None else load_grips()
+    for template in templates.values():
+        for control_id in template.parameter_control_ids:
+            if control_id not in loaded_grips:
+                raise ValueError(
+                    f"Control-change template '{template.id}' references "
+                    f"unknown control '{control_id}'."
+                )
+    return templates
 
 
 def _load_records(path: Path | str, model: type[ModelT], record_name: str) -> dict[str, ModelT]:

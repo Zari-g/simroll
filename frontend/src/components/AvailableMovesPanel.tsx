@@ -1,4 +1,4 @@
-import type { Transition } from '../types/api'
+import type { RollAction } from '../types/api'
 import { RollTransitionCard } from './RollTransitionCard'
 
 interface StatusMessage {
@@ -7,7 +7,7 @@ interface StatusMessage {
 }
 
 interface AvailableMovesPanelProps {
-  transitions: Transition[]
+  transitions: RollAction[]
   currentPositionName: string | null
   isRollActive: boolean
   isPlaybackActive: boolean
@@ -139,7 +139,11 @@ export function AvailableMovesPanel({
               <li key={transition.id}>
                 <RollTransitionCard
                   transition={transition}
-                  destinationName={resolvePositionName(transition.to_position)}
+                  destinationName={
+                    transition.action_type === 'transition'
+                      ? resolvePositionName(transition.to_position)
+                      : currentPositionName ?? 'Current position'
+                  }
                   resolveGripName={resolveGripName}
                   isDisabled={isMutationLoading}
                   isFailed={failedTransitionId === transition.id}

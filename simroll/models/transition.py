@@ -14,6 +14,7 @@ class Transition(BaseModel):
 
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
+    action_type: Literal["transition"] = "transition"
     from_position: str = Field(min_length=1)
     to_position: str = Field(min_length=1)
     transition_type: str = Field(min_length=1)

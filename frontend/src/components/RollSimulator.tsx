@@ -20,6 +20,7 @@ import type {
   GrapplingStateResponse,
   Grip,
   Position,
+  RollAction,
   RollSimulationResponse,
   Transition,
 } from '../types/api'
@@ -45,7 +46,7 @@ interface RollSimulatorProps {
 
 interface RollHistoryData {
   states: GrapplingStateResponse[]
-  transitionIds: string[]
+  actions: RollAction[]
 }
 
 interface AutoRollStatus {
@@ -101,16 +102,24 @@ function isValidSimulationResponse(
   if (
     !path ||
     !Array.isArray(path.states) ||
-    !Array.isArray(path.transition_ids) ||
-    !Number.isInteger(path.step_count) ||
-    path.step_count < 0 ||
-    path.step_count > requestedMaxSteps ||
+    !Array.isArray(path.actions) ||
+    !Array.isArray(path.action_ids) ||
+    !Number.isInteger(path.total_events) ||
+    path.total_events < 0 ||
+    path.total_events > requestedMaxSteps ||
     (response.stop_reason !== 'max_steps' &&
       response.stop_reason !== 'no_available_transitions') ||
-    path.states.length !== path.transition_ids.length + 1 ||
-    path.step_count !== path.transition_ids.length ||
-    !path.transition_ids.every((transitionId) =>
-      Boolean(transitionId && typeof transitionId === 'string'),
+    path.states.length !== path.actions.length + 1 ||
+    path.total_events !== path.actions.length ||
+    path.action_ids.length !== path.actions.length ||
+    path.positional_steps + path.control_actions !== path.total_events ||
+    !path.actions.every((action, index) =>
+      Boolean(
+        action &&
+          action.id === path.action_ids[index] &&
+          (action.action_type === 'transition' ||
+            action.action_type === 'control_change'),
+      ),
     ) ||
     !path.states.every(
       (state) =>
@@ -152,14 +161,13 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     useState<GrapplingStateResponse | null>(null)
   const [history, setHistory] = useState<RollHistoryData>({
     states: [],
-    transitionIds: [],
+    actions: [],
   })
   const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<
     number | null
   >(null)
-  const [availableTransitions, setAvailableTransitions] = useState<
-    Transition[]
-  >([])
+  const [availableTransitions, setAvailableTransitions] = useState<RollAction[]>([])
+  const [actionNames, setActionNames] = useState<Record<string, string>>({})
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false)
   const [availabilityError, setAvailabilityError] = useState<string | null>(
     null,
@@ -330,7 +338,9 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
   const resolveGripName = (gripId: string) =>
     gripNames.get(gripId) ?? formatReadable(gripId)
   const resolveTransitionName = (transitionId: string) =>
-    transitionNames.get(transitionId) ?? formatReadable(transitionId)
+    actionNames[transitionId] ??
+    transitionNames.get(transitionId) ??
+    formatReadable(transitionId)
 
   const handlePositionChange = (positionId: string) => {
     const position = positions.find((item) => item.id === positionId)
@@ -397,7 +407,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     setIsAutoDeadEnd(false)
     setAvailableTransitions([])
     setIsAvailabilityLoading(true)
-    setHistory({ states: [startingState], transitionIds: [] })
+    setHistory({ states: [startingState], actions: [] })
+    setActionNames({})
     setCurrentState(startingState)
   }
 
@@ -423,7 +434,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
     try {
       const response = await performRollStep(
-        { state, transition_id: transitionId },
+        { state, action_id: transitionId },
         controller.signal,
       )
 
@@ -443,7 +454,11 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
       const startVisual = resolveStateVisual(state)
       const endVisual = resolveStateVisual(response.next_state)
-      if (startVisual && endVisual) {
+      if (
+        response.transition.action_type === 'transition' &&
+        startVisual &&
+        endVisual
+      ) {
         await poseAnimation.play({
           transitionId: response.transition.id,
           transitionName: response.transition.name,
@@ -462,10 +477,11 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
       setHistory((currentHistory) => ({
         states: [...currentHistory.states, response.next_state!],
-        transitionIds: [
-          ...currentHistory.transitionIds,
-          response.transition!.id,
-        ],
+        actions: [...currentHistory.actions, response.transition!],
+      }))
+      setActionNames((current) => ({
+        ...current,
+        [response.transition!.id]: response.transition!.name,
       }))
       setAvailableTransitions([])
       setIsAvailabilityLoading(true)
@@ -526,18 +542,23 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
       const { path, stop_reason: stopReason } = response
 
-      if (path.step_count > 0) {
-        for (let index = 0; index < path.transition_ids.length; index += 1) {
-          const transitionId = path.transition_ids[index]
+      if (path.total_events > 0) {
+        setActionNames((current) => ({
+          ...current,
+          ...Object.fromEntries(path.actions.map((action) => [action.id, action.name])),
+        }))
+        for (let index = 0; index < path.actions.length; index += 1) {
+          const action = path.actions[index]
+          const transitionId = action.id
           const startState = path.states[index]
           const endState = path.states[index + 1]
           const startVisual = resolveStateVisual(startState)
           const endVisual = resolveStateVisual(endState)
 
-          if (startVisual && endVisual) {
+          if (action.action_type === 'transition' && startVisual && endVisual) {
             await poseAnimation.play({
               transitionId,
-              transitionName: resolveTransitionName(transitionId),
+              transitionName: action.name,
               startPoses: startVisual.poses,
               endPoses: endVisual.poses,
               startState: startVisual.displayState,
@@ -553,10 +574,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
           setHistory((currentHistory) => ({
             states: [...currentHistory.states, endState],
-            transitionIds: [
-              ...currentHistory.transitionIds,
-              transitionId,
-            ],
+            actions: [...currentHistory.actions, action],
           }))
           setCurrentState(endState)
         }
@@ -575,22 +593,20 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         setAutoRollStatus({
           kind: 'dead_end',
           message:
-            path.step_count === 0
+            path.total_events === 0
               ? 'Auto Roll could not begin because no valid moves remain.'
-              : `Auto Roll stopped after ${path.step_count} ${
-                  path.step_count === 1 ? 'step' : 'steps'
+              : `Auto Roll stopped after ${path.total_events} ${
+                  path.total_events === 1 ? 'event' : 'events'
                 } because no valid moves remain.`,
         })
       } else {
         setIsAutoDeadEnd(false)
-        if (path.step_count > 0) {
+        if (path.total_events > 0) {
           setIsAvailabilityLoading(true)
         }
         setAutoRollStatus({
           kind: 'completed',
-          message: `Auto Roll completed ${path.step_count} ${
-            path.step_count === 1 ? 'step' : 'steps'
-          }. You can choose the next move or Auto Roll again.`,
+          message: `Auto Roll completed ${path.total_events} events (${path.positional_steps} positional, ${path.control_actions} control). You can choose the next move or Auto Roll again.`,
         })
       }
     } catch (requestError) {
@@ -622,7 +638,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     stepController.current = null
     autoRollController.current = null
     setCurrentState(null)
-    setHistory({ states: [], transitionIds: [] })
+    setHistory({ states: [], actions: [] })
+    setActionNames({})
     setAvailableTransitions([])
     setIsAvailabilityLoading(false)
     setAvailabilityError(null)
@@ -683,7 +700,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
     const historicalTransition = getHistoricalTransition(
       history.states,
-      history.transitionIds,
+      history.actions.map((action) => action.id),
       selectedHistoryIndex,
     )
     if (!historicalTransition) return
@@ -691,9 +708,10 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     const replayGeneration = ++playbackGeneration.current
     poseAnimation.cancel()
 
+    const historicalAction = history.actions[historicalTransition.transitionIndex]
     const startVisual = resolveStateVisual(historicalTransition.startState)
     const endVisual = resolveStateVisual(historicalTransition.endState)
-    if (startVisual && endVisual) {
+    if (historicalAction?.action_type === 'transition' && startVisual && endVisual) {
       await poseAnimation.play({
         transitionId: historicalTransition.transitionId,
         transitionName: resolveTransitionName(
@@ -800,7 +818,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           isRollActive={currentState !== null}
           isPlaybackActive={isPlaybackActive}
           playbackStateIndex={selectedHistoryIndex}
-          stepCount={history.transitionIds.length}
+          stepCount={history.actions.length}
           isMutationLoading={isRollMutationLoading}
           animatedPoses={poseAnimation.display?.poses ?? null}
           animatedTransitionName={
@@ -842,7 +860,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       {currentState && (
         <RollHistory
           states={history.states}
-          transitionIds={history.transitionIds}
+          actions={history.actions}
           resolvePositionName={resolvePositionName}
           resolveGripName={resolveGripName}
           resolveTransitionName={resolveTransitionName}

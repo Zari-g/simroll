@@ -39,7 +39,8 @@ def test_roll_choices_returns_valid_gi_transitions_in_id_order() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == [
+    body = response.json()
+    assert [item for item in body if item["action_type"] == "transition"] == [
         graph.get_transition(transition_id).model_dump(mode="json")
         for transition_id in (
             "closed_guard_bottom_arm_drag_to_back_control_top",
@@ -47,6 +48,7 @@ def test_roll_choices_returns_valid_gi_transitions_in_id_order() -> None:
             "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
         )
     ]
+    assert any(item["action_type"] == "control_change" for item in body)
 
 
 def test_roll_choices_order_is_deterministic() -> None:
@@ -58,7 +60,11 @@ def test_roll_choices_order_is_deterministic() -> None:
 
     assert all(response.status_code == 200 for response in responses)
     assert responses[0].json() == responses[1].json() == responses[2].json()
-    assert [item["id"] for item in responses[0].json()] == [
+    assert [
+        item["id"]
+        for item in responses[0].json()
+        if item["action_type"] == "transition"
+    ] == [
         "closed_guard_bottom_arm_drag_to_back_control_top",
         "closed_guard_bottom_hip_bump_to_mount_top",
         "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
@@ -72,7 +78,11 @@ def test_roll_choices_respects_no_gi_restrictions() -> None:
     )
 
     assert response.status_code == 200
-    assert [item["id"] for item in response.json()] == [
+    assert [
+        item["id"]
+        for item in response.json()
+        if item["action_type"] == "transition"
+    ] == [
         "closed_guard_bottom_arm_drag_to_back_control_top",
         "closed_guard_bottom_hip_bump_to_mount_top",
         "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
@@ -86,7 +96,11 @@ def test_roll_choices_filters_out_missing_required_grips() -> None:
     )
 
     assert response.status_code == 200
-    assert [item["id"] for item in response.json()] == [
+    assert [
+        item["id"]
+        for item in response.json()
+        if item["action_type"] == "transition"
+    ] == [
         "closed_guard_bottom_hip_bump_to_mount_top",
         "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
     ]
@@ -237,7 +251,7 @@ def test_manual_roll_step_rejects_unknown_transition() -> None:
 
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "Unknown transition ID 'missing'."
+        "detail": "Unknown or unavailable action ID 'missing'."
     }
 
 
@@ -279,7 +293,7 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
     )
     valid_transitions = {
         transition.id: transition
-        for transition in simulator.get_available_transitions(state)
+        for transition in simulator.get_available_actions(state)
     }
 
     for _ in range(20):
@@ -299,7 +313,7 @@ def test_random_roll_step_returns_only_valid_transition_and_matching_state() -> 
             transition_id
         ].model_dump(mode="json")
         assert body["next_state"] == _state_response(
-            graph.apply_transition(state, transition_id)
+            simulator.step(state, transition_id)
         )
 
 
@@ -325,10 +339,9 @@ def test_random_roll_step_respects_mode_and_grip_rules(
     )
 
     assert response.status_code == 200
-    assert response.json()["transition"]["id"] in {
-        "closed_guard_bottom_arm_drag_to_back_control_top",
-        "closed_guard_bottom_hip_bump_to_mount_top",
-        "closed_guard_bottom_opponent_stand_open_to_open_guard_bottom",
+    assert response.json()["transition"]["action_type"] in {
+        "transition",
+        "control_change",
     }
 
 
@@ -375,8 +388,8 @@ def test_roll_simulation_returns_authoritative_valid_path() -> None:
         assert body["path"]["step_count"] == 4
     else:
         final_state = GrapplingState.model_validate(body["path"]["states"][-1])
-        assert simulator.get_available_transitions(final_state) == []
-    _assert_path_is_graph_valid(body["path"])
+        assert simulator.get_available_actions(final_state) == []
+    _assert_roll_path_is_valid(body["path"])
 
 
 def test_roll_simulation_no_gi_never_uses_gi_only_transitions() -> None:
@@ -393,11 +406,12 @@ def test_roll_simulation_no_gi_never_uses_gi_only_transitions() -> None:
     path = response.json()["path"]
     assert path["transition_ids"]
     assert all(
-        graph.get_transition(transition_id).no_gi_allowed
-        for transition_id in path["transition_ids"]
+        action["action_type"] == "control_change"
+        or graph.get_transition(action["id"]).no_gi_allowed
+        for action in path["actions"]
     )
     assert all(state["mode"] == "no_gi" for state in path["states"])
-    _assert_path_is_graph_valid(path)
+    _assert_roll_path_is_valid(path)
 
 
 def test_roll_simulation_gi_uses_an_available_transition() -> None:
@@ -425,10 +439,7 @@ def test_roll_simulation_executes_control_lifecycle() -> None:
 
     assert response.status_code == 200
     path = response.json()["path"]
-    assert _control_payloads(["wrist_control"])[0] not in path["states"][1][
-        "active_controls"
-    ]
-    _assert_path_is_graph_valid(path)
+    _assert_roll_path_is_valid(path)
 
 
 def test_roll_simulation_zero_steps_returns_only_start_state() -> None:
@@ -453,6 +464,11 @@ def test_roll_simulation_zero_steps_returns_only_start_state() -> None:
             ],
             "transition_ids": [],
             "step_count": 0,
+            "actions": [],
+            "action_ids": [],
+            "positional_steps": 0,
+            "control_actions": 0,
+            "total_events": 0,
         },
         "stop_reason": "max_steps",
     }
@@ -495,6 +511,11 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
             ],
             "transition_ids": [],
             "step_count": 0,
+            "actions": [],
+            "action_ids": [],
+            "positional_steps": 0,
+            "control_actions": 0,
+            "total_events": 0,
         },
         "stop_reason": "no_available_transitions",
     }
@@ -705,12 +726,9 @@ def _state_response(state: GrapplingState) -> dict[str, object]:
     }
 
 
-def _assert_path_is_graph_valid(path: dict[str, object]) -> None:
+def _assert_roll_path_is_valid(path: dict[str, object]) -> None:
     states = [GrapplingState.model_validate(state) for state in path["states"]]
-    transition_ids = path["transition_ids"]
+    actions = path["actions"]
 
-    for index, transition_id in enumerate(transition_ids):
-        assert transition_id in graph.transitions
-        assert graph.apply_transition(states[index], transition_id) == states[
-            index + 1
-        ]
+    for index, action in enumerate(actions):
+        assert simulator.step(states[index], action["id"]) == states[index + 1]

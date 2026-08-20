@@ -1,10 +1,14 @@
-import type { GrapplingStateResponse } from '../types/api'
+import type { GrapplingStateResponse, RollAction } from '../types/api'
 import { activeControlIds } from '../utils/activeControls'
+import {
+  getHistoryActionName,
+  getHistoryControlChanges,
+} from '../utils/rollHistory'
 import { RollPlaybackControls } from './RollPlaybackControls'
 
 interface RollHistoryProps {
   states: GrapplingStateResponse[]
-  transitionIds: string[]
+  actions: RollAction[]
   resolvePositionName: (positionId: string) => string
   resolveGripName: (gripId: string) => string
   resolveTransitionName: (transitionId: string) => string
@@ -18,29 +22,9 @@ interface RollHistoryProps {
   onReturnToLive: () => void
 }
 
-interface GripChanges {
-  added: string[]
-  released: string[]
-}
-
-function getGripChanges(
-  previous: GrapplingStateResponse,
-  current: GrapplingStateResponse,
-): GripChanges {
-  const previousControlIds = activeControlIds(previous.active_controls)
-  const currentControlIds = activeControlIds(current.active_controls)
-  const previousGrips = new Set(previousControlIds)
-  const currentGrips = new Set(currentControlIds)
-
-  return {
-    added: currentControlIds.filter((gripId) => !previousGrips.has(gripId)),
-    released: previousControlIds.filter((gripId) => !currentGrips.has(gripId)),
-  }
-}
-
 export function RollHistory({
   states,
-  transitionIds,
+  actions,
   resolvePositionName,
   resolveGripName,
   resolveTransitionName,
@@ -62,7 +46,7 @@ export function RollHistory({
   const outgoingTransitionId =
     selectedStateIndex === null
       ? undefined
-      : transitionIds[selectedStateIndex]
+      : actions[selectedStateIndex]?.id
 
   return (
     <section className="roll-history" aria-labelledby="roll-history-heading">
@@ -70,8 +54,8 @@ export function RollHistory({
         <div>
           <p className="section-label">Roll history</p>
           <h3 id="roll-history-heading">
-            {transitionIds.length}{' '}
-            {transitionIds.length === 1 ? 'step' : 'steps'}
+            {actions.length}{' '}
+            {actions.length === 1 ? 'event' : 'events'}
           </h3>
         </div>
         <span>{selectedLabel}</span>
@@ -99,10 +83,11 @@ export function RollHistory({
           const isStart = stateIndex === 0
           const isCurrent = stateIndex === states.length - 1
           const isSelected = selectedStateIndex === stateIndex
-          const transitionId = transitionIds[stateIndex - 1]
+          const action = actions[stateIndex - 1]
+          const transitionId = action?.id
           const changes = isStart
             ? null
-            : getGripChanges(states[stateIndex - 1], state)
+            : getHistoryControlChanges(states[stateIndex - 1], state)
           const hasGripChanges =
             changes !== null &&
             (changes.added.length > 0 || changes.released.length > 0)
@@ -120,7 +105,12 @@ export function RollHistory({
               {!isStart && (
                 <div className="roll-history__transition">
                   <span aria-hidden="true">↓</span>
-                  <strong>{resolveTransitionName(transitionId)}</strong>
+                  <strong>
+                    {action
+                      ? getHistoryActionName(action)
+                      : resolveTransitionName(transitionId)}
+                  </strong>
+                  {action?.action_type === 'control_change' && <span>Control change</span>}
                 </div>
               )}
 
