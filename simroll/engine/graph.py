@@ -6,7 +6,12 @@ from types import MappingProxyType
 import networkx as nx
 
 from simroll.data import load_grips, load_positions, load_transitions
-from simroll.engine.control_semantics import owned_controls, requirement_is_satisfied
+from simroll.engine.control_semantics import (
+    apply_control_lifecycle,
+    control_incompatibility_reason,
+    owned_controls,
+    requirement_is_satisfied,
+)
 from simroll.engine.rules import (
     is_transition_allowed_in_mode,
     is_transition_available,
@@ -157,6 +162,14 @@ class GrapplingGraph:
                     f"Gi-required grip '{control.control_id}' cannot be active "
                     "in no_gi mode."
                 )
+            reason = control_incompatibility_reason(
+                control, position, mode, self._grips
+            )
+            if reason is not None:
+                raise ValueError(
+                    f"Control '{control.control_id}' owned by {control.owner} "
+                    f"is invalid: {reason}."
+                )
 
     def apply_transition(
         self, state: GrapplingState, transition_id: str
@@ -214,16 +227,15 @@ class GrapplingGraph:
                 f"controls: {missing_list}."
             )
 
-        if _uses_runtime_control_schema(transition):
-            # 11C intentionally preserves the current owned-control state. The
-            # normalized add/remove/preserve intent is loaded on the transition,
-            # but executing that lifecycle belongs to 11D/11E.
-            next_controls = state.active_controls
-        else:
-            # Retain support for small legacy/custom graph fixtures.
-            next_controls = state.active_controls.difference(
-                owned_controls(transition.removed_grips)
-            ).union(owned_controls(transition.created_grips))
+        destination = self.get_position(transition.to_position)
+        next_controls = apply_control_lifecycle(
+            transition,
+            state.active_controls,
+            destination,
+            state.mode,
+            self._grips,
+            uses_runtime_schema=_uses_runtime_control_schema(transition),
+        )
         next_state = GrapplingState(
             position_id=transition.to_position,
             mode=state.mode,

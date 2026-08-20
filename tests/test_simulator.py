@@ -37,7 +37,7 @@ def test_step_applies_selected_transition_without_mutating_start_state(
     assert result == GrapplingState(
         position_id="mount_top",
         mode="gi",
-        active_controls=owned_controls({"sleeve_grip", "wrist_control"}),
+        active_controls=frozenset(),
     )
     assert result is not start
     assert start.position_id == "closed_guard_bottom"

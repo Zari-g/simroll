@@ -101,9 +101,25 @@ reversal. Roll simulation reuses these models without adding simulation
 behavior to them.
 
 Runtime transition requirements resolve normalized `actor` / `opponent`
-templates to stable player IDs before graph loading. Normalized created,
-removed, optional, and preserved-control intent is retained on transitions but
-is not executed in 11C; control lifecycle behavior remains deferred.
+templates to stable player IDs before graph loading. Positional transitions
+execute the normalized control lifecycle centrally in `control_semantics.py`:
+
+```text
+validate source state and required controls
+    -> resolve destination
+    -> reset/clear controls
+    -> remove exact owned controls
+    -> add exact owned controls
+    -> restore only explicitly preserved controls
+    -> prune destination/mode-incompatible controls
+    -> validate resulting state
+```
+
+An owned-control identity is its control ID, owner, and target. Optional
+controls do not affect legality or create controls. Explicit additions must be
+valid; preservation is conservative and succeeds only when the same owned
+control was active before the move and remains valid for the destination role,
+position allowlist, and mode.
 
 ---
 
@@ -117,6 +133,7 @@ Responsibilities:
 * apply transition rules for gi/no-gi modes and owned-control requirements
 * validate grappling states
 * execute transitions as immutable state updates
+* enforce destination position, owner-role, and Gi/No-Gi control compatibility
 * use `GrapplingPathfinder` for shortest and multiple path searches
 * use `RollSimulator` for user-directed steps and bounded random roll sequences
 

@@ -145,15 +145,15 @@ def test_manual_roll_step_returns_transition_and_authoritative_next_state() -> N
         "transition": graph.get_transition(
             "closed_guard_bottom_hip_bump_to_mount_top"
         ).model_dump(mode="json"),
-        "next_state": {
-            "position_id": "mount_top",
-            "mode": "gi",
-            "active_controls": _control_payloads(["wrist_control"]),
+            "next_state": {
+                "position_id": "mount_top",
+                "mode": "gi",
+                "active_controls": [],
         },
     }
 
 
-def test_manual_roll_step_preserves_other_grips_and_sorts_response() -> None:
+def test_manual_roll_step_clears_controls_not_explicitly_preserved() -> None:
     response = client.post(
         "/rolls/step",
         json=_step_payload(
@@ -166,7 +166,7 @@ def test_manual_roll_step_preserves_other_grips_and_sorts_response() -> None:
     assert response.json()["next_state"] == {
         "position_id": "mount_top",
         "mode": "gi",
-        "active_controls": _control_payloads(["sleeve_grip", "wrist_control"]),
+        "active_controls": [],
     }
 
 
@@ -414,29 +414,21 @@ def test_roll_simulation_gi_uses_an_available_transition() -> None:
     assert len(response.json()["path"]["transition_ids"]) == 1
 
 
-@pytest.mark.parametrize(
-    ("active_grips", "expected_grips"),
-    [
-        (["wrist_control"], ["wrist_control"]),
-        (["sleeve_grip"], ["sleeve_grip"]),
-    ],
-)
-def test_roll_simulation_preserves_controls_until_lifecycle_iteration(
-    active_grips: list[str],
-    expected_grips: list[str],
-) -> None:
+def test_roll_simulation_executes_control_lifecycle() -> None:
     response = client.post(
         "/rolls/simulate",
         json=_simulation_payload(
             max_steps=1,
-            active_grips=active_grips,
+            active_grips=["wrist_control"],
         ),
     )
 
     assert response.status_code == 200
-    assert response.json()["path"]["states"][1][
+    path = response.json()["path"]
+    assert _control_payloads(["wrist_control"])[0] not in path["states"][1][
         "active_controls"
-    ] == _control_payloads(expected_grips)
+    ]
+    _assert_path_is_graph_valid(path)
 
 
 def test_roll_simulation_zero_steps_returns_only_start_state() -> None:

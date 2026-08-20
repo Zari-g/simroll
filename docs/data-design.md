@@ -143,7 +143,10 @@ compatibility projections for existing API/frontend consumers. Authoritative
 requirements use `required_controls`, whose any-of clauses carry concrete
 `player_a` / `player_b` owner and target identities plus applicable modes.
 Created, removed, optional, reset, and preserved-control fields retain the
-normalized lifecycle intent but are data-only in 11C.
+normalized lifecycle intent. Iteration 11D executes those fields in order:
+reset, exact removal, exact addition, explicit preservation, compatibility
+pruning, and final state validation. Optional controls remain descriptive and
+never block a positional transition or acquire a control automatically.
 
 Example:
 
@@ -313,8 +316,11 @@ simroll/data/grips.yaml
 The active runtime contains 20 positions (19 live plus
 `submission_terminal`), 65 positional/submission transitions (including 10
 submissions), and 17 controls. All live positions form one strongly connected
-component. Control-change templates and advanced control lifecycle execution
-remain deferred to later Iteration 11 work.
+component. Position `allowed_controls` arrays, control mode flags, and the four
+normalized owner-role constraint forms provide the intentionally small
+destination compatibility layer. An omitted allowlist on a legacy/custom
+fixture remains unmodeled; runtime dataset positions always provide one.
+Control-change templates remain deferred to later Iteration 11 work.
 
 ---
 
