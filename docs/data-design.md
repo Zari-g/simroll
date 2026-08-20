@@ -340,6 +340,14 @@ supplement these curated fixtures but allow legitimate early submissions.
 executed. Submission termination is attached to the executed submission edge;
 starting directly at the terminal node produces no synthetic edge or metadata.
 
+Runtime YAML must not be edited independently of the normalized artifact. Run
+`python scripts/build_runtime_data.py` to regenerate it and
+`python scripts/build_runtime_data.py --check` to verify freshness without
+writing. Regression coverage also preserves the manual-review metadata: 30
+ownership-sensitive records, 11 manual-review transitions, and the Toreando and
+old-school sweep future split candidates. These are future review items, not
+Iteration 11 changes.
+
 ---
 
 # 10. Future Database Possibilities

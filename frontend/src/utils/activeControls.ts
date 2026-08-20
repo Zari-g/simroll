@@ -5,6 +5,8 @@ const playerNames: Record<PlayerId, string> = {
   player_b: 'Player B',
 }
 
+// Legacy setup projection: selectors still choose flat control IDs before a
+// roll assigns them to the configured Player A starting state.
 export function starterControls(controlIds: readonly string[]): ActiveControl[] {
   return controlIds.map((controlId) => ({
     control_id: controlId,
@@ -13,6 +15,7 @@ export function starterControls(controlIds: readonly string[]): ActiveControl[] 
   }))
 }
 
+// Legacy setup projection retained for flat-ID selector components.
 export function activeControlIds(
   controls: readonly ActiveControl[],
 ): string[] {

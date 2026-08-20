@@ -409,14 +409,36 @@ Complete
 11G Status:
 Complete
 
+## 11H — Integration Polish & Iteration Closeout
+
+- [x] Consolidate exact runtime count, reference, SCC, terminal, mode, ownership,
+  lifecycle, and generated-state invariants.
+- [x] Replay representative curated Gi and No-Gi rolls through legal actions,
+  API steps, serialization, and frontend-compatible mixed-event history.
+- [x] Add a non-mutating deterministic runtime YAML freshness check.
+- [x] Audit flat grip-ID/starter frontend adapters and retain only the narrow
+  setup conversions and documented API aliases still used by consumers.
+- [x] Verify expanded frontend flows, submission endings, mode switching, and
+  intentional position/choreography fallbacks.
+- [x] Preserve 30 ownership-sensitive records, 11 manual-review transitions,
+  and the Toreando/old-school sweep future split candidates.
+
+11H Status:
+Complete
+
 Iteration 11 Status:
-In progress
+Complete
 
 ---
 
 # Future Ideas
 
 Potential future systems:
+- Additional position artwork and transition choreography
+- Scoring, strategy, stamina, skill, probability, and physics models
+- Control-aware pathfinding (Pathfinder currently remains positional-only)
+- Review of ownership-sensitive and manual-review transition metadata
+- Review of the Toreando and old-school sweep split candidates
 - Native mobile application
 - Offline quick-reference tools
 - Saved systems

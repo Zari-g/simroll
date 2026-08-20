@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from pathlib import Path
 import random
 
 import pytest
@@ -6,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from simroll.api.app import app
 from simroll.api.dependencies import get_simulator
+from simroll.datasets.importer import load_normalized_dataset
 from simroll.engine.control_semantics import owned_controls
 from simroll.engine import GrapplingGraph, RollSimulator
 from simroll.models import GrapplingState
@@ -13,6 +15,7 @@ from simroll.models import GrapplingState
 client = TestClient(app)
 graph = GrapplingGraph.from_default_data()
 simulator = RollSimulator(graph)
+NORMALIZED_PATH = Path("data/generated/simroll_bjj_mvp.normalized.json")
 
 
 class _SeededSimulator(RollSimulator):
@@ -35,10 +38,119 @@ def _control_payloads(control_ids: list[str]) -> list[dict[str, str]]:
     ]
 
 
+def _owned_control_payloads(serialized: str) -> list[dict[str, str]]:
+    if not serialized or serialized == "none":
+        return []
+    controls = []
+    for item in serialized.split("; "):
+        owner, binding = item.split(":", maxsplit=1)
+        control_id, target = binding.split(">", maxsplit=1)
+        controls.append(
+            {"control_id": control_id, "owner": owner, "target": target}
+        )
+    return sorted(
+        controls,
+        key=lambda item: (item["control_id"], item["owner"], item["target"]),
+    )
+
+
 @pytest.fixture(autouse=True)
 def restore_dependency_overrides() -> Iterator[None]:
     yield
     app.dependency_overrides.clear()
+
+
+@pytest.mark.parametrize("sequence_id", ["gi_roll_01", "nogi_roll_04"])
+def test_curated_roll_round_trips_through_api_and_history(
+    sequence_id: str,
+) -> None:
+    dataset = load_normalized_dataset(NORMALIZED_PATH)
+    example = next(
+        item for item in dataset.example_rolls if item.sequence_id == sequence_id
+    )
+    state = {
+        "position_id": example.start_position,
+        "mode": example.mode,
+        "active_controls": [],
+    }
+    states = [state]
+    actions: list[dict[str, object]] = []
+
+    for step in example.steps:
+        assert state == {
+            "position_id": step.position_before,
+            "mode": example.mode,
+            "active_controls": _owned_control_payloads(
+                step.active_controls_before
+            ),
+        }
+        available = client.post("/rolls/available", json={"state": state})
+        assert available.status_code == 200
+        candidates = available.json()
+
+        if step.counts_as_positional_transition:
+            matching_actions = [
+                action for action in candidates if action["id"] == step.transition_id
+            ]
+        else:
+            matching_actions = [
+                action
+                for action in candidates
+                if action["action_type"] == "control_change"
+                and action["template_id"] == step.transition_id
+                and action["actor_player"] == step.player_performing
+            ]
+
+        expected_state = {
+            "position_id": step.resulting_position,
+            "mode": example.mode,
+            "active_controls": _owned_control_payloads(step.resulting_controls),
+        }
+        matching_results = []
+        for action in matching_actions:
+            response = client.post(
+                "/rolls/step",
+                json={"state": state, "action_id": action["id"]},
+            )
+            assert response.status_code == 200
+            if response.json()["next_state"] == expected_state:
+                matching_results.append(response.json())
+
+        assert len(matching_results) == 1
+        result = matching_results[0]
+        action = result["transition"]
+        assert action["actor_player"] == step.player_performing
+        actions.append(action)
+        state = result["next_state"]
+        states.append(state)
+
+    assert state["position_id"] == "submission_terminal"
+    assert actions[-1]["action_type"] == "transition"
+    assert actions[-1]["submission"] is True
+    assert any(action["action_type"] == "control_change" for action in actions)
+    assert any(
+        action["action_type"] == "transition"
+        and action.get("metadata", {}).get("role_change") is True
+        for action in actions
+    )
+    assert len(states) == len(actions) + 1
+    historical_control_ids = {
+        control["control_id"]
+        for historical_state in states
+        for control in historical_state["active_controls"]
+    }
+    garment_control_ids = {
+        "belt_grip",
+        "collar_grip",
+        "lapel_grip",
+        "pants_grip",
+        "sleeve_grip",
+    }
+    assert historical_control_ids
+    if example.mode == "no_gi":
+        assert historical_control_ids.isdisjoint(garment_control_ids)
+    else:
+        assert historical_control_ids.intersection(garment_control_ids)
 
 
 def test_roll_choices_returns_valid_gi_transitions_in_id_order() -> None:
@@ -665,6 +777,11 @@ def test_roll_simulation_request_validation_uses_422(
         {
             "state": {"position_id": "closed_guard_bottom", "mode": "gi"},
             "transition_id": "",
+        },
+        {
+            "state": {"position_id": "closed_guard_bottom", "mode": "gi"},
+            "transition_id": "legacy_action",
+            "action_id": "preferred_action",
         },
     ],
 )

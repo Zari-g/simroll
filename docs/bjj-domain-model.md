@@ -1,167 +1,79 @@
 # SimRoll — BJJ Domain Model
 
-## Overview
+## Semantic model
 
-SimRoll models Brazilian Jiu-Jitsu as a graph-based system.
+SimRoll represents a roll as validated immutable states connected by legal
+actions:
 
-A roll is represented as a sequence of connected states.
+```text
+Position + mode + stable players + owned controls
+    -> legal action
+    -> updated state
+```
 
-Positions are nodes.
-Transitions are edges.
-Grips and rules act as constraints.
-
----
-
-# Core Entities
+An action is either a positional transition or a same-position control change.
 
 ## Position
 
-A Position represents a grappling state.
+A position is a canonical graph node with player A and player B roles, mode
+legality, terminal status, and allowed/common controls. The runtime contains 20
+positions: 19 live positions and the sole dead end, `submission_terminal`.
 
-Examples:
-- Closed Guard
-- Mount
-- Side Control
-- Back Control
-- Turtle
-- Standing
+Gi and No-Gi use the same position graph. Mode changes action and control
+legality, not position identity.
 
-Each Position contains:
+## Stable players and roles
 
-- id
-- name
-- category
-- dominant_player
-- gi_allowed
-- no_gi_allowed
-- tags
-- description
+`player_a` and `player_b` remain the same people throughout a roll. Top, bottom,
+attacker, defender, passer, and guard roles come from the current position and
+may change after sweeps or reversals. Controls never change owner merely because
+roles change.
 
----
+## Controls
 
-## Transition
+A control definition describes one of 17 garment, limb, or body controls. An
+`ActiveControl` is a concrete immutable instance:
 
-A Transition represents movement between positions.
+- `control_id`
+- `owner` (`player_a` or `player_b`)
+- `target` (the other player)
 
-Examples:
-- Arm Drag
-- Knee Cut Pass
-- Flower Sweep
-- Hip Escape
-- Back Take
+Garment controls are Gi-only. Limb and body controls may be legal in both modes,
+subject to the current position and owner-role constraint. Two players can hold
+the same control type independently because ownership is part of identity.
 
-Each Transition contains:
+The public `/grips` name and flat grip projection fields on transitions are
+legacy compatibility surfaces; runtime state uses player-owned controls.
 
-- id
-- name
-- from_position
-- to_position
-- transition_type
-- required_grips
-- created_grips
-- removed_grips
-- gi_only
-- no_gi_only
-- difficulty
-- tags
-- notes
+## Actions
 
----
+A positional `Transition` is one of 65 graph edges, including 10 submissions.
+It checks source position, mode, and owned-control requirements, then applies
+deterministic removal, creation, preservation, pruning, and destination
+validation. A submission edge ends at `submission_terminal` and terminates the
+roll.
 
-## Grip
+A `ControlChange` is generated on demand from one of five templates. It acquires,
+releases, or switches controls without changing position, mode, or player
+identity. Control changes are roll actions but not graph edges; Pathfinder is
+intentionally positional-only.
 
-A Grip represents physical control points during a roll.
+## Simulation and presentation
 
-Examples:
-- Collar Grip
-- Sleeve Grip
-- Pant Grip
-- Wrist Control
-- Underhook
-- Overhook
+`RollSimulator` emits ordered states and typed actions with separate positional,
+control, and total-event counts. `transition_ids` and `step_count` remain legacy
+roll aliases for current consumers; new code uses `actions`, `action_ids`, and
+explicit counters.
 
-Each Grip contains:
+The frontend covers the complete semantic dataset. Visual coverage remains
+intentionally partial: unvisualized positions and unknown choreography use safe,
+explicit fallbacks.
 
-- id
-- name
-- grip_type
-- gi_required
-- control_target
-- dominant_hand
-- tags
+Scoring, strategy, stamina, skill levels, probability tuning, control-aware
+Pathfinder, and submission physics are outside the completed Iteration 11 model.
 
----
+## Known future review items
 
-## Active Control
-
-An Active Control is an immutable control instance attached to stable player
-identity. It contains:
-
-- control_id
-- owner (`player_a` or `player_b`)
-- target (`player_a` or `player_b`)
-
-Owner and target must differ. Player identity remains stable for the entire
-roll; top and bottom are positional roles derived from the current position.
-
-## Grappling State
-
-`GrapplingState` is an immutable, hashable snapshot containing:
-
-- position_id
-- mode
-- active_controls
-
-Two players may hold the same control type independently because ownership is
-part of control identity.
-
----
-
-## Roll State
-
-A Roll State represents the entire simulated exchange.
-
-Each Roll State contains:
-
-- player_one_state
-- player_two_state
-- current_sequence
-- history
-- timestamps
-- rule_set
-- gi_mode
-
----
-
-# Graph Logic
-
-SimRoll models grappling using directed graphs.
-
-- Positions are nodes
-- Transitions are edges
-- Pathways are sequences of transitions
-
-The system should support:
-
-- transition lookup
-- position connectivity
-- pathway discovery
-- gi/no-gi filtering
-- grip constraints
-- branching pathways
-
----
-
-# Simulation Philosophy
-
-SimRoll is not intended to be a realistic physics engine.
-
-Instead, it focuses on:
-- grappling logic
-- positional relationships
-- transitions
-- decision pathways
-- playful experimentation
-
-The system should feel educational, interactive, and slightly chaotic — similar to the nature of real BJJ rolls.
-
+The normalized dataset retains 30 ownership-sensitive review records, 11
+manual-review transitions, and future split candidates for the Toreando pass and
+old-school sweep. Iteration 11 intentionally does not resolve or remove them.
