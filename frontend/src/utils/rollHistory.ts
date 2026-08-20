@@ -2,25 +2,28 @@ import type {
   GrapplingStateResponse,
   RollAction,
 } from '../types/api'
-import { activeControlIds } from './activeControls.ts'
+import type { ActiveControl } from '../types/api'
+import { activeControlKey } from './activeControls.ts'
 
 export interface ControlChanges {
-  added: string[]
-  released: string[]
+  added: ActiveControl[]
+  released: ActiveControl[]
 }
 
 export function getHistoryControlChanges(
   previous: GrapplingStateResponse,
   current: GrapplingStateResponse,
 ): ControlChanges {
-  const previousIds = activeControlIds(previous.active_controls)
-  const currentIds = activeControlIds(current.active_controls)
-  const previousControls = new Set(previousIds)
-  const currentControls = new Set(currentIds)
+  const previousControls = new Set(previous.active_controls.map(activeControlKey))
+  const currentControls = new Set(current.active_controls.map(activeControlKey))
 
   return {
-    added: currentIds.filter((controlId) => !previousControls.has(controlId)),
-    released: previousIds.filter((controlId) => !currentControls.has(controlId)),
+    added: current.active_controls.filter(
+      (control) => !previousControls.has(activeControlKey(control)),
+    ),
+    released: previous.active_controls.filter(
+      (control) => !currentControls.has(activeControlKey(control)),
+    ),
   }
 }
 

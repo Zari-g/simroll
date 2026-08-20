@@ -1,9 +1,10 @@
-import type { GrapplingMode, GrapplingStateResponse } from '../types/api'
+import type { ActiveControl, GrapplingMode, GrapplingStateResponse } from '../types/api'
 
 export interface GrapplingDisplayState {
   readonly positionId: string
   readonly mode: GrapplingMode
   readonly activeGripIds: readonly string[]
+  readonly activeControls: readonly ActiveControl[]
 }
 
 interface DisplayStateSources {
@@ -22,11 +23,13 @@ export function createGrapplingDisplayState(
   positionId: string,
   mode: GrapplingMode,
   activeGripIds: readonly string[],
+  activeControls: readonly ActiveControl[] = [],
 ): GrapplingDisplayState {
   return {
     positionId,
     mode,
     activeGripIds: [...activeGripIds],
+    activeControls: [...activeControls],
   }
 }
 
@@ -37,6 +40,7 @@ export function displayStateFromResponse(
     state.position_id,
     state.mode,
     [...new Set(state.active_controls.map((control) => control.control_id))],
+    state.active_controls,
   )
 }
 

@@ -39,7 +39,7 @@ test('history describes a same-position control-change event', () => {
   assert.equal(before.position_id, after.position_id)
   assert.equal(getHistoryActionName(action), action.name)
   assert.deepEqual(getHistoryControlChanges(before, after), {
-    added: ['wrist_control'],
+    added: after.active_controls,
     released: [],
   })
 })

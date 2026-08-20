@@ -3,7 +3,7 @@ import {
   getAvailableTransitions,
   getGrips,
   getPosition,
-  getPositionTransitions,
+  getTransitions,
 } from '../api/client'
 import type {
   GrapplingMode,
@@ -11,7 +11,7 @@ import type {
   Position,
   Transition,
 } from '../types/api'
-import { starterControls } from '../utils/activeControls'
+import { formatActiveControls, starterControls } from '../utils/activeControls'
 import { formatReadable } from '../utils/format'
 import {
   filterGripIdsForMode,
@@ -33,6 +33,7 @@ interface PositionDetailProps {
 interface DetailData {
   position: Position
   transitions: Transition[]
+  incomingTransitions: Transition[]
   grips: Grip[]
 }
 
@@ -67,13 +68,22 @@ export function PositionDetail({
       setDetailError(null)
 
       try {
-        const [position, transitions, grips] = await Promise.all([
+        const [position, allTransitions, grips] = await Promise.all([
           getPosition(positionId, controller.signal),
-          getPositionTransitions(positionId, controller.signal),
+          getTransitions(controller.signal),
           getGrips(controller.signal),
         ])
 
-        setDetail({ position, transitions, grips })
+        setDetail({
+          position,
+          transitions: allTransitions.filter(
+            (transition) => transition.from_position === position.id,
+          ),
+          incomingTransitions: allTransitions.filter(
+            (transition) => transition.to_position === position.id,
+          ),
+          grips,
+        })
         setMode(getInitialMode(position))
         setSelectedGripIds([])
       } catch (requestError) {
@@ -222,7 +232,7 @@ export function PositionDetail({
     )
   }
 
-  const { position, transitions, grips } = detail
+  const { position, transitions, incomingTransitions, grips } = detail
   const hasSettledAvailability =
     !isAvailabilityLoading && availabilityError === null
 
@@ -240,6 +250,9 @@ export function PositionDetail({
           {formatReadable(position.player_role)}
         </p>
         <h2 id="detail-heading">{position.name}</h2>
+        {position.id === 'submission_terminal' && (
+          <p className="terminal-state-badge">Terminal submission state</p>
+        )}
         <p className="detail-description">{position.description}</p>
         <ul className="availability-list" aria-label="Grappling mode availability">
           <li className={`availability ${position.gi_allowed ? '' : 'availability--off'}`}>
@@ -303,10 +316,13 @@ export function PositionDetail({
             <h3 id="state-summary-heading">{position.name}</h3>
             <p><strong>Mode:</strong> {mode === 'gi' ? 'Gi' : 'No-Gi'}</p>
             <div>
-              <strong>Active grips:</strong>
+              <strong>Active controls:</strong>
               <p>
                 {selectedGripIds.length > 0
-                  ? selectedGripIds.map(resolveGripName).join(', ')
+                  ? formatActiveControls(
+                      starterControls(selectedGripIds),
+                      resolveGripName,
+                    ).join('; ')
                   : 'None'}
               </p>
             </div>
@@ -362,6 +378,31 @@ export function PositionDetail({
                     destinationName={resolvePositionName(transition.to_position)}
                     resolveGripName={resolveGripName}
                   />
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="transitions-heading-row incoming-transitions-heading">
+            <div>
+              <p className="section-label">Incoming moves</p>
+              <h3>Transitions into this position</h3>
+            </div>
+            <p className="transition-count">{incomingTransitions.length} total</p>
+          </div>
+          {incomingTransitions.length === 0 ? (
+            <div className="empty-state">
+              <strong>No transitions currently enter this position.</strong>
+            </div>
+          ) : (
+            <ul className="incoming-transition-list">
+              {incomingTransitions.map((transition) => (
+                <li key={transition.id}>
+                  <strong>{transition.name}</strong>
+                  <span>
+                    {resolvePositionName(transition.from_position)} → {position.name}
+                  </span>
+                  {transition.submission && <span>Submission · Terminal</span>}
                 </li>
               ))}
             </ul>

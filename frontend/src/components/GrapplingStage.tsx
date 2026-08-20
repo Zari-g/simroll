@@ -1,5 +1,6 @@
 import type { GrapplingDisplayState } from '../grappling/displayState'
 import type { GrapplerId, GrapplerPose } from '../grappling/types'
+import { formatActiveControls } from '../utils/activeControls'
 import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
 
 interface GrapplingStageProps {
@@ -28,7 +29,10 @@ export function GrapplingStage({
   resolveGripName,
 }: GrapplingStageProps) {
   const positionName = resolvePositionName(displayState.positionId)
-  const activeGripNames = displayState.activeGripIds.map(resolveGripName)
+  const activeControlNames = formatActiveControls(
+    displayState.activeControls,
+    resolveGripName,
+  )
   const playbackStepLabel =
     playbackStateIndex === 0 ? 'Start' : `Step ${playbackStateIndex}`
 
@@ -102,9 +106,9 @@ export function GrapplingStage({
                   : 'Starting grips'}
             </dt>
             <dd>
-              {activeGripNames.length > 0
-                ? activeGripNames.join(', ')
-                : 'No active grips'}
+              {activeControlNames.length > 0
+                ? activeControlNames.join('; ')
+                : 'No active controls'}
             </dd>
           </div>
         </dl>

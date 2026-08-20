@@ -28,6 +28,7 @@ export interface TransitionGraphEdgeData extends Record<string, unknown> {
   routeOffset: number
   isHighlighted: boolean
   isDimmed: boolean
+  isSubmission: boolean
 }
 
 export type TransitionFlowEdge = Edge<TransitionGraphEdgeData, 'transition'>
@@ -240,6 +241,7 @@ export function buildGraphElements(
         isDimmed:
           hasHighlight &&
           !(highlightedTransitionIds?.has(transition.id) ?? false),
+        isSubmission: transition.submission || transition.terminal,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,

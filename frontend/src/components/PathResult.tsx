@@ -5,7 +5,7 @@ import type {
   Transition,
 } from '../types/api'
 import { formatReadable } from '../utils/format'
-import { activeControlIds } from '../utils/activeControls'
+import { buildPathPresentation } from '../utils/pathPresentation'
 
 interface PathResultProps {
   path: GrapplingPath
@@ -24,18 +24,17 @@ export function PathResult({
   title,
   onShowOnMap,
 }: PathResultProps) {
-  const positionNames = new Map(
-    positions.map((position) => [position.id, position.name]),
-  )
   const transitionsById = new Map(
     transitions.map((transition) => [transition.id, transition]),
   )
-  const gripNames = new Map(grips.map((grip) => [grip.id, grip.name]))
-  const resolvePosition = (id: string) =>
-    positionNames.get(id) ?? formatReadable(id)
-  const resolveGrip = (id: string) => gripNames.get(id) ?? formatReadable(id)
   const extraTransitionIds = path.transition_ids.slice(
     Math.max(0, path.states.length - 1),
+  )
+  const presentationSteps = buildPathPresentation(
+    path,
+    positions,
+    transitions,
+    grips,
   )
 
   return (
@@ -57,6 +56,7 @@ export function PathResult({
       ) : (
         <ol className="path-sequence">
           {path.states.map((state, stateIndex) => {
+            const presentation = presentationSteps[stateIndex]
             const transitionId =
               stateIndex > 0 ? path.transition_ids[stateIndex - 1] : undefined
             const transition = transitionId
@@ -72,7 +72,7 @@ export function PathResult({
                     </span>
                     <div>
                       <strong>
-                        {transition?.name ?? formatReadable(transitionId)}
+                        {presentation.incomingTransitionName}
                       </strong>
                       {transition && (
                         <span>
@@ -84,15 +84,13 @@ export function PathResult({
                   </div>
                 )}
                 <div className="path-state">
-                  <span className="path-state__number">State {stateIndex + 1}</span>
-                  <h5>{resolvePosition(state.position_id)}</h5>
-                  <p>{state.mode === 'gi' ? 'Gi' : 'No-Gi'}</p>
+                  <span className="path-state__number">State {presentation.stateNumber}</span>
+                  <h5>{presentation.positionName}</h5>
+                  <p>{presentation.modeName}</p>
                   <p>
-                    <strong>Active grips:</strong>{' '}
-                    {state.active_controls.length > 0
-                      ? activeControlIds(state.active_controls)
-                          .map(resolveGrip)
-                          .join(', ')
+                    <strong>Active controls:</strong>{' '}
+                    {presentation.activeControlNames.length > 0
+                      ? presentation.activeControlNames.join('; ')
                       : 'None'}
                   </p>
                 </div>

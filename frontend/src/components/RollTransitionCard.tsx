@@ -1,5 +1,6 @@
 import type { RollAction } from '../types/api'
 import { formatReadable } from '../utils/format'
+import { formatActiveControls } from '../utils/activeControls'
 
 interface RollTransitionCardProps {
   transition: RollAction
@@ -27,6 +28,8 @@ export function RollTransitionCard({
     : normalizedType.includes('sweep')
       ? 'sweep'
       : 'transition'
+  const controlsAdded = transition.created_controls
+  const controlsRemoved = transition.removed_controls
 
   return (
     <button
@@ -60,6 +63,19 @@ export function RollTransitionCard({
           <span className="roll-transition-card__requirements">
             <strong>Required grips:</strong>{' '}
             {transition.required_grips.map(resolveGripName).join(', ')}
+          </span>
+        )}
+
+        {controlsAdded.length > 0 && (
+          <span className="roll-transition-card__requirements">
+            <strong>Adds:</strong>{' '}
+            {formatActiveControls(controlsAdded, resolveGripName).join('; ')}
+          </span>
+        )}
+        {controlsRemoved.length > 0 && (
+          <span className="roll-transition-card__requirements">
+            <strong>Removes:</strong>{' '}
+            {formatActiveControls(controlsRemoved, resolveGripName).join('; ')}
           </span>
         )}
 

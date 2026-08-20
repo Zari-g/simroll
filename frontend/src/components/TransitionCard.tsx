@@ -1,5 +1,6 @@
 import type { Transition } from '../types/api'
 import { formatReadable } from '../utils/format'
+import { formatActiveControls } from '../utils/activeControls'
 
 export type AvailabilityState =
   | 'available'
@@ -82,7 +83,33 @@ export function TransitionCard({
           gripIds={transition.removed_grips}
           resolveGripName={resolveGripName}
         />
+        {transition.created_controls.length > 0 && (
+          <div>
+            <dt>Controls added</dt>
+            <dd>
+              {formatActiveControls(
+                transition.created_controls,
+                resolveGripName,
+              ).join('; ')}
+            </dd>
+          </div>
+        )}
+        {transition.removed_controls.length > 0 && (
+          <div>
+            <dt>Controls removed</dt>
+            <dd>
+              {formatActiveControls(
+                transition.removed_controls,
+                resolveGripName,
+              ).join('; ')}
+            </dd>
+          </div>
+        )}
       </dl>
+
+      {transition.submission && (
+        <p className="terminal-state-badge">Submission · Terminal</p>
+      )}
 
       <p className="transition-modes">
         {transition.gi_allowed && 'Gi'}

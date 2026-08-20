@@ -232,13 +232,13 @@ current authoritative state
     -> continue manual branching from the returned final state
 ```
 
-The frontend history is one `{ states, transitionIds }` value that maintains
-`states.length === transitionIds.length + 1`. A single step appends the
-transition and `next_state` returned by `/rolls/step`. An Auto Roll appends all
-returned transition IDs and `path.states.slice(1)`, avoiding duplication of its
-current-state prefix. `RollHistory.tsx` resolves readable metadata and compares
-consecutive authoritative states only to display grip additions and releases;
-it never applies transitions or decides grappling validity.
+The frontend history is one `{ states, actions }` value that maintains
+`states.length === actions.length + 1`. A single step appends the typed action
+and `next_state` returned by `/rolls/step`. An Auto Roll appends the returned
+typed actions and authoritative states without duplicating its current-state
+prefix. `RollHistory.tsx` resolves readable metadata and compares consecutive
+authoritative states only to display player-owned control additions and
+releases; it never applies actions or decides grappling validity.
 
 Grappler graphics preserve the same frontend ownership boundaries. A single
 display-state boundary selects configured, live, historical, or animated
@@ -476,5 +476,20 @@ Integration tests replay all ten normalized 11A example rolls step by step and
 also validate deterministic seeded random runs in both Gi and No-Gi. Random
 runs may end early in a valid submission and are not each required to reach an
 artificial minimum length.
+
+Iteration 11G connects the frontend to the complete semantic MVP catalog: 20
+positions, 65 positional/submission transitions, and 17 control definitions.
+Position, graph, detail, roll, history, and Pathfinder views use API names and
+retain control owner/target identity in readable text. The graph is shared by
+Gi and No-Gi; mode-specific legality remains backend-owned.
+
+Visual coverage remains intentionally partial. Closed Guard, Mount, and Side
+Control retain their articulated scenes, and registered choreography continues
+to animate unchanged. Positions without authored artwork use the explicit
+"visualization coming soon" fallback. Transitions without registered
+choreography commit the authoritative destination state directly and never
+borrow interpolation from another move. Control-change actions update controls
+in place without body choreography. Later iterations can expand artwork and
+choreography independently from this semantic data integration.
 
 This keeps the project realistic and expandable.
