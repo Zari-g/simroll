@@ -18,6 +18,14 @@ export interface ActiveControl {
   target: PlayerId
 }
 
+export interface OwnedControlRequirement {
+  match: 'any_of'
+  control_ids: string[]
+  owner: PlayerId
+  target: PlayerId
+  modes: GrapplingMode[]
+}
+
 export interface Grip {
   id: string
   name: string
@@ -39,6 +47,12 @@ export interface Transition {
   required_grips: string[]
   created_grips: string[]
   removed_grips: string[]
+  required_controls: OwnedControlRequirement[]
+  created_controls: ActiveControl[]
+  removed_controls: ActiveControl[]
+  optional_controls: ActiveControl[]
+  controls_preserved_if_valid: ActiveControl[]
+  reset_controls: boolean
   gi_allowed: boolean
   no_gi_allowed: boolean
   difficulty: string

@@ -13,6 +13,7 @@ import {
 } from '../grappling/displayState'
 import { resolvePositionContacts } from '../grappling/contacts'
 import { getPositionVisual } from '../grappling/positionVisuals'
+import { getTransitionVisual } from '../grappling/transitionVisuals'
 import { resolveVisualPose } from '../grappling/resolveVisualPose'
 import { usePoseAnimation } from '../hooks/usePoseAnimation'
 import type {
@@ -461,6 +462,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       const endVisual = resolveStateVisual(response.next_state)
       if (
         response.transition.action_type === 'transition' &&
+        getTransitionVisual(response.transition.id) &&
         startVisual &&
         endVisual
       ) {
@@ -560,7 +562,12 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           const startVisual = resolveStateVisual(startState)
           const endVisual = resolveStateVisual(endState)
 
-          if (action.action_type === 'transition' && startVisual && endVisual) {
+          if (
+            action.action_type === 'transition' &&
+            getTransitionVisual(action.id) &&
+            startVisual &&
+            endVisual
+          ) {
             await poseAnimation.play({
               transitionId,
               transitionName: action.name,
@@ -721,7 +728,12 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     const historicalAction = history.actions[historicalTransition.transitionIndex]
     const startVisual = resolveStateVisual(historicalTransition.startState)
     const endVisual = resolveStateVisual(historicalTransition.endState)
-    if (historicalAction?.action_type === 'transition' && startVisual && endVisual) {
+    if (
+      historicalAction?.action_type === 'transition' &&
+      getTransitionVisual(historicalAction.id) &&
+      startVisual &&
+      endVisual
+    ) {
       await poseAnimation.play({
         transitionId: historicalTransition.transitionId,
         transitionName: resolveTransitionName(
@@ -770,6 +782,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         startPositionId,
         mode,
         selectedGripIds,
+        starterControls(selectedGripIds),
       ),
     [startPositionId, mode, selectedGripIds],
   )

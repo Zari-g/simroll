@@ -11,10 +11,11 @@ export function PositionGraphNode({ data }: NodeProps<PositionFlowNode>) {
     position.gi_allowed ? 'Gi' : null,
     position.no_gi_allowed ? 'No-Gi' : null,
   ].filter(Boolean)
+  const isTerminal = position.id === 'submission_terminal'
 
   return (
     <article
-      className={`position-graph-node${isHighlighted ? ' is-path-highlighted' : ''}${isDimmed ? ' is-path-dimmed' : ''}`}
+      className={`position-graph-node${isTerminal ? ' is-terminal' : ''}${isHighlighted ? ' is-path-highlighted' : ''}${isDimmed ? ' is-path-dimmed' : ''}`}
     >
       {graphHandlePositions.flatMap(({ side, position: handlePosition }) => [
         <Handle
@@ -37,6 +38,9 @@ export function PositionGraphNode({ data }: NodeProps<PositionFlowNode>) {
 
       {isHighlighted && (
         <span className="position-graph-node__path-badge">Path position</span>
+      )}
+      {isTerminal && (
+        <span className="position-graph-node__terminal-badge">Terminal</span>
       )}
 
       <p className="position-graph-node__meta">

@@ -390,6 +390,25 @@ Complete
 11F Status:
 Complete
 
+## 11G — Frontend Dataset Integration
+
+- [x] Consume all 20 runtime positions, 65 positional/submission transitions,
+  and 17 controls across the existing frontend data flow.
+- [x] Preserve player ownership and targets in readable control state,
+  Pathfinder results, transition details, and roll history.
+- [x] Distinguish positional, control-change, and terminal submission events in
+  history while preserving mixed-event playback and authoritative endpoints.
+- [x] Keep Gi/No-Gi on one backend-owned graph and remove garment controls when
+  frontend mode configuration changes to No-Gi.
+- [x] Preserve the three articulated position visuals and registered
+  choreography; use intentional position and no-choreography fallbacks for the
+  remaining dataset instead of fabricated BJJ visuals.
+- [x] Expose all graph edges, incoming/outgoing position moves, readable route
+  metadata, and a distinct submission terminal in Explorer and Pathfinder.
+
+11G Status:
+Complete
+
 Iteration 11 Status:
 In progress
 

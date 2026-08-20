@@ -25,6 +25,7 @@ export function TransitionGraphEdge({
     : data?.isDimmed
       ? ' is-path-dimmed'
       : ''
+  const semanticClass = data?.isSubmission ? ' is-submission' : ''
 
   return (
     <>
@@ -32,11 +33,11 @@ export function TransitionGraphEdge({
         id={id}
         path={edgePath}
         markerEnd={markerEnd}
-        className={`transition-graph-edge${selected ? ' is-selected' : ''}${stateClass}`}
+        className={`transition-graph-edge${selected ? ' is-selected' : ''}${stateClass}${semanticClass}`}
       />
       <EdgeLabelRenderer>
         <div
-          className={`transition-graph-edge__label${selected ? ' is-selected' : ''}${stateClass}`}
+          className={`transition-graph-edge__label${selected ? ' is-selected' : ''}${stateClass}${semanticClass}`}
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}

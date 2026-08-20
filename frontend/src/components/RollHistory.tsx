@@ -1,5 +1,5 @@
 import type { GrapplingStateResponse, RollAction } from '../types/api'
-import { activeControlIds } from '../utils/activeControls'
+import { formatActiveControls } from '../utils/activeControls'
 import {
   getHistoryActionName,
   getHistoryControlChanges,
@@ -111,6 +111,20 @@ export function RollHistory({
                       : resolveTransitionName(transitionId)}
                   </strong>
                   {action?.action_type === 'control_change' && <span>Control change</span>}
+                  {action?.action_type === 'transition' && action.submission && (
+                    <span>Submission · Terminal</span>
+                  )}
+                  {action?.action_type === 'transition' && (
+                    <span>
+                      {resolvePositionName(action.from_position)} →{' '}
+                      {resolvePositionName(action.to_position)}
+                    </span>
+                  )}
+                  {action?.action_type === 'control_change' && (
+                    <span>
+                      Position retained · {resolvePositionName(action.position_id)}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -143,12 +157,13 @@ export function RollHistory({
                     <dd>{state.mode === 'gi' ? 'Gi' : 'No-Gi'}</dd>
                   </div>
                   <div>
-                    <dt>Grips</dt>
+                    <dt>Active controls</dt>
                     <dd>
                       {state.active_controls.length > 0
-                        ? activeControlIds(state.active_controls)
-                            .map(resolveGripName)
-                            .join(', ')
+                        ? formatActiveControls(
+                            state.active_controls,
+                            resolveGripName,
+                          ).join('; ')
                         : 'None'}
                     </dd>
                   </div>
@@ -156,11 +171,11 @@ export function RollHistory({
 
                 {hasGripChanges && changes && (
                   <div className="roll-history__grip-changes">
-                    <strong>Grip changes</strong>
+                    <strong>Control changes</strong>
                     {changes.added.length > 0 && (
                       <p>
                         <span className="roll-history__grip-added">Added</span>{' '}
-                        {changes.added.map(resolveGripName).join(', ')}
+                        {formatActiveControls(changes.added, resolveGripName).join('; ')}
                       </p>
                     )}
                     {changes.released.length > 0 && (
@@ -168,7 +183,7 @@ export function RollHistory({
                         <span className="roll-history__grip-released">
                           Released
                         </span>{' '}
-                        {changes.released.map(resolveGripName).join(', ')}
+                        {formatActiveControls(changes.released, resolveGripName).join('; ')}
                       </p>
                     )}
                   </div>
