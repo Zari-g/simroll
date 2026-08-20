@@ -10,6 +10,7 @@ from simroll.datasets.importer import load_normalized_dataset
 from simroll.engine import GrapplingGraph, GrapplingPathfinder, RollSimulator
 from simroll.engine.control_semantics import owned_controls
 from simroll.models import GrapplingState
+from scripts.build_runtime_data import build_runtime_data
 
 
 TRANSITIONS_PATH = Path("simroll/data/transitions.yaml")
@@ -50,6 +51,21 @@ def test_runtime_ids_exactly_match_normalized_positional_dataset() -> None:
     assert set(graph.transitions).isdisjoint(
         item.id for item in normalized.control_change_templates
     )
+
+
+def test_runtime_yaml_is_fresh_and_deterministically_generated() -> None:
+    build_runtime_data(check=True)
+
+
+def test_manual_review_metadata_remains_preserved() -> None:
+    normalized = load_normalized_dataset(NORMALIZED_PATH)
+
+    assert len(normalized.reviews.ownership_sensitive_transitions) == 30
+    assert len(normalized.reviews.manual_review_transitions) == 11
+    assert set(normalized.reviews.future_split_candidates) == {
+        "half_guard_bottom_old_school_sweep_to_side_control_top",
+        "open_guard_top_toreando_to_side_control_top",
+    }
 
 
 def test_owned_requirements_resolve_actor_and_opponent_to_stable_players() -> None:

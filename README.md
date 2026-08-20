@@ -16,20 +16,21 @@ The goal is to build an interactive system where users can move through BJJ posi
 
 ## Current Status
 
-Iterations 1-7 are complete. Iteration 7 adds the backend roll simulation
-engine, its single-step and multi-step APIs, and the complete interactive Roll
-Simulator UI with manual branching, Surprise Me, Roll History, and Auto Roll.
-The web interface includes the frontend foundation,
-Position Explorer and search, Position Detail and its grip-aware transition
-viewer, the interactive structural Grappling Map, and the backend-powered
-Pathfinder.
-SimRoll currently provides validated Pydantic models and YAML data, a directed
-graph engine, immutable grappling-state updates, state-aware pathfinding, random
-and user-directed roll simulation, a thin HTTP API over the existing engine
-features, and a React frontend for browsing positions and
-inspecting grip-aware transition availability for a selected grappling state.
+Iterations 1-11 are complete. The semantic runtime contains exactly 20
+positions (19 live plus `submission_terminal`), 65 positional/submission
+transitions (10 submissions), 17 controls, and five parameterized same-position
+control-change templates. All 19 live positions form one strongly connected
+component.
+
+SimRoll provides validated Pydantic models and deterministically generated YAML
+data, stable player-owned controls, Gi/No-Gi legality, lifecycle-aware state
+updates, pathfinding, deterministic and random roll simulation, submission
+termination, a thin HTTP API, and a React frontend. The frontend supports the
+complete semantic dataset across Explorer, Position Detail, Pathfinder, Roll
+Simulator, Auto Roll, history, and playback. Artwork and choreography remain
+intentionally partial and use explicit safe fallbacks.
 The Pathfinder discovers shortest or multiple valid paths through the API,
-shows the complete returned position/mode/grip state at every step, and can
+shows the complete returned position/mode/control state at every step, and can
 highlight any returned route on the structural Grappling Map. The Roll Simulator
 lets users configure a starting state, advance through backend-authoritative
 manual or random steps, inspect one continuous history, and continue branching
@@ -64,20 +65,20 @@ state = GrapplingState(
     ],
 )
 
-next_state = graph.apply_transition(state, "hip_bump_sweep")
+next_state = graph.apply_transition(
+    state, "closed_guard_bottom_hip_bump_to_mount_top"
+)
 
 assert next_state.position_id == "mount_top"
-assert {control.control_id for control in next_state.active_controls} == {
-    "underhook"
-}
+assert next_state.active_controls == frozenset()
 assert state.position_id == "closed_guard_bottom"
 ```
 
 ## State-Aware Pathfinding
 
 `GrapplingPathfinder` searches over complete states: position, grappling mode,
-and active grips. This allows a path to revisit a position after creating or
-removing a grip, while still respecting gi/no-gi and transition requirements.
+and player-owned controls. It intentionally traverses positional transitions
+only; same-position control changes belong to roll simulation.
 
 ```python
 from simroll.engine import GrapplingGraph, GrapplingPathfinder
@@ -101,7 +102,9 @@ start = GrapplingState(
 path = pathfinder.find_shortest_path(start, "mount_top")
 
 assert path is not None
-assert path.transition_ids == ("hip_bump_sweep",)
+assert path.transition_ids == (
+    "closed_guard_bottom_hip_bump_to_mount_top",
+)
 assert path.final_state.position_id == "mount_top"
 ```
 
@@ -118,10 +121,11 @@ filtered_path = pathfinder.find_shortest_path(
 
 ## Roll Simulation Engine
 
-`RollSimulator` advances complete grappling states through transitions validated
-and applied by `GrapplingGraph`. Callers can select a transition, request one
-random valid step, or generate a bounded random `GrapplingPath`. Supplying a
-seeded `random.Random` makes random rolls repeatable.
+`RollSimulator` advances complete grappling states through positional
+transitions and same-position control changes validated by `GrapplingGraph`.
+Callers can select an action, request one random valid step, or generate a
+bounded `RollSimulation`. Supplying a seeded `random.Random` makes random rolls
+repeatable.
 
 ```python
 import random
@@ -252,25 +256,25 @@ needed.
 Use the Positions / Grappling map / Pathfinder / Roll simulator switch to move
 among the searchable position list, interactive structural graph, path search
 form, and step-by-step roll interface.
-Position Detail lets users set Gi or No-Gi mode, choose active grips, and inspect
+Position Detail lets users set Gi or No-Gi mode, choose active controls, and inspect
 backend-reported transition availability for that state.
 
-Pathfinder accepts a starting position, supported grappling mode, starting grips,
+Pathfinder accepts a starting position, supported grappling mode, starting controls,
 target position, and optional difficulty/type/depth limits. It calls
 `POST /paths/shortest` for the shortest valid route or `POST /paths` for multiple
-engine-ordered routes. Returned states and active grips are displayed directly;
+engine-ordered routes. Returned states and owned controls are displayed directly;
 the frontend does not execute transitions or reproduce pathfinding rules. Use
 **Show on grappling map** on a result to emphasize its returned position and
 transition IDs while retaining the rest of the structural map, then **Clear path
 highlight** to restore the normal map.
 
-The Roll Simulator setup reuses the shared mode and grip controls. Starting a
+The Roll Simulator setup reuses the shared mode and control selectors. Starting a
 roll stores that configuration locally, then asks the backend for valid moves.
-**Use Move** sends the selected transition ID, while **Surprise Me** sends a null
-transition ID so the backend chooses one random valid move. Every resulting
-position and active-grip set is rendered directly from the returned next state.
+**Use Move** sends the selected action ID, while **Surprise Me** sends a null
+action ID so the backend chooses one random legal action. Every resulting
+position and owned-control set is rendered directly from the returned next state.
 The complete Roll History combines manual, Surprise Me, and Auto Roll results in
-one timeline and derives visible grip additions/releases only by comparing
+one timeline and derives visible control additions/releases only by comparing
 consecutive returned states. **Auto Roll** calls `POST /rolls/simulate` for 5 or
 10 steps, validates the returned path, appends its transition IDs and all states
 after the duplicate starting state, and then resumes manual choices from the
@@ -289,4 +293,5 @@ Install the development dependencies and run the complete test suite:
 ```bash
 python -m pip install -e ".[dev]"
 python -m pytest
+python scripts/build_runtime_data.py --check
 ```

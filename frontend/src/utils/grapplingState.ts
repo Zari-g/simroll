@@ -4,6 +4,8 @@ export function getInitialMode(position: Position): GrapplingMode {
   return position.gi_allowed ? 'gi' : 'no_gi'
 }
 
+// Legacy setup adapter: configuration selectors use flat IDs, while live and
+// historical grappling states use player-owned ActiveControl values.
 export function filterGripIdsForMode(
   gripIds: string[],
   grips: Grip[],

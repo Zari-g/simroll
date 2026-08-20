@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
@@ -189,22 +191,55 @@ def build_transitions(dataset: Any) -> list[dict[str, Any]]:
     return records
 
 
-def _write_yaml(path: Path, records: list[dict[str, Any]]) -> None:
-    with path.open("w", encoding="utf-8", newline="\n") as output:
-        yaml.safe_dump(
-            records,
-            output,
-            allow_unicode=True,
-            sort_keys=False,
-            width=1000,
+def _render_yaml(records: list[dict[str, Any]]) -> str:
+    output = StringIO(newline="\n")
+    yaml.safe_dump(
+        records,
+        output,
+        allow_unicode=True,
+        sort_keys=False,
+        width=1000,
+    )
+    return output.getvalue()
+
+
+def build_runtime_data(*, check: bool = False) -> None:
+    """Write runtime YAML, or fail when committed data is not current."""
+
+    dataset = load_normalized_dataset(SOURCE)
+    generated = {
+        RUNTIME_DIR / "positions.yaml": build_positions(dataset),
+        RUNTIME_DIR / "grips.yaml": build_controls(dataset),
+        RUNTIME_DIR / "transitions.yaml": build_transitions(dataset),
+    }
+    stale_paths: list[Path] = []
+    for path, records in generated.items():
+        rendered = _render_yaml(records)
+        if check:
+            if not path.exists() or path.read_text(encoding="utf-8") != rendered:
+                stale_paths.append(path)
+        else:
+            path.write_text(rendered, encoding="utf-8", newline="\n")
+
+    if stale_paths:
+        relative_paths = ", ".join(
+            str(path.relative_to(ROOT)) for path in stale_paths
+        )
+        raise SystemExit(
+            "Runtime data is stale: "
+            f"{relative_paths}. Run 'python scripts/build_runtime_data.py'."
         )
 
 
 def main() -> None:
-    dataset = load_normalized_dataset(SOURCE)
-    _write_yaml(RUNTIME_DIR / "positions.yaml", build_positions(dataset))
-    _write_yaml(RUNTIME_DIR / "grips.yaml", build_controls(dataset))
-    _write_yaml(RUNTIME_DIR / "transitions.yaml", build_transitions(dataset))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail without writing when committed runtime YAML is stale",
+    )
+    arguments = parser.parse_args()
+    build_runtime_data(check=arguments.check)
 
 
 if __name__ == "__main__":

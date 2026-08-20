@@ -59,10 +59,12 @@ external curated JSON
     -> runtime domain models and graph
 ```
 
-Iteration 11C derives the runtime YAML from the canonical normalized artifact.
+Iteration 11 derives the runtime YAML from the canonical normalized artifact.
 `GrapplingGraph.from_default_data()` now loads 20 positions, 65 positional and
 submission transitions, and 17 controls. The five control-change templates
-remain outside the runtime graph.
+load from the normalized artifact and remain outside the positional graph.
+`python scripts/build_runtime_data.py --check` verifies that committed YAML is
+the exact deterministic projection of the normalized source.
 
 Example data:
 
@@ -491,5 +493,26 @@ choreography commit the authoritative destination state directly and never
 borrow interpolation from another move. Control-change actions update controls
 in place without body choreography. Later iterations can expand artwork and
 choreography independently from this semantic data integration.
+
+Iteration 11 closes on one runtime equation:
+
+```text
+Position + mode + stable players + owned controls
+    -> legal action
+    -> updated validated state
+```
+
+A legal action is either a positional transition or a same-position control
+change. Gi and No-Gi share the canonical position graph. Garment controls are
+Gi-only; limb and body controls can be legal in either mode. Pathfinder remains
+positional-only.
+
+The legacy `/grips` resource name, transition `required_grips` / `created_grips`
+/ `removed_grips` projections, roll `transition_ids`, roll `step_count`, and
+single-step response field `transition` remain for existing API/frontend
+consumers. New roll code uses owned controls, typed `actions`, `action_ids`, and
+the explicit event counters. Frontend flat-ID/starter adapters remain narrowly
+scoped to setup selectors and are marked as legacy; live and historical states
+use owned controls.
 
 This keeps the project realistic and expandable.
