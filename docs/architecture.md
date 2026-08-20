@@ -464,4 +464,17 @@ selected twice consecutively. The pathfinder intentionally continues to
 enumerate positional graph edges only; same-position control changes are not
 part of BFS in 11E.
 
+Iteration 11F makes termination part of the domain simulation result. An
+executed submission transition stops immediately with `stop_reason` set to
+`submission`, ahead of the event-limit and no-action checks. Merely starting at
+`submission_terminal` executes no submission and therefore reports
+`no_available_transitions`. The API serializes the domain-owned reason together
+with all three counters; `step_count` remains a total-event compatibility alias.
+
+Long-roll capability is measured with `positional_steps`, never total events.
+Integration tests replay all ten normalized 11A example rolls step by step and
+also validate deterministic seeded random runs in both Gi and No-Gi. Random
+runs may end early in a valid submission and are not each required to reach an
+artificial minimum length.
+
 This keeps the project realistic and expandable.

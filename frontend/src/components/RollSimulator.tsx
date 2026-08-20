@@ -30,6 +30,7 @@ import {
   getInitialMode,
 } from '../utils/grapplingState'
 import { getHistoricalTransition } from '../utils/rollPlayback'
+import { formatSimulationResult } from '../utils/simulationResult'
 import {
   activeControlIds,
   activeControlKey,
@@ -50,7 +51,7 @@ interface RollHistoryData {
 }
 
 interface AutoRollStatus {
-  kind: 'completed' | 'dead_end'
+  kind: 'completed' | 'dead_end' | 'submission'
   message: string
 }
 
@@ -98,6 +99,7 @@ function isValidSimulationResponse(
   requestedMaxSteps: number,
 ) {
   const path = response.path
+  const finalAction = path?.actions?.at(-1)
 
   if (
     !path ||
@@ -107,12 +109,15 @@ function isValidSimulationResponse(
     !Number.isInteger(path.total_events) ||
     path.total_events < 0 ||
     path.total_events > requestedMaxSteps ||
-    (response.stop_reason !== 'max_steps' &&
+    (response.stop_reason !== 'submission' &&
+      response.stop_reason !== 'max_steps' &&
       response.stop_reason !== 'no_available_transitions') ||
     path.states.length !== path.actions.length + 1 ||
     path.total_events !== path.actions.length ||
     path.action_ids.length !== path.actions.length ||
     path.positional_steps + path.control_actions !== path.total_events ||
+    (response.stop_reason === 'submission' &&
+      (finalAction?.action_type !== 'transition' || !finalAction.submission)) ||
     !path.actions.every((action, index) =>
       Boolean(
         action &&
@@ -584,7 +589,17 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
       setIsRandomDeadEnd(false)
 
-      if (stopReason === 'no_available_transitions') {
+      if (stopReason === 'submission') {
+        availabilityRequestId.current += 1
+        setAvailableTransitions([])
+        setAvailabilityError(null)
+        setIsAvailabilityLoading(false)
+        setIsAutoDeadEnd(true)
+        setAutoRollStatus({
+          kind: 'submission',
+          message: formatSimulationResult(response),
+        })
+      } else if (stopReason === 'no_available_transitions') {
         availabilityRequestId.current += 1
         setAvailableTransitions([])
         setAvailabilityError(null)
@@ -592,12 +607,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         setIsAutoDeadEnd(true)
         setAutoRollStatus({
           kind: 'dead_end',
-          message:
-            path.total_events === 0
-              ? 'Auto Roll could not begin because no valid moves remain.'
-              : `Auto Roll stopped after ${path.total_events} ${
-                  path.total_events === 1 ? 'event' : 'events'
-                } because no valid moves remain.`,
+          message: formatSimulationResult(response),
         })
       } else {
         setIsAutoDeadEnd(false)
@@ -606,7 +616,7 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         }
         setAutoRollStatus({
           kind: 'completed',
-          message: `Auto Roll completed ${path.total_events} events (${path.positional_steps} positional, ${path.control_actions} control). You can choose the next move or Auto Roll again.`,
+          message: formatSimulationResult(response),
         })
       }
     } catch (requestError) {

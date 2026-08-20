@@ -1,9 +1,11 @@
 from collections.abc import Iterator
+import random
 
 import pytest
 from fastapi.testclient import TestClient
 
 from simroll.api.app import app
+from simroll.api.dependencies import get_simulator
 from simroll.engine.control_semantics import owned_controls
 from simroll.engine import GrapplingGraph, RollSimulator
 from simroll.models import GrapplingState
@@ -11,6 +13,15 @@ from simroll.models import GrapplingState
 client = TestClient(app)
 graph = GrapplingGraph.from_default_data()
 simulator = RollSimulator(graph)
+
+
+class _SeededSimulator(RollSimulator):
+    def simulate(self, start_state, *, max_steps, rng=None):
+        return super().simulate(
+            start_state,
+            max_steps=max_steps,
+            rng=random.Random(9),
+        )
 
 
 def _control_payloads(control_ids: list[str]) -> list[dict[str, str]]:
@@ -383,12 +394,18 @@ def test_roll_simulation_returns_authoritative_valid_path() -> None:
     assert len(body["path"]["states"]) == (
         len(body["path"]["transition_ids"]) + 1
     )
-    assert body["stop_reason"] in {"max_steps", "no_available_transitions"}
+    assert body["stop_reason"] in {
+        "submission",
+        "max_steps",
+        "no_available_transitions",
+    }
     if body["stop_reason"] == "max_steps":
         assert body["path"]["step_count"] == 4
-    else:
+    elif body["stop_reason"] == "no_available_transitions":
         final_state = GrapplingState.model_validate(body["path"]["states"][-1])
         assert simulator.get_available_actions(final_state) == []
+    else:
+        assert body["path"]["actions"][-1]["submission"] is True
     _assert_roll_path_is_valid(body["path"])
 
 
@@ -519,6 +536,29 @@ def test_roll_simulation_returns_zero_step_path_at_dead_end() -> None:
         },
         "stop_reason": "no_available_transitions",
     }
+
+
+def test_roll_simulation_serializes_executed_submission_reason() -> None:
+    app.dependency_overrides[get_simulator] = lambda: _SeededSimulator(graph)
+
+    response = client.post(
+        "/rolls/simulate",
+        json=_simulation_payload(
+            max_steps=30,
+            position_id="standing_neutral",
+            active_grips=[],
+        ),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["stop_reason"] == "submission"
+    assert body["path"]["states"][-1]["position_id"] == "submission_terminal"
+    assert body["path"]["actions"][-1]["submission"] is True
+    assert body["path"]["positional_steps"] > 0
+    assert body["path"]["total_events"] == (
+        body["path"]["positional_steps"] + body["path"]["control_actions"]
+    )
 
 
 @pytest.mark.parametrize(

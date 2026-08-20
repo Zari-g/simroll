@@ -289,16 +289,13 @@ def simulate_roll(
             request.start_state,
             max_steps=request.max_steps,
         )
-        if simulation.total_events == request.max_steps:
-            stop_reason = "max_steps"
-        else:
+        if simulation.stop_reason == "no_available_transitions":
             final_state = simulation.states[-1]
             if simulator.get_available_actions(final_state):
                 raise RuntimeError(
                     "Simulation stopped before max_steps despite available "
                     "transitions."
                 )
-            stop_reason = "no_available_transitions"
     except KeyError as error:
         _raise_not_found(error)
     except ValueError as error:
@@ -306,7 +303,7 @@ def simulate_roll(
 
     return RollSimulationResponse(
         path=RollSimulationPathResponse.from_domain(simulation),
-        stop_reason=stop_reason,
+        stop_reason=simulation.stop_reason,
     )
 
 

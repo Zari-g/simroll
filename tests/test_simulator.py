@@ -251,6 +251,7 @@ def test_simulate_never_exceeds_max_steps() -> None:
 
     assert path.step_count == 3
     assert len(path.states) == 4
+    assert path.stop_reason == "max_steps"
 
 
 def test_simulate_stops_at_dead_end() -> None:
@@ -260,6 +261,45 @@ def test_simulate_stops_at_dead_end() -> None:
 
     assert path.transition_ids == ("only_step",)
     assert [state.position_id for state in path.states] == ["start", "middle"]
+    assert path.stop_reason == "no_available_transitions"
+
+
+def test_simulate_stops_immediately_after_executed_submission() -> None:
+    graph = _graph(
+        [
+            _transition(
+                "armbar",
+                "start",
+                "submission_terminal",
+                submission=True,
+            )
+        ]
+    )
+
+    result = RollSimulator(graph).simulate(_state(), max_steps=1)
+
+    assert result.stop_reason == "submission"
+    assert result.transition_ids == ("armbar",)
+    assert result.states[-1].position_id == "submission_terminal"
+    assert result.submission_transition == result.actions[-1]
+
+
+def test_submission_precedes_max_steps_when_final_event_hits_limit() -> None:
+    graph = _graph(
+        [
+            _transition(
+                "armbar",
+                "start",
+                "submission_terminal",
+                submission=True,
+            )
+        ]
+    )
+
+    result = RollSimulator(graph).simulate(_state(), max_steps=1)
+
+    assert result.total_events == 1
+    assert result.stop_reason == "submission"
 
 
 def test_simulate_zero_steps_returns_only_validated_start_state() -> None:
@@ -268,7 +308,7 @@ def test_simulate_zero_steps_returns_only_validated_start_state() -> None:
 
     path = RollSimulator(graph).simulate(start, max_steps=0)
 
-    assert path == RollSimulation(states=(start,))
+    assert path == RollSimulation(states=(start,), stop_reason="max_steps")
 
 
 def test_simulate_zero_steps_still_rejects_invalid_start_state() -> None:
@@ -374,6 +414,7 @@ def _position(position_id: str) -> Position:
         player_role="test",
         gi_allowed=True,
         no_gi_allowed=True,
+        terminal=position_id == "submission_terminal",
         description="Custom test position.",
     )
 
@@ -397,6 +438,7 @@ def _transition(
     required_grips: tuple[str, ...] = (),
     created_grips: tuple[str, ...] = (),
     removed_grips: tuple[str, ...] = (),
+    submission: bool = False,
 ) -> Transition:
     return Transition(
         id=transition_id,
@@ -410,4 +452,6 @@ def _transition(
         gi_allowed=True,
         no_gi_allowed=True,
         difficulty="beginner",
+        submission=submission,
+        terminal=submission,
     )

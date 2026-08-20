@@ -2,7 +2,7 @@ import type { RollAction } from '../types/api'
 import { RollTransitionCard } from './RollTransitionCard'
 
 interface StatusMessage {
-  kind: 'completed' | 'dead_end'
+  kind: 'completed' | 'dead_end' | 'submission'
   message: string
 }
 

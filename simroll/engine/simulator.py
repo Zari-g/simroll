@@ -99,6 +99,7 @@ class RollSimulator:
         states = [start_state]
         actions: list[RollAction] = []
         previous_control_action_id: str | None = None
+        stop_reason = "max_steps"
 
         for _ in range(max_steps):
             result = self.random_step(
@@ -107,6 +108,7 @@ class RollSimulator:
                 excluded_action_id=previous_control_action_id,
             )
             if result is None:
+                stop_reason = "no_available_transitions"
                 break
 
             action, next_state = result
@@ -115,8 +117,16 @@ class RollSimulator:
             previous_control_action_id = (
                 action.id if isinstance(action, ControlChange) else None
             )
+            if (
+                isinstance(action, Transition)
+                and action.submission
+                and next_state.position_id == "submission_terminal"
+            ):
+                stop_reason = "submission"
+                break
 
         return RollSimulation(
             states=tuple(states),
             actions=tuple(actions),
+            stop_reason=stop_reason,
         )

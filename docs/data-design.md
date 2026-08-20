@@ -328,6 +328,18 @@ existing controls, and the 17-control vocabulary. These runtime actions remain
 separate from the 65 positional/submission transitions and are never inserted
 as graph edges.
 
+The normalized artifact's five Gi and five No-Gi example rolls are executable
+regression fixtures. Each fixture is replayed without rewriting its sequence:
+source position, mode legality, owned-control requirements, destination,
+resulting controls, acting player, and stable player identity are checked at
+every event. Their long-roll target uses the recorded positional-transition
+count (11--15), excluding same-position control changes. Seeded random tests
+supplement these curated fixtures but allow legitimate early submissions.
+
+`submission_terminal` is a safe terminal node, not proof that a submission was
+executed. Submission termination is attached to the executed submission edge;
+starting directly at the terminal node produces no synthetic edge or metadata.
+
 ---
 
 # 10. Future Database Possibilities

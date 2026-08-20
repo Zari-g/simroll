@@ -1,7 +1,5 @@
 """Transport models for SimRoll state, pathfinding, and roll endpoints."""
 
-from typing import Literal
-
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from simroll.models import (
@@ -11,6 +9,7 @@ from simroll.models import (
     GrapplingState,
     RollAction,
     RollSimulation,
+    SimulationStopReason,
 )
 
 
@@ -195,7 +194,7 @@ class RollSimulationResponse(BaseModel):
     """Authoritative simulated path and the reason it stopped."""
 
     path: "RollSimulationPathResponse"
-    stop_reason: Literal["max_steps", "no_available_transitions"]
+    stop_reason: SimulationStopReason
 
 
 class RollSimulationPathResponse(BaseModel):
