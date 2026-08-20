@@ -35,6 +35,7 @@ export interface Transition {
   from_position: string
   to_position: string
   transition_type: string
+  actor_player: PlayerId
   required_grips: string[]
   created_grips: string[]
   removed_grips: string[]
@@ -43,6 +44,8 @@ export interface Transition {
   difficulty: string
   tags: string[]
   notes: string
+  submission: boolean
+  terminal: boolean
 }
 
 export interface AvailableTransitionsRequest {
@@ -110,6 +113,7 @@ export interface RollStepResponse {
 }
 
 export type RollSimulationStopReason =
+  | 'submission'
   | 'max_steps'
   | 'no_available_transitions'
 

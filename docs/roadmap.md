@@ -372,6 +372,24 @@ Complete
 11E Status:
 Complete
 
+## 11F — Long-Roll & Submission Simulation
+
+- [x] Stop immediately after an executed submission transition and expose the
+  typed `submission` reason with explicit precedence over the event limit.
+- [x] Keep a direct `submission_terminal` start safe without fabricating a
+  submission event.
+- [x] Execute all five Gi and five No-Gi normalized example rolls as exact
+  integration fixtures with position, mode, control, and player checks.
+- [x] Validate deterministic seeded simulations and 10+ positional-step
+  capability in both modes without requiring every random roll to be long.
+- [x] Keep positional, control, and total-event counters distinct across the
+  domain, API, and frontend while retaining compatibility aliases.
+- [x] Render submission endings with the executed transition display name and
+  preserve history/playback behavior.
+
+11F Status:
+Complete
+
 Iteration 11 Status:
 In progress
 
