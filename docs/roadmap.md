@@ -654,9 +654,42 @@ Complete
 Remaining fallback transitions touching these 3 positions (e.g. back control's
 `scrape_off`/`opponent_transitions_to_mount` and the toreando/submission
 edges) did not genuinely match an existing family and remain deferred rather
-than force-fit. Full 19-position visual coverage, generalized inverse
-kinematics, multi-joint/chain relational solving, and broader mat/ground
-contact modeling remain deferred to later Iteration 13 work.
+than force-fit.
+
+## 13E — Verification & Iteration Closeout
+
+- [x] Re-run the complete frontend suite (tests, lint, build, animation
+  coverage generation and check) and confirm the numbers reported by 13D
+  still hold with nothing hand-edited.
+- [x] Confirm no backend (`simroll/`, `tests/`) files changed anywhere across
+  13A-13D, then run `pytest` and `scripts/build_runtime_data.py --check`
+  as a defense-in-depth confirmation.
+- [x] Run `git diff --check` across the full 13A-13D range.
+- [x] Start the backend and frontend locally and visually inspect, at normal
+  Roll Simulator scale: all 6 canonical position visuals (the 3 from before
+  13B plus Open Guard, Half Guard, and Back Control from 13B) in the live
+  Roll Simulator, the intentional "coming soon" placeholder on each
+  position pair's non-canonical side, and 2 of the 13D family-backed
+  transitions (`half_guard_bottom_old_school_sweep_to_side_control_top` and
+  `back_control_top_opponent_turn_in_to_half_guard_bottom`) playing a
+  smooth multi-frame animation into their correct destination pose.
+- [x] Confirm no regression in the original 3 core positions or their
+  existing transitions.
+
+13E Status:
+Complete
+
+Iteration 13 Status:
+Complete
+
+Intentionally deferred out of Iteration 13: 13 of the 19 live positions
+(every non-canonical position ID, e.g. `open_guard_top`, `half_guard_top`,
+`back_control_bottom`) still render the intentional "coming soon" placeholder
+rather than authored artwork; 37 of 65 transitions still resolve through the
+safe generic fallback animation rather than an explicit or family-backed
+recipe; and generalized inverse kinematics, multi-joint/chain relational
+solving, and mat/ground contact modeling beyond the single grounded anchor
+per pose all remain deferred to later work.
 
 ---
 
