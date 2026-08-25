@@ -324,9 +324,11 @@ Semantic transitions and visual choreography are intentionally separate. The
 backend graph remains authoritative for legality, source and destination state,
 mode, controls, and simulation results. An animation recipe is optional visual
 metadata keyed by a transition ID; it cannot redefine either semantic endpoint.
-The centralized read-only recipe registry is the sole authoring lookup boundary.
-An unregistered transition remains valid and uses deterministic eased
-source-to-destination interpolation.
+A centralized resolver is the sole playback and coverage-policy boundary. It
+selects an explicit recipe first, then compiles family-backed authoring into a
+normal recipe, and otherwise returns deterministic eased
+source-to-destination interpolation with a predictable fallback duration.
+Missing visual choreography is therefore safe.
 
 Recipes declaratively compose reusable pure motion primitives, timing offsets,
 ordered intermediate phases, and narrowly scoped local skeleton overrides. The
@@ -343,7 +345,8 @@ connected renderer geometry:
 
 ```text
 authoritative semantic transition
-    -> optional recipe registry lookup
+    -> explicit recipe OR family compilation OR fallback
+    -> resolved animation (source, recipe, duration)
     -> primitive-driven motion phases + local authored overrides
     -> constrained skeleton keyframes
     -> prioritized contact correction
@@ -360,6 +363,8 @@ constraints. This remains authored choreography rather than physics, collision
 handling, or general IK. Source and destination frames bypass intermediate
 generation so their resolved poses remain exact, including grip-modified
 endpoints. Missing transition choreography uses the safe interpolation fallback.
+Coverage classification (`explicit`, `family`, or `fallback`) calls the same
+resolver as playback and cannot drift into a separate source of truth.
 Semantic controls now resolve through an immutable visual control registry.
 Each reusable definition relates controller/opponent landmarks (hand, wrist,
 arm, torso, leg, and similar small regions) and compiles to ordinary weighted
@@ -533,15 +538,15 @@ Iteration 12D adds a declarative technique-family layer at the animation
 authoring boundary. An authored entry is either an explicit `AnimationRecipe`
 or a family ID plus validated parameters and small recipe-level overrides.
 Family templates define reusable phases, primitive choreography, timing, and
-visual control lifecycle defaults. A single deterministic compilation step
-resolves parameter references and produces the same validated
-`AnimationRecipe` consumed by the existing interpolation pipeline.
+visual control lifecycle defaults. The resolver compiles parameter references
+before playback and produces the same validated `AnimationRecipe` consumed by
+the family-agnostic interpolation pipeline.
 
 Families never define semantic outcomes: backend transitions remain
 authoritative, unknown family IDs fail during authoring, and unusual movement
 can stay explicit. The initial registry contains rotation-sweep, hip-escape,
-and step-over-advance patterns. Broader graph animation coverage remains
-deferred.
+and step-over-advance patterns. Iteration 12E centralizes resolution and safe
+coverage; graph-wide coverage authoring and reporting remain deferred to 12F.
 
 Iteration 11 closes on one runtime equation:
 

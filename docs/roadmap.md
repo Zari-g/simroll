@@ -519,6 +519,26 @@ deferred.
 
 ---
 
+## 12E — Procedural Recipe Compiler & Coverage Resolution
+
+- [x] Resolve every visual transition through explicit recipe, family
+  compilation, then deterministic fallback precedence.
+- [x] Return one immutable recipe/duration result to the existing
+  family-agnostic execution pipeline.
+- [x] Centralize `explicit` / `family` / `fallback` coverage classification on
+  the same resolver used by playback.
+- [x] Preserve exact endpoints, finite fallback output, constraints, controls,
+  and backend authority over semantic legality.
+
+12E Status:
+Complete
+
+Graph-wide coverage authoring/reporting remains deferred to 12F. Additional
+families, generalized IK, collision/force physics, grip breaking, and broad
+realism work also remain deferred.
+
+---
+
 # Future Ideas
 
 Potential future systems:
