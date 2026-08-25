@@ -1,6 +1,7 @@
 import type { MotionPrimitive } from '../motionPrimitives.ts'
 import type { SkeletonPoseOverride } from '../types.ts'
 import type { AnimationRecipe } from './types.ts'
+import { getControlTargetDefinition } from '../controlTargets.ts'
 
 function fail(recipe: AnimationRecipe, message: string): never {
   throw new Error(`Invalid animation recipe "${recipe.transitionId || '<empty>'}": ${message}`)
@@ -277,6 +278,27 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     if (control.controlId.trim() === '') {
       fail(recipe, `requirements.controls[${index}].controlId must be non-empty`)
     }
+    if (!getControlTargetDefinition(control.controlId)) {
+      fail(recipe, `requirements.controls[${index}].controlId is unknown`)
+    }
+    if (control.action !== undefined) {
+      requireEnum(recipe, control.action, ['preserve', 'release', 'acquire'], `requirements.controls[${index}].action`)
+    }
+    for (const [role, value] of [['controller', control.controller], ['opponent', control.opponent]] as const) {
+      if (value !== undefined) {
+        requireEnum(recipe, value, ['playerA', 'playerB'], `requirements.controls[${index}].${role}`)
+      }
+    }
+    if (control.controller !== undefined && control.controller === control.opponent) {
+      fail(recipe, `requirements.controls[${index}] controller and opponent must differ`)
+    }
+    if (control.side !== undefined) {
+      requireSide(recipe, control.side, `requirements.controls[${index}].side`)
+    }
+    requireFinite(recipe, control.strength, `requirements.controls[${index}].strength`)
+    if (control.strength !== undefined && (control.strength < 0 || control.strength > 1)) {
+      fail(recipe, `requirements.controls[${index}].strength must be within [0, 1]`)
+    }
     requireFinite(recipe, control.activeFrom, `requirements.controls[${index}].activeFrom`)
     requireFinite(recipe, control.activeUntil, `requirements.controls[${index}].activeUntil`)
     for (const value of [control.activeFrom, control.activeUntil]) {
@@ -291,6 +313,15 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     ) {
       fail(recipe, `requirements.controls[${index}] range must be ordered`)
     }
+  }
+
+  const controlRequirementKeys = new Set<string>()
+  for (const [index, control] of (recipe.requirements?.controls ?? []).entries()) {
+    const key = `${control.controlId}:${control.controller ?? 'playerA'}:${control.opponent ?? 'playerB'}:${control.side ?? 'left'}`
+    if (controlRequirementKeys.has(key)) {
+      fail(recipe, `requirements.controls[${index}] duplicates an incompatible control change`)
+    }
+    controlRequirementKeys.add(key)
   }
 
   return recipe

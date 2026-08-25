@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test tests/grapplingAnatomy.test.ts tests/grapplerAppearance.test.ts tests/positionVisuals.test.ts tests/contacts.test.ts tests/graphicsIntegration.test.ts tests/skeleton.test.ts tests/poseValidation.test.ts tests/motionPrimitives.test.ts tests/contactCorrection.test.ts tests/animationRecipes.test.ts tests/rollHistory.test.ts tests/simulationResult.test.ts tests/datasetIntegration.test.ts",
+    "test": "node --test tests/grapplingAnatomy.test.ts tests/grapplerAppearance.test.ts tests/positionVisuals.test.ts tests/contacts.test.ts tests/graphicsIntegration.test.ts tests/skeleton.test.ts tests/poseValidation.test.ts tests/motionPrimitives.test.ts tests/contactCorrection.test.ts tests/controlTargets.test.ts tests/animationRecipes.test.ts tests/rollHistory.test.ts tests/simulationResult.test.ts tests/datasetIntegration.test.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

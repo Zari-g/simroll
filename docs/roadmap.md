@@ -472,8 +472,29 @@ compilation, and graph coverage tooling. Expanded primitives are completed in
 12B Status:
 Complete
 
-Semantic grip/contact target compilation remains planned for 12C. Technique
+Semantic grip/contact target compilation is completed in 12C below. Technique
 families and broader graph choreography remain deferred to later Iteration 12.
+
+---
+
+## 12C â€” Semantic Contact & Control Targets
+
+- [x] Add an immutable, typed semantic landmark and control-target registry.
+- [x] Compile representative hand, arm/torso, and leg relationships into the
+  existing weighted contact-correction contract.
+- [x] Keep Gi and No-Gi on shared canonical position visuals while active
+  garment, limb, and body controls provide their visual differences.
+- [x] Let recipes visually preserve, release, and acquire controls with
+  deterministic source/destination influence blending.
+- [x] Preserve backend authority, exact endpoints, finite skeleton output,
+  local joint constraints, and separate decorative grip rendering.
+
+12C Status:
+Complete
+
+Technique-family templates, generalized inverse kinematics, collision/force
+physics, grip breaking, and broader graph animation coverage remain deferred
+to 12D or later work.
 
 ---
 

@@ -360,10 +360,29 @@ constraints. This remains authored choreography rather than physics, collision
 handling, or general IK. Source and destination frames bypass intermediate
 generation so their resolved poses remain exact, including grip-modified
 endpoints. Missing transition choreography uses the safe interpolation fallback.
-Semantic grips and contacts remain separate from body mechanics; compiling them
-into active recipe targets is planned for 12C. Technique-family templates,
-procedural compilation, and graph animation coverage remain deferred to later
-Iteration 12 work.
+Semantic controls now resolve through an immutable visual control registry.
+Each reusable definition relates controller/opponent landmarks (hand, wrist,
+arm, torso, leg, and similar small regions) and compiles to ordinary weighted
+contacts before the existing correction pass:
+
+```text
+backend-owned semantic controls
+    -> reusable side-aware control target definitions
+    -> weighted grip/control/hook/pressure contacts
+    -> existing bounded contact correction
+    -> constrained skeleton pose
+```
+
+Gi and No-Gi therefore keep the same canonical position visuals: garment
+controls such as collar/sleeve grips and body/limb controls such as underhooks
+or wrist control change the active relationships, not the position graph.
+Decorative grip marks remain optional consumers of control state and are not
+the physical-contact source of truth. Recipe metadata can visually preserve,
+release, or acquire a relationship and blends source/destination influence
+through intermediate frames. It never changes backend semantic state, and
+exact authoritative endpoints continue to bypass correction. Technique-family
+templates, generalized IK, and broader graph choreography remain deferred to
+12D and later Iteration 12 work.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an
