@@ -599,9 +599,32 @@ Complete
 13B Status:
 Complete
 
-Full 19-position visual coverage, generalized inverse kinematics, and
-broader mat/ground contact modeling remain deferred to later Iteration 13
-work.
+## 13C — Relational Contact Correction
+
+- [x] Add a small named set of two-anchor relational adjustments
+  (`hand-to-grip-target`, `knee-to-hip-line`, `foot-to-inner-thigh`) that a
+  declared contact can explicitly opt into, kept separate from the default
+  whole-root correction.
+- [x] Rotate only the single joint that geometrically controls the
+  declared anchor (elbow for a hand, hip for a knee, knee for a foot)
+  toward the contact's target, with a bounded and deterministic angle
+  correction reusing the existing `maxCorrection`-style clamping pattern.
+- [x] Re-clamp every relational adjustment through the existing joint
+  constraint profile via `constrainSkeletonPose` and skip a target
+  entirely when its declared body part does not match the opted-in
+  anchor pair, rather than guessing.
+- [x] Preserve the existing whole-root correction exactly for every
+  contact that does not opt in; this is additive, not a replacement.
+- [x] Cover bounded correction, determinism, immutability, finite output,
+  joint constraint compliance, the anchor-pair opt-out safety case, and a
+  connected-limb (not just torso) tracking case with focused tests.
+
+13C Status:
+Complete
+
+Full 19-position visual coverage, generalized inverse kinematics, multi-
+joint/chain relational solving, and broader mat/ground contact modeling
+remain deferred to later Iteration 13 work.
 
 ---
 
