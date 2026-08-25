@@ -320,19 +320,27 @@ core curvature to the torso renderer; future visuals can migrate gradually.
 Both paths still reach the same grip, contact, interpolation, apparel, and
 rendering contracts, including exact source and destination animation frames.
 
-Transition choreography stays on the same skeleton boundary. Reusable pure
-motion primitives apply pelvis-rooted shifts and local joint rotation deltas to
-intermediate skeleton blends; optional authored local overrides handle the few
-action-specific silhouettes that primitives cannot express cleanly. Generated
-phases are constrained, then a lightweight contact pass reuses the position and
-grip contact model to apply capped root-space corrections for the strongest
-anchors. Grip and hook contacts outrank pressure and broad control contacts, and
-only a small number are corrected at once. Per-grappler phase offsets then let
-hips, torso, arms, and head lead or follow by small amounts before the existing
-interpolator produces connected renderer geometry:
+Semantic transitions and visual choreography are intentionally separate. The
+backend graph remains authoritative for legality, source and destination state,
+mode, controls, and simulation results. An animation recipe is optional visual
+metadata keyed by a transition ID; it cannot redefine either semantic endpoint.
+The centralized read-only recipe registry is the sole authoring lookup boundary.
+An unregistered transition remains valid and uses deterministic eased
+source-to-destination interpolation.
+
+Recipes declaratively compose reusable pure motion primitives, timing offsets,
+ordered intermediate phases, and narrowly scoped local skeleton overrides.
+Registry construction validates IDs, durations, ordering, progress bounds,
+finite primitive payloads, overrides, and reserved contact-requirement metadata
+once during module initialization. The recipe compiler remains technique-agnostic.
+Generated phases are constrained, then the existing contact pass applies capped
+root-space corrections for the strongest anchors. Per-grappler phase offsets
+let hips, torso, arms, and head lead or follow before interpolation produces
+connected renderer geometry:
 
 ```text
-source skeleton
+authoritative semantic transition
+    -> optional recipe registry lookup
     -> primitive-driven motion phases + local authored overrides
     -> constrained skeleton keyframes
     -> prioritized contact correction
@@ -340,14 +348,18 @@ source skeleton
     -> renderer
 ```
 
-Contact correction translates a contacted grappler as a bounded whole and does
+The hip bump sweep, flower sweep, elbow escape, and mount-to-side-control
+animations are recipe data and retain their existing choreography. Contact
+correction translates a contacted grappler as a bounded whole and does
 not rotate joints, solve limb chains, or attempt to satisfy every declaration.
 It is deterministic and immutable, and preserves already-valid local joint
 constraints. This remains authored choreography rather than physics, collision
 handling, or general IK. Source and destination frames bypass intermediate
 generation so their resolved poses remain exact, including grip-modified
-endpoints. Missing transition choreography still uses the existing safe
-fallback.
+endpoints. Missing transition choreography uses the safe interpolation fallback.
+Later Iteration 12 work may expand primitives, compile contact/control targets,
+introduce technique-family templates and procedural compilation, and report
+graph animation coverage; those capabilities are not part of 12A.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an

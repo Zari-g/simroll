@@ -1,4 +1,3 @@
-import type { MotionPrimitive } from './motionPrimitives.ts'
 import type {
   GrapplerChildJointName,
   GrapplerSkeletonPose,
@@ -132,29 +131,6 @@ export interface SkeletonPoseOverride {
   readonly joints?: Partial<
     Record<GrapplerChildJointName, Partial<LocalJointTransform>>
   >
-}
-
-export interface TransitionGrapplerChoreography {
-  readonly primitives?: readonly MotionPrimitive[]
-  readonly override?: SkeletonPoseOverride
-}
-
-export interface TransitionVisualKeyframe {
-  readonly progress: number
-  /** Skeleton blend used before primitives; defaults to the phase progress. */
-  readonly baseProgress?: number
-  readonly playerA?: TransitionGrapplerChoreography
-  readonly playerB?: TransitionGrapplerChoreography
-}
-
-export interface TransitionVisualDefinition {
-  transitionId: string
-  durationMs: number
-  /** Small local phase offsets; positive values lag and negative values lead. */
-  timing?: Readonly<
-    Partial<Record<GrapplerId, Readonly<Partial<Record<MotionTimingGroup, number>>>>>
-  >
-  keyframes: readonly TransitionVisualKeyframe[]
 }
 
 export type MotionTimingGroup = 'hips' | 'torso' | 'arms' | 'head'

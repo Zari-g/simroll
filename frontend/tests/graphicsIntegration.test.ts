@@ -31,9 +31,9 @@ import {
 } from '../src/grappling/positionVisuals.ts'
 import { resolveVisualPose } from '../src/grappling/resolveVisualPose.ts'
 import {
-  getTransitionVisual,
-  transitionVisuals,
-} from '../src/grappling/transitionVisuals.ts'
+  animationRecipeRegistry,
+  getAnimationRecipe,
+} from '../src/grappling/animationRecipes/registry.ts'
 import type {
   GrapplerId,
   GrapplerPose,
@@ -138,7 +138,7 @@ test('configured, live, and playback state resolve through one display boundary'
 test('transition endpoints preserve resolved pose, mode, and grips exactly', () => {
   const sourceVisual = getPositionVisual('closed_guard_bottom')
   const destinationVisual = getPositionVisual('mount_top')
-  const transition = getTransitionVisual('hip_bump_sweep')
+  const transition = getAnimationRecipe('hip_bump_sweep')
   assert.ok(sourceVisual)
   assert.ok(destinationVisual)
   assert.ok(transition)
@@ -222,7 +222,7 @@ test('graphics resolution never mutates static Iteration 9 definitions', () => {
   const anatomySnapshot = structuredClone(defaultGrapplerAnatomy)
   const appearanceSnapshot = structuredClone(defaultAppearanceThemes)
   const gripSnapshot = structuredClone(gripVisuals)
-  const transitionSnapshot = structuredClone(transitionVisuals)
+  const transitionSnapshot = structuredClone({ ...animationRecipeRegistry })
   const positionSnapshots = Object.fromEntries(
     corePositionVisualIds.map((positionId) => [
       positionId,
@@ -252,7 +252,7 @@ test('graphics resolution never mutates static Iteration 9 definitions', () => {
   assert.deepEqual(defaultGrapplerAnatomy, anatomySnapshot)
   assert.deepEqual(defaultAppearanceThemes, appearanceSnapshot)
   assert.deepEqual(gripVisuals, gripSnapshot)
-  assert.deepEqual(transitionVisuals, transitionSnapshot)
+  assert.deepEqual({ ...animationRecipeRegistry }, transitionSnapshot)
   for (const positionId of corePositionVisualIds) {
     assert.deepEqual(getPositionVisual(positionId), positionSnapshots[positionId])
   }

@@ -8,9 +8,11 @@ import type {
   GrapplerPose,
   GrapplerSegmentName,
   SkeletonPoseOverride,
-  TransitionGrapplerChoreography,
-  TransitionVisualDefinition,
 } from './types'
+import type {
+  AnimationPlayerChoreography,
+  AnimationRecipe,
+} from './animationRecipes/types.ts'
 import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
 import { composeMotionPrimitives } from './motionPrimitives.ts'
 import { constrainSkeletonPose } from './poseValidation.ts'
@@ -234,7 +236,7 @@ function resolveChoreographedSkeleton(
   start: GrapplerSkeletonPose,
   end: GrapplerSkeletonPose,
   baseProgress: number,
-  choreography?: TransitionGrapplerChoreography,
+  choreography?: AnimationPlayerChoreography,
 ): GrapplerSkeletonPose {
   const blended = interpolateSkeletonPose(start, end, baseProgress)
   const moved = composeMotionPrimitives(blended, choreography?.primitives ?? [])
@@ -248,7 +250,7 @@ interface CompiledTransitionFrame {
 }
 
 const compiledTransitionCache = new WeakMap<
-  TransitionVisualDefinition,
+  AnimationRecipe,
   WeakMap<GrapplerPosePair, WeakMap<GrapplerPosePair, WeakMap<TransitionContactContext, readonly CompiledTransitionFrame[]>>>
 >()
 
@@ -270,7 +272,7 @@ function contactTargets(
 }
 
 function compileTransitionFrames(
-  definition: TransitionVisualDefinition,
+  recipe: AnimationRecipe,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
   contactContext: TransitionContactContext,
@@ -286,7 +288,7 @@ function compileTransitionFrames(
 
   return [
     { progress: 0, skeletons: startSkeletons, poses: { playerA: cloneGrapplerPose(start.playerA), playerB: cloneGrapplerPose(start.playerB) } },
-    ...definition.keyframes
+    ...recipe.phases
       .filter((phase) => phase.progress > 0 && phase.progress < 1)
       .map((phase) => {
         const baseProgress = phase.baseProgress ?? phase.progress
@@ -322,15 +324,15 @@ function compileTransitionFrames(
 }
 
 function getCompiledTransitionFrames(
-  definition: TransitionVisualDefinition,
+  recipe: AnimationRecipe,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
-  let byStart = compiledTransitionCache.get(definition)
+  let byStart = compiledTransitionCache.get(recipe)
   if (!byStart) {
     byStart = new WeakMap()
-    compiledTransitionCache.set(definition, byStart)
+    compiledTransitionCache.set(recipe, byStart)
   }
   let byEnd = byStart.get(start)
   if (!byEnd) {
@@ -344,7 +346,7 @@ function getCompiledTransitionFrames(
   }
   let frames = byContacts.get(contactContext)
   if (!frames) {
-    frames = compileTransitionFrames(definition, start, end, contactContext)
+    frames = compileTransitionFrames(recipe, start, end, contactContext)
     byContacts.set(contactContext, frames)
   }
   return frames
@@ -352,18 +354,18 @@ function getCompiledTransitionFrames(
 
 /** Authoring/test access to the constrained local skeleton phases. */
 export function resolveTransitionSkeletonKeyframes(
-  definition: TransitionVisualDefinition,
+  recipe: AnimationRecipe,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
-  return getCompiledTransitionFrames(definition, start, end, contactContext)
+  return getCompiledTransitionFrames(recipe, start, end, contactContext)
     .filter((frame) => frame.progress > 0 && frame.progress < 1)
     .map((frame) => ({ progress: frame.progress, skeletons: frame.skeletons }))
 }
 
 export function resolveTransitionPoses(
-  definition: TransitionVisualDefinition,
+  recipe: AnimationRecipe | null,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
   progress: number,
@@ -378,7 +380,12 @@ export function resolveTransitionPoses(
     playerB: cloneGrapplerPose(end.playerB),
   }
 
-  const frames = getCompiledTransitionFrames(definition, start, end, contactContext)
+  if (!recipe) return {
+    playerA: interpolateGrapplerPose(start.playerA, end.playerA, easeInOutCubic(progress)),
+    playerB: interpolateGrapplerPose(start.playerB, end.playerB, easeInOutCubic(progress)),
+  }
+
+  const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
 
   const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
   const leftFrame = frames[rightIndex - 1]
@@ -390,13 +397,13 @@ export function resolveTransitionPoses(
     leftFrame.skeletons.playerA,
     rightFrame.skeletons.playerA,
     localProgress,
-    definition.timing?.playerA,
+    recipe.timing?.playerA,
   )
   const playerBSkeleton = interpolateTimedSkeletonPose(
     leftFrame.skeletons.playerB,
     rightFrame.skeletons.playerB,
     localProgress,
-    definition.timing?.playerB,
+    recipe.timing?.playerB,
   )
 
   return {

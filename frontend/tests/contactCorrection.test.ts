@@ -14,7 +14,10 @@ import { constrainSkeletonPose, validateSkeletonPose } from '../src/grappling/po
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
 import { resolvePositionContacts } from '../src/grappling/contacts.ts'
 import { resolveVisualPose } from '../src/grappling/resolveVisualPose.ts'
-import { getTransitionVisual, transitionVisuals } from '../src/grappling/transitionVisuals.ts'
+import {
+  animationRecipeRegistry,
+  getAnimationRecipe,
+} from '../src/grappling/animationRecipes/registry.ts'
 import type { GrapplingContact } from '../src/grappling/types.ts'
 
 const anatomies = {
@@ -78,7 +81,7 @@ test('authored correction reduces the highest-value early grip drift', () => {
     startContacts: [...resolvePositionContacts(source), ...start.gripContacts],
     endContacts: [...resolvePositionContacts(destination), ...end.gripContacts],
   }
-  const definition = transitionVisuals.hip_bump_sweep
+  const definition = animationRecipeRegistry.hip_bump_sweep
   const plain = resolveTransitionSkeletonKeyframes(definition, start.poses, end.poses)
   const corrected = resolveTransitionSkeletonKeyframes(
     definition,
@@ -98,7 +101,7 @@ test('authored correction reduces the highest-value early grip drift', () => {
 })
 
 test('unsupported transitions retain the safe no-choreography path', () => {
-  assert.equal(getTransitionVisual('unsupported_transition'), null)
+  assert.equal(getAnimationRecipe('unsupported_transition'), null)
 })
 
 test('phase offsets stagger motion while preserving exact local endpoints', () => {

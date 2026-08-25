@@ -7,7 +7,7 @@ import {
   resolveTransitionDisplayState,
   type GrapplingDisplayState,
 } from '../grappling/displayState'
-import { getTransitionVisual } from '../grappling/transitionVisuals'
+import { getAnimationRecipe } from '../grappling/animationRecipes/registry'
 import type { GrapplingContact } from '../grappling/types'
 
 interface PlayPoseAnimationOptions {
@@ -56,12 +56,12 @@ export function usePoseAnimation() {
       startContacts,
       endContacts,
     }: PlayPoseAnimationOptions): Promise<boolean> => {
-      const definition = getTransitionVisual(transitionId)
+      const recipe = getAnimationRecipe(transitionId)
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches
 
-      if (!definition || reduceMotion) {
+      if (reduceMotion) {
         cancel()
         return Promise.resolve(false)
       }
@@ -76,7 +76,7 @@ export function usePoseAnimation() {
 
         setDisplay({
           poses: resolveTransitionPoses(
-            definition,
+            recipe,
             startPoses,
             endPoses,
             0,
@@ -91,12 +91,12 @@ export function usePoseAnimation() {
           if (animationGeneration !== generation.current) return
 
           const progress = Math.min(
-            (timestamp - startTime) / definition.durationMs,
+            (timestamp - startTime) / (recipe?.durationMs ?? 300),
             1,
           )
           setDisplay({
             poses: resolveTransitionPoses(
-              definition,
+              recipe,
               startPoses,
               endPoses,
               progress,
