@@ -498,6 +498,27 @@ to 12D or later work.
 
 ---
 
+## 12D — Technique Family Templates
+
+- [x] Add typed declarative family parameters, phases, timing, and visual
+  control lifecycle defaults.
+- [x] Validate and deeply freeze a centralized family registry.
+- [x] Compile family-backed authoring into ordinary validated animation
+  recipes without changing the executor.
+- [x] Migrate rotation sweep, hip escape, and step-over advance choreography
+  while retaining Flower Sweep as an explicit recipe.
+- [x] Prove side parameterization and reuse of one hip-escape family by two
+  distinct semantic transitions.
+
+12D Status:
+Complete
+
+Full graph coverage, additional technique families, generalized IK,
+collision/force physics, grip-breaking mechanics, and realism redesign remain
+deferred.
+
+---
+
 # Future Ideas
 
 Potential future systems:

@@ -529,6 +529,20 @@ borrow interpolation from another move. Control-change actions update controls
 in place without body choreography. Later iterations can expand artwork and
 choreography independently from this semantic data integration.
 
+Iteration 12D adds a declarative technique-family layer at the animation
+authoring boundary. An authored entry is either an explicit `AnimationRecipe`
+or a family ID plus validated parameters and small recipe-level overrides.
+Family templates define reusable phases, primitive choreography, timing, and
+visual control lifecycle defaults. A single deterministic compilation step
+resolves parameter references and produces the same validated
+`AnimationRecipe` consumed by the existing interpolation pipeline.
+
+Families never define semantic outcomes: backend transitions remain
+authoritative, unknown family IDs fail during authoring, and unusual movement
+can stay explicit. The initial registry contains rotation-sweep, hip-escape,
+and step-over-advance patterns. Broader graph animation coverage remains
+deferred.
+
 Iteration 11 closes on one runtime equation:
 
 ```text

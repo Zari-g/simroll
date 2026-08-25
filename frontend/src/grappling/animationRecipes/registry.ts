@@ -1,5 +1,6 @@
 import { authoredAnimationRecipes } from './recipes.ts'
-import type { AnimationRecipe } from './types.ts'
+import { compileFamilyRecipe } from './familyRegistry.ts'
+import type { AnimationRecipe, AuthoredAnimationRecipe } from './types.ts'
 import { validateAnimationRecipe } from './validation.ts'
 
 function deepFreeze<T>(value: T): T {
@@ -11,17 +12,18 @@ function deepFreeze<T>(value: T): T {
 }
 
 function createRegistry(
-  recipes: readonly AnimationRecipe[],
+  authoredRecipes: readonly AuthoredAnimationRecipe[],
 ): Readonly<Record<string, AnimationRecipe>> {
   const registry: Record<string, AnimationRecipe> = Object.create(null)
-  for (const recipe of recipes) {
+  for (const authoring of authoredRecipes) {
+    const recipe = 'familyId' in authoring ? compileFamilyRecipe(authoring) : authoring
     validateAnimationRecipe(recipe)
     if (registry[recipe.transitionId]) {
       throw new Error(`Duplicate animation recipe for transition "${recipe.transitionId}"`)
     }
     registry[recipe.transitionId] = deepFreeze(recipe)
   }
-  deepFreeze(recipes)
+  deepFreeze(authoredRecipes)
   return Object.freeze(registry)
 }
 
