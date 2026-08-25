@@ -449,9 +449,31 @@ Complete
 12A Status:
 Complete
 
-Deferred to later Iteration 12 work: expanded primitives, active
+Deferred from 12A to later Iteration 12 work: expanded primitives, active
 contact/control targets, technique-family templates, procedural recipe
-compilation, and graph coverage tooling.
+compilation, and graph coverage tooling. Expanded primitives are completed in
+12B below.
+
+---
+
+## 12B — Expanded BJJ Motion Primitive Library
+
+- [x] Expand the immutable skeleton-space vocabulary across core/base, arm,
+  leg, and relative/force-like movement categories.
+- [x] Parameterize side, amount, path, direction, angle, and distance while
+  retaining compatibility with all existing recipe primitives.
+- [x] Validate every new primitive payload and reject non-finite values,
+  invalid sides, missing requirements, and unsupported enum values.
+- [x] Prove reusable composition with sweep-like, guard-pass-like, escape-like,
+  and positional-advance recipe keyframes.
+- [x] Preserve determinism, immutability, constraints, contact correction, and
+  the existing renderer pipeline.
+
+12B Status:
+Complete
+
+Semantic grip/contact target compilation remains planned for 12C. Technique
+families and broader graph choreography remain deferred to later Iteration 12.
 
 ---
 

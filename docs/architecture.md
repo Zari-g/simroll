@@ -329,7 +329,10 @@ An unregistered transition remains valid and uses deterministic eased
 source-to-destination interpolation.
 
 Recipes declaratively compose reusable pure motion primitives, timing offsets,
-ordered intermediate phases, and narrowly scoped local skeleton overrides.
+ordered intermediate phases, and narrowly scoped local skeleton overrides. The
+primitive vocabulary is organized around technique-agnostic core/base, arm,
+leg, and relative movement mechanics. Parameters such as side, amount, path,
+direction, angle, and distance express variations without technique functions.
 Registry construction validates IDs, durations, ordering, progress bounds,
 finite primitive payloads, overrides, and reserved contact-requirement metadata
 once during module initialization. The recipe compiler remains technique-agnostic.
@@ -357,9 +360,10 @@ constraints. This remains authored choreography rather than physics, collision
 handling, or general IK. Source and destination frames bypass intermediate
 generation so their resolved poses remain exact, including grip-modified
 endpoints. Missing transition choreography uses the safe interpolation fallback.
-Later Iteration 12 work may expand primitives, compile contact/control targets,
-introduce technique-family templates and procedural compilation, and report
-graph animation coverage; those capabilities are not part of 12A.
+Semantic grips and contacts remain separate from body mechanics; compiling them
+into active recipe targets is planned for 12C. Technique-family templates,
+procedural compilation, and graph animation coverage remain deferred to later
+Iteration 12 work.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an

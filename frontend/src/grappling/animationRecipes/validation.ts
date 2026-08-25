@@ -24,6 +24,23 @@ function requireFiniteValue(
   if (!Number.isFinite(value)) fail(recipe, `${path} must be finite`)
 }
 
+function requireSide(recipe: AnimationRecipe, value: unknown, path: string) {
+  if (value !== 'left' && value !== 'right') {
+    fail(recipe, `${path} must be left or right`)
+  }
+}
+
+function requireEnum(
+  recipe: AnimationRecipe,
+  value: unknown,
+  allowed: readonly string[],
+  path: string,
+) {
+  if (typeof value !== 'string' || !allowed.includes(value)) {
+    fail(recipe, `${path} must be one of: ${allowed.join(', ')}`)
+  }
+}
+
 function validatePrimitive(
   recipe: AnimationRecipe,
   primitive: MotionPrimitive,
@@ -41,7 +58,8 @@ function validatePrimitive(
     case 'hipEscape':
       requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
       requireFinite(recipe, primitive.turn, `${path}.turn`)
-      break
+      requireSide(recipe, primitive.side, `${path}.side`)
+      return
     case 'bridge':
       requireFiniteValue(recipe, primitive.lift, `${path}.lift`)
       requireFinite(recipe, primitive.extension, `${path}.extension`)
@@ -53,7 +71,8 @@ function validatePrimitive(
     case 'postHand':
       requireFiniteValue(recipe, primitive.shoulder, `${path}.shoulder`)
       requireFinite(recipe, primitive.elbow, `${path}.elbow`)
-      break
+      requireSide(recipe, primitive.side, `${path}.side`)
+      return
     case 'torsoTurn':
       requireFinite(recipe, primitive.spine, `${path}.spine`)
       requireFiniteValue(recipe, primitive.chest, `${path}.chest`)
@@ -65,18 +84,117 @@ function validatePrimitive(
     case 'legPummel':
       requireFiniteValue(recipe, primitive.hip, `${path}.hip`)
       requireFiniteValue(recipe, primitive.knee, `${path}.knee`)
-      break
+      requireSide(recipe, primitive.side, `${path}.side`)
+      return
     case 'weightShift':
       requireFinite(recipe, primitive.forward, `${path}.forward`)
       requireFinite(recipe, primitive.lateral, `${path}.lateral`)
       requireFinite(recipe, primitive.torso, `${path}.torso`)
       return
+    case 'hipSwitch':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.drive, `${path}.drive`)
+      return
+    case 'hipDrive':
+      requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
+      requireFinite(recipe, primitive.lift, `${path}.lift`)
+      requireFinite(recipe, primitive.extension, `${path}.extension`)
+      return
+    case 'baseAdjust':
+      requireFinite(recipe, primitive.forward, `${path}.forward`)
+      requireFinite(recipe, primitive.lateral, `${path}.lateral`)
+      requireFinite(recipe, primitive.rotation, `${path}.rotation`)
+      return
+    case 'postRetract':
+    case 'retractArm':
+    case 'kneeRetract':
+    case 'legUnhook':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      return
+    case 'torsoLean':
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.lateral, `${path}.lateral`)
+      return
+    case 'bodyRotation':
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.torsoFollow, `${path}.torsoFollow`)
+      return
+    case 'reach':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireEnum(recipe, primitive.path, ['straight', 'under', 'over', 'across'], `${path}.path`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.bend, `${path}.bend`)
+      requireFinite(recipe, primitive.wrist, `${path}.wrist`)
+      return
+    case 'frame':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.angle, `${path}.angle`)
+      return
+    case 'armPummel':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireEnum(recipe, primitive.direction, ['inside', 'outside'], `${path}.direction`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      return
+    case 'armDrag':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.turn, `${path}.turn`)
+      return
+    case 'kneeInsert':
+    case 'legHook':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.bend, `${path}.bend`)
+      return
+    case 'kneeSlide':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
+      requireFinite(recipe, primitive.angle, `${path}.angle`)
+      return
+    case 'step':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireEnum(recipe, primitive.path, ['over', 'around'], `${path}.path`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.bend, `${path}.bend`)
+      return
+    case 'hookElevation':
+      requireSide(recipe, primitive.side, `${path}.side`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.extension, `${path}.extension`)
+      return
+    case 'push':
+    case 'pull':
+      requireEnum(recipe, primitive.direction, ['forward', 'backward', 'left', 'right'], `${path}.direction`)
+      requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
+      if (primitive.side !== undefined) requireSide(recipe, primitive.side, `${path}.side`)
+      return
+    case 'drag':
+      requireEnum(recipe, primitive.direction, ['forward', 'backward', 'left', 'right'], `${path}.direction`)
+      requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
+      requireFinite(recipe, primitive.turn, `${path}.turn`)
+      return
+    case 'lift':
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.extension, `${path}.extension`)
+      return
+    case 'follow':
+      requireEnum(recipe, primitive.direction, ['forward', 'backward', 'left', 'right'], `${path}.direction`)
+      requireFiniteValue(recipe, primitive.distance, `${path}.distance`)
+      return
+    case 'dropWeight':
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.lean, `${path}.lean`)
+      return
+    case 'offBalance':
+      requireEnum(recipe, primitive.direction, ['forward', 'backward', 'left', 'right'], `${path}.direction`)
+      requireFiniteValue(recipe, primitive.amount, `${path}.amount`)
+      requireFinite(recipe, primitive.turn, `${path}.turn`)
+      return
     default:
       fail(recipe, `${path}.type is unsupported`)
-  }
-
-  if (primitive.side !== 'left' && primitive.side !== 'right') {
-    fail(recipe, `${path}.side must be left or right`)
   }
 }
 
