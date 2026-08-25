@@ -74,8 +74,8 @@ test('resolution precedence is explicit, then family, then fallback', () => {
 })
 
 test('family resolution compiles one immutable deterministic normal recipe', () => {
-  const first = resolveTransitionAnimation('hip_bump_sweep')
-  const second = resolveTransitionAnimation('hip_bump_sweep')
+  const first = resolveTransitionAnimation('closed_guard_bottom_hip_bump_to_mount_top')
+  const second = resolveTransitionAnimation('closed_guard_bottom_hip_bump_to_mount_top')
   assert.equal(first.source, 'family')
   assert.ok(first.recipe)
   assert.equal(first, second)
@@ -104,13 +104,13 @@ test('fallback resolution is deterministic, finite, and preserves exact endpoint
 })
 
 test('coverage classification uses playback resolution rules', () => {
-  assert.equal(getAnimationCoverage('flower_sweep'), 'explicit')
-  assert.equal(getAnimationCoverage('hip_bump_sweep'), 'family')
+  assert.equal(getAnimationCoverage('open_guard_bottom_butterfly_sweep_to_side_control_top'), 'explicit')
+  assert.equal(getAnimationCoverage('closed_guard_bottom_hip_bump_to_mount_top'), 'family')
   assert.equal(getAnimationCoverage('not_authored'), 'fallback')
 })
 
 test('resolved family recipes retain semantic control lifecycle choreography', () => {
-  const resolved = resolveTransitionAnimation('hip_bump_sweep')
+  const resolved = resolveTransitionAnimation('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(resolved.recipe)
   const context = {
     startContacts: [], endContacts: [],

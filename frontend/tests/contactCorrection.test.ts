@@ -81,7 +81,7 @@ test('authored correction reduces the highest-value early grip drift', () => {
     startContacts: [...resolvePositionContacts(source), ...start.gripContacts],
     endContacts: [...resolvePositionContacts(destination), ...end.gripContacts],
   }
-  const definition = animationRecipeRegistry.hip_bump_sweep
+  const definition = animationRecipeRegistry.closed_guard_bottom_hip_bump_to_mount_top
   const plain = resolveTransitionSkeletonKeyframes(definition, start.poses, end.poses)
   const corrected = resolveTransitionSkeletonKeyframes(
     definition,

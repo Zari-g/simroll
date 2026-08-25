@@ -277,7 +277,7 @@ test('position resolution preserves base poses while applying grip visuals', () 
 test('transition pose resolution still interpolates both grapplers', () => {
   const closedGuard = getPositionVisual('closed_guard_bottom')
   const mount = getPositionVisual('mount_top')
-  const transition = getAnimationRecipe('hip_bump_sweep')
+  const transition = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(closedGuard)
   assert.ok(mount)
   assert.ok(transition)
@@ -304,7 +304,7 @@ test('transition pose resolution still interpolates both grapplers', () => {
 test('authored torso keyframes carry the derived core silhouette with them', () => {
   const closedGuard = getPositionVisual('closed_guard_bottom')
   const mount = getPositionVisual('mount_top')
-  const transition = getAnimationRecipe('hip_bump_sweep')
+  const transition = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(closedGuard)
   assert.ok(mount)
   assert.ok(transition)

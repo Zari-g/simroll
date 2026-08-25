@@ -30,9 +30,9 @@ function poses(positionId: string) {
 }
 
 test('registry resolves known recipes, returns null for unknown transitions, and is immutable', () => {
-  const recipe = getAnimationRecipe('hip_bump_sweep')
+  const recipe = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(recipe)
-  assert.equal(recipe, animationRecipeRegistry.hip_bump_sweep)
+  assert.equal(recipe, animationRecipeRegistry.closed_guard_bottom_hip_bump_to_mount_top)
   assert.equal(getAnimationRecipe('not_authored'), null)
   assert.ok(Object.isFrozen(animationRecipeRegistry))
   assert.ok(Object.isFrozen(recipe))
@@ -40,7 +40,7 @@ test('registry resolves known recipes, returns null for unknown transitions, and
   assert.throws(() => {
     ;(recipe.phases as AnimationRecipe['phases'] & unknown[]).push(validRecipe.phases[0])
   }, TypeError)
-  assert.equal(getAnimationRecipe('hip_bump_sweep'), recipe)
+  assert.equal(getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top'), recipe)
 })
 
 test('valid recipes pass focused validation', () => {
@@ -161,10 +161,10 @@ test('validation rejects unknown, malformed, and duplicate semantic control chan
 
 test('migrated recipes preserve endpoints and deterministic finite intermediate poses', () => {
   const endpoints = {
-    hip_bump_sweep: ['closed_guard_bottom', 'mount_top'],
-    flower_sweep: ['closed_guard_bottom', 'mount_top'],
-    elbow_escape: ['mount_top', 'closed_guard_bottom'],
-    mount_to_side_control: ['mount_top', 'side_control_top'],
+    closed_guard_bottom_hip_bump_to_mount_top: ['closed_guard_bottom', 'mount_top'],
+    open_guard_bottom_butterfly_sweep_to_side_control_top: ['closed_guard_bottom', 'side_control_top'],
+    mount_bottom_elbow_knee_escape_to_half_guard: ['mount_top', 'closed_guard_bottom'],
+    side_control_top_step_over_to_mount: ['side_control_top', 'mount_top'],
   } as const
   for (const [transitionId, [startId, endId]] of Object.entries(endpoints)) {
     const start = poses(startId)

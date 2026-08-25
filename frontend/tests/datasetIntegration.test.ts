@@ -149,7 +149,7 @@ test('unknown transitions do not borrow choreography and mixed playback keeps en
   ]
   const actionIds = [
     'establish_limb_control:player_a:wrist_control',
-    'hip_bump_sweep',
+    'closed_guard_bottom_hip_bump_to_mount_top',
     'mount_top_armbar_submission',
   ]
 
