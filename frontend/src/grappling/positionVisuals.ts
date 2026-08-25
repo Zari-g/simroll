@@ -1,6 +1,8 @@
 import type { GrapplingPositionVisualDefinition } from './types'
 import { defaultGrapplerAnatomy } from './anatomy.ts'
 import { createArticulatedSkeletonPose } from './coreKinematics.ts'
+import type { GroundedAnchorSet } from './groundedAnchors.ts'
+import { groundSkeletonPose } from './groundedAnchors.ts'
 import { skeletonToGrapplerPose } from './kinematics.ts'
 import { warnForInvalidSkeletonPose } from './poseValidation.ts'
 import type {
@@ -11,13 +13,17 @@ import type {
 function articulatedSkeleton(
   definition: ArticulatedGrapplerPoseDefinition,
   label: string,
+  groundedAnchors?: GroundedAnchorSet,
 ): GrapplerSkeletonPose {
   const skeleton = createArticulatedSkeletonPose(
     definition,
     defaultGrapplerAnatomy,
   )
-  warnForInvalidSkeletonPose(skeleton, label)
-  return skeleton
+  const grounded = groundedAnchors
+    ? groundSkeletonPose(skeleton, groundedAnchors)
+    : skeleton
+  warnForInvalidSkeletonPose(grounded, label)
+  return grounded
 }
 
 const closedGuardBottomSkeleton = articulatedSkeleton({
@@ -236,6 +242,224 @@ const sideControlTopSkeleton = articulatedSkeleton({
   },
 }, 'Side Control Top')
 
+const openGuardBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 340 },
+  core: {
+    pelvisRotation: 96,
+    spineFlexion: -30,
+    chestRotation: -10,
+    neckRotation: 16,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: 150,
+      distalRotation: 55,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: -105,
+      distalRotation: -55,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: 131,
+      distalRotation: 117,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: 115,
+      distalRotation: 119,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+}, 'Open Guard Bottom')
+
+const openGuardTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 220 },
+  core: {
+    pelvisRotation: -88,
+    spineFlexion: 12,
+    chestRotation: -8,
+    neckRotation: 6,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -158,
+      distalRotation: -86,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: 158,
+      distalRotation: 74,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: -160,
+      distalRotation: -55,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: 165,
+      distalRotation: 60,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+  // The passer's lead knee is the base that carries weight against the mat.
+}, 'Open Guard Top', { leftKnee: { baselineY: 327 } })
+
+const halfGuardBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 330 },
+  core: {
+    pelvisRotation: 96,
+    spineFlexion: -25,
+    chestRotation: -10,
+    neckRotation: 12,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: 145,
+      distalRotation: 95,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: -100,
+      distalRotation: -85,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: 87.3,
+      distalRotation: -112.5,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: -170.5,
+      distalRotation: -90,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+}, 'Half Guard Bottom')
+
+const halfGuardTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 500, y: 278 },
+  core: {
+    pelvisRotation: -85,
+    spineFlexion: 15,
+    chestRotation: -10,
+    neckRotation: 8,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: 165,
+      distalRotation: -10,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: 160,
+      distalRotation: 15,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: -150,
+      distalRotation: -55,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: 128,
+      distalRotation: 28,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+  // The free leg's knee is the passer's grounded driving base.
+}, 'Half Guard Top', { rightKnee: { baselineY: 359 } })
+
+const backControlBottomSkeleton = articulatedSkeleton({
+  rootPosition: { x: 460, y: 330 },
+  core: {
+    pelvisRotation: -95,
+    spineFlexion: -5,
+    chestRotation: 5,
+    neckRotation: -8,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -120,
+      distalRotation: 170,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: 113,
+      distalRotation: -172,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: -145,
+      distalRotation: -20,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: 150,
+      distalRotation: 22,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+}, 'Back Control Bottom')
+
+const backControlTopSkeleton = articulatedSkeleton({
+  rootPosition: { x: 560, y: 300 },
+  core: {
+    pelvisRotation: -95,
+    spineFlexion: -6,
+    chestRotation: -14,
+    neckRotation: -10,
+  },
+  limbs: {
+    leftArm: {
+      proximalRotation: -41,
+      distalRotation: -86,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    rightArm: {
+      proximalRotation: -76,
+      distalRotation: 0,
+      proximalLength: 76,
+      distalLength: 68,
+    },
+    leftLeg: {
+      proximalRotation: -157.4,
+      distalRotation: 114.3,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+    rightLeg: {
+      proximalRotation: -163.9,
+      distalRotation: 123.6,
+      proximalLength: 116,
+      distalLength: 98,
+    },
+  },
+}, 'Back Control Top')
+
 export const articulatedPositionSkeletons = {
   closed_guard_bottom: {
     playerA: closedGuardBottomSkeleton,
@@ -249,6 +473,18 @@ export const articulatedPositionSkeletons = {
     playerA: sideControlTopSkeleton,
     playerB: sideControlBottomSkeleton,
   },
+  open_guard_bottom: {
+    playerA: openGuardBottomSkeleton,
+    playerB: openGuardTopSkeleton,
+  },
+  half_guard_bottom: {
+    playerA: halfGuardBottomSkeleton,
+    playerB: halfGuardTopSkeleton,
+  },
+  back_control_top: {
+    playerA: backControlTopSkeleton,
+    playerB: backControlBottomSkeleton,
+  },
 } as const
 
 const closedGuardBottomPose = skeletonToGrapplerPose(closedGuardBottomSkeleton)
@@ -257,11 +493,20 @@ const mountBottomPose = skeletonToGrapplerPose(mountBottomSkeleton)
 const mountTopPose = skeletonToGrapplerPose(mountTopSkeleton)
 const sideControlBottomPose = skeletonToGrapplerPose(sideControlBottomSkeleton)
 const sideControlTopPose = skeletonToGrapplerPose(sideControlTopSkeleton)
+const openGuardBottomPose = skeletonToGrapplerPose(openGuardBottomSkeleton)
+const openGuardTopPose = skeletonToGrapplerPose(openGuardTopSkeleton)
+const halfGuardBottomPose = skeletonToGrapplerPose(halfGuardBottomSkeleton)
+const halfGuardTopPose = skeletonToGrapplerPose(halfGuardTopSkeleton)
+const backControlBottomPose = skeletonToGrapplerPose(backControlBottomSkeleton)
+const backControlTopPose = skeletonToGrapplerPose(backControlTopSkeleton)
 
 export const corePositionVisualIds = [
   'closed_guard_bottom',
   'mount_top',
   'side_control_top',
+  'open_guard_bottom',
+  'half_guard_bottom',
+  'back_control_top',
 ] as const
 
 const positionVisuals: Readonly<
@@ -436,6 +681,185 @@ const positionVisuals: Readonly<
         {
           bodyPart: { grapplerId: 'playerA', bodyPart: 'leftUpperArm' },
           relativeTo: { grapplerId: 'playerB', bodyPart: 'torso' },
+          placement: 'before',
+        },
+      ],
+    },
+  },
+  open_guard_bottom: {
+    positionId: 'open_guard_bottom',
+    label: 'Open Guard Bottom',
+    description:
+      'Open Guard visual showing Player A on their back framing both feet on Player B\'s hips to control distance.',
+    playerAPose: openGuardBottomPose,
+    playerBPose: openGuardTopPose,
+    playerARole: 'Bottom',
+    playerBRole: 'Top',
+    playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'open-guard-left-foot-frame',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'start',
+        },
+      },
+      {
+        id: 'open-guard-right-foot-frame',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'rightShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'start',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerB', bodyPart: 'leftForearm' },
+          relativeTo: { grapplerId: 'playerA', bodyPart: 'leftShin' },
+          placement: 'after',
+        },
+        {
+          bodyPart: { grapplerId: 'playerB', bodyPart: 'rightForearm' },
+          relativeTo: { grapplerId: 'playerA', bodyPart: 'rightShin' },
+          placement: 'after',
+        },
+      ],
+    },
+  },
+  half_guard_bottom: {
+    positionId: 'half_guard_bottom',
+    label: 'Half Guard Bottom',
+    description:
+      'Half Guard visual showing Player A trapping one of Player B\'s legs while framing a knee shield with the free leg.',
+    playerAPose: halfGuardBottomPose,
+    playerBPose: halfGuardTopPose,
+    playerARole: 'Bottom',
+    playerBRole: 'Top',
+    playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'half-guard-leg-wrap',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'leftShin',
+          anchor: 'midpoint',
+        },
+      },
+      {
+        id: 'half-guard-knee-shield',
+        type: 'control',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'rightShin',
+          anchor: 'start',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'leftThigh' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'leftThigh' },
+          placement: 'before',
+        },
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'rightShin' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'torso' },
+          placement: 'after',
+        },
+      ],
+    },
+  },
+  back_control_top: {
+    positionId: 'back_control_top',
+    label: 'Back Control Top',
+    description:
+      'Back Control visual showing Player A hooking both legs inside Player B\'s thighs with a seatbelt grip around the torso.',
+    playerAPose: backControlTopPose,
+    playerBPose: backControlBottomPose,
+    playerARole: 'Back Control',
+    playerBRole: 'Defending',
+    playerOrder: ['playerB', 'playerA'],
+    contacts: [
+      {
+        id: 'back-control-left-hook',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'leftThigh',
+          anchor: 'midpoint',
+        },
+      },
+      {
+        id: 'back-control-right-hook',
+        type: 'hook',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'rightShin',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'rightThigh',
+          anchor: 'midpoint',
+        },
+      },
+      {
+        id: 'back-control-seatbelt',
+        type: 'control',
+        source: {
+          grapplerId: 'playerA',
+          bodyPart: 'leftForearm',
+          anchor: 'end',
+        },
+        target: {
+          grapplerId: 'playerB',
+          bodyPart: 'torso',
+          anchor: 'midpoint',
+        },
+      },
+    ],
+    occlusion: {
+      overrides: [
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'leftThigh' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'leftThigh' },
+          placement: 'before',
+        },
+        {
+          bodyPart: { grapplerId: 'playerA', bodyPart: 'rightThigh' },
+          relativeTo: { grapplerId: 'playerB', bodyPart: 'rightThigh' },
           placement: 'before',
         },
       ],

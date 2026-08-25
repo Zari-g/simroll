@@ -98,7 +98,10 @@ test('complete semantic dataset flows through explorer with safe visual coverage
   assert.ok(getPositionVisual('closed_guard_bottom'))
   assert.ok(getPositionVisual('mount_top'))
   assert.ok(getPositionVisual('side_control_top'))
-  assert.equal(getPositionVisual('half_guard_bottom'), null)
+  assert.ok(getPositionVisual('open_guard_bottom'))
+  assert.ok(getPositionVisual('half_guard_bottom'))
+  assert.ok(getPositionVisual('back_control_top'))
+  assert.equal(getPositionVisual('turtle_bottom'), null)
 })
 
 test('all controls retain readable ownership and No-Gi removes garment controls', () => {

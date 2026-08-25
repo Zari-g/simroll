@@ -579,9 +579,29 @@ coverage for every transition, and broad animation realism remain deferred.
 13A Status:
 Complete
 
-Wiring grounded anchors into authored position visuals and recipes, general
-inverse kinematics, and broader mat/ground contact modeling remain deferred
-to later Iteration 13 work.
+## 13B — Position Visual Coverage Expansion
+
+- [x] Author real articulated top/bottom poses for Open Guard, Half Guard,
+  and Back Control using the existing `ArticulatedGrapplerPoseDefinition`
+  pattern, bringing real artwork from 3 to 6 of the 19 live positions.
+- [x] Wire the 13A grounded-anchor primitive into authored position visuals
+  for the first time, pinning each pose's clearest weight-bearing joint
+  (a passer's base knee, a hooking foot) to a fixed mat baseline.
+- [x] Add position contacts and occlusion overrides for all 3 new positions
+  following the existing core-position pattern, keeping every contact
+  anchored within a tight tolerance of its displayed target body.
+- [x] Extend `corePositionVisualIds` and its coverage-tracking tests to the
+  3 new positions without touching the semantic graph or adding Gi/No-Gi
+  duplicate position nodes.
+- [x] Inspect all 6 core scenes (3 prior, 3 new) at normal Roll Simulator
+  scale in the running application.
+
+13B Status:
+Complete
+
+Full 19-position visual coverage, generalized inverse kinematics, and
+broader mat/ground contact modeling remain deferred to later Iteration 13
+work.
 
 ---
 
