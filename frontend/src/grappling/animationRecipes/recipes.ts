@@ -107,4 +107,83 @@ export const authoredAnimationRecipes = [
     familyId: 'backTake.rotation',
     params: { side: 'right', rotation: 44, travel: 14 },
   },
+  // Mirrors closed_guard_bottom_arm_drag_to_back_control_top from the
+  // opponent's arm-drag; the passer stays fixed as backTake.rotation's
+  // aggressor while this player is taken from closed guard top.
+  {
+    transitionId: 'closed_guard_top_opponent_arm_drag_to_back_control_bottom',
+    familyId: 'backTake.rotation',
+    params: { side: 'left', rotation: 50, travel: 16 },
+  },
+  // Mirrors mount_top_gift_wrap_to_back_control from the pinned player's
+  // side; the same gift-wrap rotation takes the back from mount bottom.
+  {
+    transitionId: 'mount_bottom_opponent_gift_wrap_to_back_control_bottom',
+    familyId: 'backTake.rotation',
+    params: { side: 'right', rotation: 60, travel: 19 },
+  },
+  {
+    transitionId: 'open_guard_bottom_tripod_sweep_to_open_guard_top',
+    familyId: 'sweep.rotation',
+    params: { side: 'left', rotation: -40, hipDrive: 22, followDirection: 'forward' },
+  },
+  // Mirrors the tripod sweep above from the swept player's perspective.
+  {
+    transitionId: 'open_guard_top_opponent_tripod_sweep',
+    familyId: 'sweep.rotation',
+    params: { side: 'right', rotation: -36, hipDrive: 18, followDirection: 'forward' },
+  },
+  {
+    transitionId: 'half_guard_bottom_old_school_sweep_to_side_control_top',
+    familyId: 'sweep.rotation',
+    params: { side: 'right', rotation: -45, hipDrive: 24, followDirection: 'forward' },
+  },
+  {
+    transitionId: 'half_guard_bottom_underhook_knee_tap_sweep',
+    familyId: 'sweep.rotation',
+    params: { side: 'left', rotation: -30, hipDrive: 16, followDirection: 'forward' },
+  },
+  // Mirrors the knee tap sweep above from the swept player's perspective.
+  {
+    transitionId: 'half_guard_top_opponent_underhook_sweep',
+    familyId: 'sweep.rotation',
+    params: { side: 'right', rotation: -28, hipDrive: 15, followDirection: 'forward' },
+  },
+  // Mirrors mount_bottom_elbow_knee_escape_to_half_guard from the top
+  // player's perspective; the opponent stays the hip-escaping actor.
+  {
+    transitionId: 'mount_top_opponent_elbow_knee_to_half_guard_top',
+    familyId: 'escape.hip',
+    params: { side: 'left', bridgeLift: 15, escapeDistance: 22, followDirection: 'backward' },
+  },
+  {
+    transitionId: 'knee_on_belly_top_opponent_shrimp_to_half_guard_top',
+    familyId: 'escape.hip',
+    params: { side: 'right', bridgeLift: 14, escapeDistance: 20, followDirection: 'backward' },
+  },
+  // Turning in to face the back-mounted attacker shares hip-escape/knee-
+  // drive mechanics with escape.hip's guard recovery, ending in half guard.
+  {
+    transitionId: 'back_control_bottom_turn_in_to_half_guard_top',
+    familyId: 'escape.hip',
+    params: { side: 'right', bridgeLift: 12, escapeDistance: 18, followDirection: 'backward' },
+  },
+  // Mirrors the turn-in escape above from the back-controlling player.
+  {
+    transitionId: 'back_control_top_opponent_turn_in_to_half_guard_bottom',
+    familyId: 'escape.hip',
+    params: { side: 'left', bridgeLift: 12, escapeDistance: 18, followDirection: 'backward' },
+  },
+  {
+    transitionId: 'open_guard_top_force_half_guard',
+    familyId: 'pass.pressure',
+    params: { side: 'right', drive: 19, slideDistance: 24, pressure: 16 },
+  },
+  // Mirrors half_guard_bottom_recover_closed_guard from the opponent's
+  // perspective; the opponent stays guard.recovery's active recoverer.
+  {
+    transitionId: 'half_guard_top_opponent_recovers_closed_guard',
+    familyId: 'guard.recovery',
+    params: { side: 'left', escapeDistance: 13, insertAmount: 26 },
+  },
 ] as const satisfies readonly AuthoredAnimationRecipe[]

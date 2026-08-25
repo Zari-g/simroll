@@ -622,9 +622,41 @@ Complete
 13C Status:
 Complete
 
-Full 19-position visual coverage, generalized inverse kinematics, multi-
-joint/chain relational solving, and broader mat/ground contact modeling
-remain deferred to later Iteration 13 work.
+## 13D — Transition Choreography for Open Guard, Half Guard & Back Control
+
+- [x] Wire the highest-value fallback transitions touching Open Guard, Half
+  Guard, or Back Control onto existing technique families (`sweep.rotation`,
+  `escape.hip`, `pass.pressure`, `backTake.rotation`, `guard.recovery`)
+  wherever the technique genuinely matched, without inventing a new family.
+- [x] Move animation coverage from 65 total / 1 explicit / 14 family / 50
+  fallback to 65 total / 1 explicit / 27 family / 37 fallback.
+- [x] Regenerate `docs/animation-coverage.md` via
+  `npm.cmd run animation:coverage` rather than hand-editing it.
+
+Transitions moved from fallback to family-backed:
+- `open_guard_bottom_tripod_sweep_to_open_guard_top` — `sweep.rotation`
+- `open_guard_top_opponent_tripod_sweep` — `sweep.rotation`
+- `half_guard_bottom_old_school_sweep_to_side_control_top` — `sweep.rotation`
+- `half_guard_bottom_underhook_knee_tap_sweep` — `sweep.rotation`
+- `half_guard_top_opponent_underhook_sweep` — `sweep.rotation`
+- `mount_top_opponent_elbow_knee_to_half_guard_top` — `escape.hip`
+- `knee_on_belly_top_opponent_shrimp_to_half_guard_top` — `escape.hip`
+- `back_control_bottom_turn_in_to_half_guard_top` — `escape.hip`
+- `back_control_top_opponent_turn_in_to_half_guard_bottom` — `escape.hip`
+- `open_guard_top_force_half_guard` — `pass.pressure`
+- `mount_bottom_opponent_gift_wrap_to_back_control_bottom` — `backTake.rotation`
+- `closed_guard_top_opponent_arm_drag_to_back_control_bottom` — `backTake.rotation`
+- `half_guard_top_opponent_recovers_closed_guard` — `guard.recovery`
+
+13D Status:
+Complete
+
+Remaining fallback transitions touching these 3 positions (e.g. back control's
+`scrape_off`/`opponent_transitions_to_mount` and the toreando/submission
+edges) did not genuinely match an existing family and remain deferred rather
+than force-fit. Full 19-position visual coverage, generalized inverse
+kinematics, multi-joint/chain relational solving, and broader mat/ground
+contact modeling remain deferred to later Iteration 13 work.
 
 ---
 

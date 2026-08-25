@@ -45,7 +45,7 @@ test('the complete authoritative graph has exactly one safe coverage classificat
   assert.equal(report.total, 65)
   assert.deepEqual(
     { explicit: report.explicit, family: report.family, fallback: report.fallback },
-    { explicit: 1, family: 14, fallback: 50 },
+    { explicit: 1, family: 27, fallback: 37 },
   )
   assert.equal(report.explicit + report.family + report.fallback, report.total)
   assert.equal(new Set(report.transitions.map(({ id }) => id)).size, report.total)

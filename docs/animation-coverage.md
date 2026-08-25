@@ -4,8 +4,8 @@
 
 - Total: 65
 - Explicit: 1
-- Family: 14
-- Fallback: 50
+- Family: 27
+- Fallback: 37
 
 ## Explicit transitions
 
@@ -13,16 +13,29 @@
 
 ## Family-backed transitions
 
+- `back_control_bottom_turn_in_to_half_guard_top` (back_control_bottom → half_guard_top) — `escape.hip`
+- `back_control_top_opponent_turn_in_to_half_guard_bottom` (back_control_top → half_guard_bottom) — `escape.hip`
 - `closed_guard_bottom_arm_drag_to_back_control_top` (closed_guard_bottom → back_control_top) — `backTake.rotation`
 - `closed_guard_bottom_hip_bump_to_mount_top` (closed_guard_bottom → mount_top) — `sweep.rotation`
+- `closed_guard_top_opponent_arm_drag_to_back_control_bottom` (closed_guard_top → back_control_bottom) — `backTake.rotation`
 - `front_headlock_top_go_behind_to_turtle_top` (front_headlock_top → turtle_top) — `advance.spinBehind`
+- `half_guard_bottom_old_school_sweep_to_side_control_top` (half_guard_bottom → side_control_top) — `sweep.rotation`
 - `half_guard_bottom_recover_closed_guard` (half_guard_bottom → closed_guard_bottom) — `guard.recovery`
+- `half_guard_bottom_underhook_knee_tap_sweep` (half_guard_bottom → half_guard_top) — `sweep.rotation`
 - `half_guard_top_knee_slice_to_side_control_top` (half_guard_top → side_control_top) — `pass.pressure`
+- `half_guard_top_opponent_recovers_closed_guard` (half_guard_top → closed_guard_top) — `guard.recovery`
+- `half_guard_top_opponent_underhook_sweep` (half_guard_top → half_guard_bottom) — `sweep.rotation`
+- `knee_on_belly_top_opponent_shrimp_to_half_guard_top` (knee_on_belly_top → half_guard_top) — `escape.hip`
 - `knee_on_belly_top_slide_to_mount` (knee_on_belly_top → mount_top) — `advance.stepOver`
 - `mount_bottom_elbow_knee_escape_to_half_guard` (mount_bottom → half_guard_bottom) — `escape.hip`
+- `mount_bottom_opponent_gift_wrap_to_back_control_bottom` (mount_bottom → back_control_bottom) — `backTake.rotation`
 - `mount_top_gift_wrap_to_back_control` (mount_top → back_control_top) — `backTake.rotation`
+- `mount_top_opponent_elbow_knee_to_half_guard_top` (mount_top → half_guard_top) — `escape.hip`
 - `open_guard_bottom_recover_closed_guard` (open_guard_bottom → closed_guard_bottom) — `guard.recovery`
+- `open_guard_bottom_tripod_sweep_to_open_guard_top` (open_guard_bottom → open_guard_top) — `sweep.rotation`
+- `open_guard_top_force_half_guard` (open_guard_top → half_guard_top) — `pass.pressure`
 - `open_guard_top_knee_cut_to_side_control_top` (open_guard_top → side_control_top) — `pass.pressure`
+- `open_guard_top_opponent_tripod_sweep` (open_guard_top → open_guard_bottom) — `sweep.rotation`
 - `side_control_bottom_elbow_escape_to_closed_guard` (side_control_bottom → closed_guard_bottom) — `escape.hip`
 - `side_control_top_step_over_to_mount` (side_control_top → mount_top) — `advance.stepOver`
 - `turtle_top_seatbelt_back_take` (turtle_top → back_control_top) — `backTake.rotation`
@@ -32,14 +45,11 @@
 
 - `back_control_bottom_opponent_transitions_to_mount_bottom` (back_control_bottom → mount_bottom)
 - `back_control_bottom_scrape_off_to_turtle` (back_control_bottom → turtle_bottom)
-- `back_control_bottom_turn_in_to_half_guard_top` (back_control_bottom → half_guard_top)
-- `back_control_top_opponent_turn_in_to_half_guard_bottom` (back_control_top → half_guard_bottom)
 - `back_control_top_rear_naked_choke_submission` (back_control_top → submission_terminal)
 - `back_control_top_rear_triangle_submission` (back_control_top → submission_terminal)
 - `closed_guard_bottom_kimura_submission` (closed_guard_bottom → submission_terminal)
 - `closed_guard_bottom_opponent_stand_open_to_open_guard_bottom` (closed_guard_bottom → open_guard_bottom)
 - `closed_guard_bottom_triangle_submission` (closed_guard_bottom → submission_terminal)
-- `closed_guard_top_opponent_arm_drag_to_back_control_bottom` (closed_guard_top → back_control_bottom)
 - `closed_guard_top_opponent_hip_bump_to_mount_bottom` (closed_guard_top → mount_bottom)
 - `closed_guard_top_stand_open_to_open_guard_top` (closed_guard_top → open_guard_top)
 - `front_headlock_bottom_guard_pull_to_closed_guard` (front_headlock_bottom → closed_guard_bottom)
@@ -48,24 +58,14 @@
 - `front_headlock_top_darce_submission` (front_headlock_top → submission_terminal)
 - `front_headlock_top_guillotine_submission` (front_headlock_top → submission_terminal)
 - `front_headlock_top_release_to_standing` (front_headlock_top → standing_neutral)
-- `half_guard_bottom_old_school_sweep_to_side_control_top` (half_guard_bottom → side_control_top)
 - `half_guard_bottom_opponent_knee_slice_to_side_control_bottom` (half_guard_bottom → side_control_bottom)
-- `half_guard_bottom_underhook_knee_tap_sweep` (half_guard_bottom → half_guard_top)
-- `half_guard_top_opponent_recovers_closed_guard` (half_guard_top → closed_guard_top)
-- `half_guard_top_opponent_underhook_sweep` (half_guard_top → half_guard_bottom)
 - `knee_on_belly_bottom_elbow_escape_to_open_guard` (knee_on_belly_bottom → open_guard_bottom)
 - `knee_on_belly_bottom_opponent_slides_to_mount_bottom` (knee_on_belly_bottom → mount_bottom)
 - `knee_on_belly_top_far_side_armbar_submission` (knee_on_belly_top → submission_terminal)
-- `knee_on_belly_top_opponent_shrimp_to_half_guard_top` (knee_on_belly_top → half_guard_top)
-- `mount_bottom_opponent_gift_wrap_to_back_control_bottom` (mount_bottom → back_control_bottom)
 - `mount_bottom_trap_roll_to_closed_guard_top` (mount_bottom → closed_guard_top)
 - `mount_top_arm_triangle_submission` (mount_top → submission_terminal)
 - `mount_top_armbar_submission` (mount_top → submission_terminal)
-- `mount_top_opponent_elbow_knee_to_half_guard_top` (mount_top → half_guard_top)
 - `open_guard_bottom_technical_stand_to_standing` (open_guard_bottom → standing_neutral)
-- `open_guard_bottom_tripod_sweep_to_open_guard_top` (open_guard_bottom → open_guard_top)
-- `open_guard_top_force_half_guard` (open_guard_top → half_guard_top)
-- `open_guard_top_opponent_tripod_sweep` (open_guard_top → open_guard_bottom)
 - `open_guard_top_toreando_to_side_control_top` (open_guard_top → side_control_top)
 - `side_control_bottom_opponent_to_knee_on_belly_bottom` (side_control_bottom → knee_on_belly_bottom)
 - `side_control_bottom_underhook_escape_to_turtle` (side_control_bottom → turtle_bottom)
