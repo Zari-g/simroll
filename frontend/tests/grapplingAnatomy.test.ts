@@ -20,7 +20,7 @@ import {
 } from '../src/grappling/interpolatePose.ts'
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
 import { resolveVisualPose } from '../src/grappling/resolveVisualPose.ts'
-import { getTransitionVisual } from '../src/grappling/transitionVisuals.ts'
+import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
 import type {
   GrapplerSegmentName,
   SegmentPose,
@@ -277,7 +277,7 @@ test('position resolution preserves base poses while applying grip visuals', () 
 test('transition pose resolution still interpolates both grapplers', () => {
   const closedGuard = getPositionVisual('closed_guard_bottom')
   const mount = getPositionVisual('mount_top')
-  const transition = getTransitionVisual('hip_bump_sweep')
+  const transition = getAnimationRecipe('hip_bump_sweep')
   assert.ok(closedGuard)
   assert.ok(mount)
   assert.ok(transition)
@@ -304,7 +304,7 @@ test('transition pose resolution still interpolates both grapplers', () => {
 test('authored torso keyframes carry the derived core silhouette with them', () => {
   const closedGuard = getPositionVisual('closed_guard_bottom')
   const mount = getPositionVisual('mount_top')
-  const transition = getTransitionVisual('hip_bump_sweep')
+  const transition = getAnimationRecipe('hip_bump_sweep')
   assert.ok(closedGuard)
   assert.ok(mount)
   assert.ok(transition)

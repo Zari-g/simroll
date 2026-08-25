@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
-import { getTransitionVisual } from '../src/grappling/transitionVisuals.ts'
+import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
 import type {
   GrapplingPath,
   GrapplingStateResponse,
@@ -130,10 +130,10 @@ test('all controls retain readable ownership and No-Gi removes garment controls'
 
 test('unknown transitions do not borrow choreography and mixed playback keeps endpoints', () => {
   const unknown = transitions.find(
-    (transition) => getTransitionVisual(transition.id) === null,
+    (transition) => getAnimationRecipe(transition.id) === null,
   )
   assert.ok(unknown)
-  assert.equal(getTransitionVisual(unknown.id), null)
+  assert.equal(getAnimationRecipe(unknown.id), null)
 
   const states: GrapplingStateResponse[] = [
     { position_id: 'closed_guard_bottom', mode: 'no_gi', active_controls: [] },

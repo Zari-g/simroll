@@ -431,6 +431,30 @@ Complete
 
 ---
 
+# Iteration 12 — Data-Driven Grappling Animation
+
+## 12A — Animation Recipe Schema & Registry
+
+- [x] Separate optional visual recipes from authoritative semantic transitions.
+- [x] Add immutable typed recipe phases, timing, per-player primitive
+  choreography, low-level overrides, metadata, and future contact requirements.
+- [x] Validate authored recipe IDs, durations, ordered progress, base progress,
+  timing, primitive payloads, overrides, and reserved contact metadata.
+- [x] Make a centralized read-only registry the animation authoring boundary.
+- [x] Migrate hip bump sweep, flower sweep, elbow escape, and
+  mount-to-side-control choreography without changing their authored phases.
+- [x] Preserve exact endpoints, constraints, contact correction, determinism,
+  and a safe eased interpolation fallback for transitions without recipes.
+
+12A Status:
+Complete
+
+Deferred to later Iteration 12 work: expanded primitives, active
+contact/control targets, technique-family templates, procedural recipe
+compilation, and graph coverage tooling.
+
+---
+
 # Future Ideas
 
 Potential future systems:

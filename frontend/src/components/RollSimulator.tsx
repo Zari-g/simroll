@@ -13,7 +13,6 @@ import {
 } from '../grappling/displayState'
 import { resolvePositionContacts } from '../grappling/contacts'
 import { getPositionVisual } from '../grappling/positionVisuals'
-import { getTransitionVisual } from '../grappling/transitionVisuals'
 import { resolveVisualPose } from '../grappling/resolveVisualPose'
 import { usePoseAnimation } from '../hooks/usePoseAnimation'
 import type {
@@ -462,7 +461,6 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
       const endVisual = resolveStateVisual(response.next_state)
       if (
         response.transition.action_type === 'transition' &&
-        getTransitionVisual(response.transition.id) &&
         startVisual &&
         endVisual
       ) {
@@ -564,7 +562,6 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
 
           if (
             action.action_type === 'transition' &&
-            getTransitionVisual(action.id) &&
             startVisual &&
             endVisual
           ) {
@@ -730,7 +727,6 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
     const endVisual = resolveStateVisual(historicalTransition.endState)
     if (
       historicalAction?.action_type === 'transition' &&
-      getTransitionVisual(historicalAction.id) &&
       startVisual &&
       endVisual
     ) {

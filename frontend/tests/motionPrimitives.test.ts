@@ -12,7 +12,7 @@ import {
 } from '../src/grappling/motionPrimitives.ts'
 import { articulatedPositionSkeletons, getPositionVisual } from '../src/grappling/positionVisuals.ts'
 import { validateSkeletonPose } from '../src/grappling/poseValidation.ts'
-import { transitionVisuals } from '../src/grappling/transitionVisuals.ts'
+import { animationRecipeRegistry } from '../src/grappling/animationRecipes/registry.ts'
 
 const primitives: readonly MotionPrimitive[] = [
   { type: 'hipShift', forward: 9, lateral: -4 },
@@ -65,7 +65,7 @@ test('composed choreography preserves endpoints and produces valid phases', () =
   )) {
     const source = getPositionVisual(sourceId)
     const destination = getPositionVisual(destinationId)
-    const transition = transitionVisuals[transitionId]
+    const transition = animationRecipeRegistry[transitionId]
     assert.ok(source)
     assert.ok(destination)
     assert.ok(transition)
@@ -89,10 +89,10 @@ test('authored phases depart meaningfully from direct pose interpolation', () =>
   )) {
     const source = getPositionVisual(sourceId)
     const destination = getPositionVisual(destinationId)
-    const transition = transitionVisuals[transitionId]
+    const transition = animationRecipeRegistry[transitionId]
     assert.ok(source)
     assert.ok(destination)
-    const phase = transition.keyframes[Math.floor(transition.keyframes.length / 2)]
+    const phase = transition.phases[Math.floor(transition.phases.length / 2)]
     const choreographed = resolveTransitionPoses(
       transition,
       { playerA: source.playerAPose, playerB: source.playerBPose },
@@ -114,12 +114,12 @@ test('authored phases depart meaningfully from direct pose interpolation', () =>
 })
 
 test('authored actions use individually tuned durations and phase timing', () => {
-  assert.ok(new Set(Object.values(transitionVisuals).map((item) => item.durationMs)).size > 1)
-  for (const transition of Object.values(transitionVisuals)) {
-    assert.ok(transition.keyframes.length >= 3)
+  assert.ok(new Set(Object.values(animationRecipeRegistry).map((item) => item.durationMs)).size > 1)
+  for (const transition of Object.values(animationRecipeRegistry)) {
+    assert.ok(transition.phases.length >= 3)
     assert.deepEqual(
-      transition.keyframes.map((phase) => phase.progress),
-      [...transition.keyframes].sort((left, right) => left.progress - right.progress).map((phase) => phase.progress),
+      transition.phases.map((phase) => phase.progress),
+      [...transition.phases].sort((left, right) => left.progress - right.progress).map((phase) => phase.progress),
     )
   }
 })

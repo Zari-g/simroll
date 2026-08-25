@@ -23,7 +23,7 @@ import {
   type GrapplerSkeletonPose,
 } from '../src/grappling/skeleton.ts'
 import { resolveTransitionPoses } from '../src/grappling/interpolatePose.ts'
-import { getTransitionVisual } from '../src/grappling/transitionVisuals.ts'
+import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
 
 function getClosedGuardSkeleton(): GrapplerSkeletonPose {
   return articulatedPositionSkeletons.closed_guard_bottom.playerA
@@ -314,7 +314,7 @@ test('legacy renderer poses retain a connected compatibility adapter', () => {
 test('transition endpoints remain exact with a skeleton-derived position pose', () => {
   const source = getPositionVisual('closed_guard_bottom')
   const destination = getPositionVisual('mount_top')
-  const transition = getTransitionVisual('hip_bump_sweep')
+  const transition = getAnimationRecipe('hip_bump_sweep')
   assert.ok(source)
   assert.ok(destination)
   assert.ok(transition)
