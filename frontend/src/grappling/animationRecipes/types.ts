@@ -117,3 +117,11 @@ export interface FamilyBackedAnimationRecipe {
 }
 
 export type AuthoredAnimationRecipe = AnimationRecipe | FamilyBackedAnimationRecipe
+
+export type AnimationCoverage = 'explicit' | 'family' | 'fallback'
+
+export interface ResolvedAnimation {
+  readonly source: AnimationCoverage
+  readonly recipe: AnimationRecipe | null
+  readonly durationMs: number
+}
