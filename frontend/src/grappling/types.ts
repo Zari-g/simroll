@@ -3,6 +3,7 @@ import type {
   GrapplerSkeletonPose,
   LocalJointTransform,
 } from './skeleton.ts'
+import type { ActiveVisualControl } from './controlTargets.ts'
 
 export type GrapplerId = 'playerA' | 'playerB'
 
@@ -138,4 +139,6 @@ export type MotionTimingGroup = 'hips' | 'torso' | 'arms' | 'head'
 export interface TransitionContactContext {
   readonly startContacts: readonly GrapplingContact[]
   readonly endContacts: readonly GrapplingContact[]
+  readonly startControls?: readonly ActiveVisualControl[]
+  readonly endControls?: readonly ActiveVisualControl[]
 }

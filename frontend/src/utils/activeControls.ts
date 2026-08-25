@@ -1,4 +1,5 @@
 import type { ActiveControl, GrapplingMode, Grip, PlayerId } from '../types/api'
+import type { ActiveVisualControl } from '../grappling/controlTargets'
 
 const playerNames: Record<PlayerId, string> = {
   player_a: 'Player A',
@@ -20,6 +21,18 @@ export function activeControlIds(
   controls: readonly ActiveControl[],
 ): string[] {
   return [...new Set(controls.map((control) => control.control_id))]
+}
+
+export function activeVisualControls(
+  controls: readonly ActiveControl[],
+): ActiveVisualControl[] {
+  const grapplerId = (player: PlayerId) =>
+    player === 'player_a' ? 'playerA' as const : 'playerB' as const
+  return controls.map((control) => ({
+    controlId: control.control_id,
+    controller: grapplerId(control.owner),
+    opponent: grapplerId(control.target),
+  }))
 }
 
 export function activeControlKey(control: ActiveControl): string {

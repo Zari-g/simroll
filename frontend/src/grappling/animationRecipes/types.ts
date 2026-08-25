@@ -1,9 +1,14 @@
-import type { MotionPrimitive } from '../motionPrimitives.ts'
+import type {
+  GrapplerSide,
+  MotionPrimitive,
+  PlanarDirection,
+} from '../motionPrimitives.ts'
 import type {
   GrapplerId,
   MotionTimingGroup,
   SkeletonPoseOverride,
 } from '../types.ts'
+import type { ControlSide } from '../controlTargets.ts'
 
 export interface AnimationPlayerChoreography {
   readonly primitives?: readonly MotionPrimitive[]
@@ -27,9 +32,14 @@ export interface AnimationContactRequirement {
   readonly maintainedUntil?: number
 }
 
-/** Reserved declarative metadata for later semantic-control-aware compilation. */
 export interface AnimationControlRequirement {
   readonly controlId: string
+  /** Visual lifecycle only; it never mutates authoritative semantic state. */
+  readonly action?: 'preserve' | 'release' | 'acquire'
+  readonly controller?: GrapplerId
+  readonly opponent?: GrapplerId
+  readonly side?: ControlSide
+  readonly strength?: number
   readonly activeFrom?: number
   readonly activeUntil?: number
 }
@@ -50,3 +60,60 @@ export interface AnimationRecipe {
     readonly controls?: readonly AnimationControlRequirement[]
   }
 }
+
+export type FamilyParameterKind = 'number' | 'side' | 'direction'
+export type FamilyParameterValue = number | GrapplerSide | PlanarDirection
+
+export interface FamilyParameterDefinition {
+  readonly kind: FamilyParameterKind
+  readonly required?: boolean
+  readonly default?: FamilyParameterValue
+  readonly min?: number
+  readonly max?: number
+}
+
+export interface FamilyParameterReference {
+  readonly $param: string
+  /** Numeric references only. */
+  readonly scale?: number
+  /** Numeric references only. */
+  readonly offset?: number
+  /** Side references only. */
+  readonly opposite?: boolean
+}
+
+type ParameterizedValue<T> = T extends number | string
+  ? T | FamilyParameterReference
+  : T extends readonly (infer Item)[]
+    ? readonly ParameterizedValue<Item>[]
+    : T extends object
+      ? { readonly [Key in keyof T]: ParameterizedValue<T[Key]> }
+      : T
+
+export type FamilyPhase = ParameterizedValue<AnimationPhase>
+export type FamilyControlRequirement = ParameterizedValue<AnimationControlRequirement>
+
+export interface TechniqueFamily {
+  readonly id: string
+  readonly durationMs: number
+  readonly timing?: AnimationRecipe['timing']
+  readonly parameters: Readonly<Record<string, FamilyParameterDefinition>>
+  readonly phases: readonly FamilyPhase[]
+  readonly controls?: readonly FamilyControlRequirement[]
+}
+
+export interface FamilyRecipeOverrides {
+  readonly durationMs?: number
+  readonly timing?: AnimationRecipe['timing']
+  readonly requirements?: AnimationRecipe['requirements']
+}
+
+export interface FamilyBackedAnimationRecipe {
+  readonly transitionId: string
+  readonly recipeId?: string
+  readonly familyId: string
+  readonly params: Readonly<Record<string, FamilyParameterValue>>
+  readonly overrides?: FamilyRecipeOverrides
+}
+
+export type AuthoredAnimationRecipe = AnimationRecipe | FamilyBackedAnimationRecipe

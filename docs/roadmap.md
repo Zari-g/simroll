@@ -472,8 +472,50 @@ compilation, and graph coverage tooling. Expanded primitives are completed in
 12B Status:
 Complete
 
-Semantic grip/contact target compilation remains planned for 12C. Technique
+Semantic grip/contact target compilation is completed in 12C below. Technique
 families and broader graph choreography remain deferred to later Iteration 12.
+
+---
+
+## 12C â€” Semantic Contact & Control Targets
+
+- [x] Add an immutable, typed semantic landmark and control-target registry.
+- [x] Compile representative hand, arm/torso, and leg relationships into the
+  existing weighted contact-correction contract.
+- [x] Keep Gi and No-Gi on shared canonical position visuals while active
+  garment, limb, and body controls provide their visual differences.
+- [x] Let recipes visually preserve, release, and acquire controls with
+  deterministic source/destination influence blending.
+- [x] Preserve backend authority, exact endpoints, finite skeleton output,
+  local joint constraints, and separate decorative grip rendering.
+
+12C Status:
+Complete
+
+Technique-family templates, generalized inverse kinematics, collision/force
+physics, grip breaking, and broader graph animation coverage remain deferred
+to 12D or later work.
+
+---
+
+## 12D — Technique Family Templates
+
+- [x] Add typed declarative family parameters, phases, timing, and visual
+  control lifecycle defaults.
+- [x] Validate and deeply freeze a centralized family registry.
+- [x] Compile family-backed authoring into ordinary validated animation
+  recipes without changing the executor.
+- [x] Migrate rotation sweep, hip escape, and step-over advance choreography
+  while retaining Flower Sweep as an explicit recipe.
+- [x] Prove side parameterization and reuse of one hip-escape family by two
+  distinct semantic transitions.
+
+12D Status:
+Complete
+
+Full graph coverage, additional technique families, generalized IK,
+collision/force physics, grip-breaking mechanics, and realism redesign remain
+deferred.
 
 ---
 

@@ -360,10 +360,29 @@ constraints. This remains authored choreography rather than physics, collision
 handling, or general IK. Source and destination frames bypass intermediate
 generation so their resolved poses remain exact, including grip-modified
 endpoints. Missing transition choreography uses the safe interpolation fallback.
-Semantic grips and contacts remain separate from body mechanics; compiling them
-into active recipe targets is planned for 12C. Technique-family templates,
-procedural compilation, and graph animation coverage remain deferred to later
-Iteration 12 work.
+Semantic controls now resolve through an immutable visual control registry.
+Each reusable definition relates controller/opponent landmarks (hand, wrist,
+arm, torso, leg, and similar small regions) and compiles to ordinary weighted
+contacts before the existing correction pass:
+
+```text
+backend-owned semantic controls
+    -> reusable side-aware control target definitions
+    -> weighted grip/control/hook/pressure contacts
+    -> existing bounded contact correction
+    -> constrained skeleton pose
+```
+
+Gi and No-Gi therefore keep the same canonical position visuals: garment
+controls such as collar/sleeve grips and body/limb controls such as underhooks
+or wrist control change the active relationships, not the position graph.
+Decorative grip marks remain optional consumers of control state and are not
+the physical-contact source of truth. Recipe metadata can visually preserve,
+release, or acquire a relationship and blends source/destination influence
+through intermediate frames. It never changes backend semantic state, and
+exact authoritative endpoints continue to bypass correction. Technique-family
+templates, generalized IK, and broader graph choreography remain deferred to
+12D and later Iteration 12 work.
 
 The position visual's `playerOrder` and anatomy `layerHint` values provide the
 default body-part order. Small position-owned occlusion overrides may move an
@@ -509,6 +528,20 @@ choreography commit the authoritative destination state directly and never
 borrow interpolation from another move. Control-change actions update controls
 in place without body choreography. Later iterations can expand artwork and
 choreography independently from this semantic data integration.
+
+Iteration 12D adds a declarative technique-family layer at the animation
+authoring boundary. An authored entry is either an explicit `AnimationRecipe`
+or a family ID plus validated parameters and small recipe-level overrides.
+Family templates define reusable phases, primitive choreography, timing, and
+visual control lifecycle defaults. A single deterministic compilation step
+resolves parameter references and produces the same validated
+`AnimationRecipe` consumed by the existing interpolation pipeline.
+
+Families never define semantic outcomes: backend transitions remain
+authoritative, unknown family IDs fail during authoring, and unusual movement
+can stay explicit. The initial registry contains rotation-sweep, hip-escape,
+and step-over-advance patterns. Broader graph animation coverage remains
+deferred.
 
 Iteration 11 closes on one runtime equation:
 
