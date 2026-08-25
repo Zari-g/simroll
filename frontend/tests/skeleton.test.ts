@@ -314,7 +314,7 @@ test('legacy renderer poses retain a connected compatibility adapter', () => {
 test('transition endpoints remain exact with a skeleton-derived position pose', () => {
   const source = getPositionVisual('closed_guard_bottom')
   const destination = getPositionVisual('mount_top')
-  const transition = getAnimationRecipe('hip_bump_sweep')
+  const transition = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(source)
   assert.ok(destination)
   assert.ok(transition)

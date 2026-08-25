@@ -138,7 +138,7 @@ test('configured, live, and playback state resolve through one display boundary'
 test('transition endpoints preserve resolved pose, mode, and grips exactly', () => {
   const sourceVisual = getPositionVisual('closed_guard_bottom')
   const destinationVisual = getPositionVisual('mount_top')
-  const transition = getAnimationRecipe('hip_bump_sweep')
+  const transition = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   assert.ok(sourceVisual)
   assert.ok(destinationVisual)
   assert.ok(transition)

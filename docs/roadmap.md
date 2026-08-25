@@ -539,6 +539,25 @@ realism work also remain deferred.
 
 ---
 
+## 12F — Graph Animation Coverage & Authoring Workflow
+
+- [x] Derive graph-wide `explicit` / `family` / `fallback` coverage from the
+  authoritative 65-transition dataset through the playback resolver.
+- [x] Generate and freshness-check a reviewable Markdown coverage artifact.
+- [x] Reject orphaned transition IDs, duplicate animation ownership, invalid
+  family references, and definitions that cannot compile.
+- [x] Add reusable pressure-pass, guard-recovery, spin-behind advance, and
+  rotational back-take families and upgrade representative transitions.
+- [x] Preserve deterministic fallback as valid coverage for unresolved moves.
+
+12F Status:
+Complete
+
+Generalized IK, collision/force physics, grip-breaking mechanics, bespoke
+coverage for every transition, and broad animation realism remain deferred.
+
+---
+
 # Future Ideas
 
 Potential future systems:

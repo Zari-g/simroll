@@ -328,7 +328,10 @@ A centralized resolver is the sole playback and coverage-policy boundary. It
 selects an explicit recipe first, then compiles family-backed authoring into a
 normal recipe, and otherwise returns deterministic eased
 source-to-destination interpolation with a predictable fallback duration.
-Missing visual choreography is therefore safe.
+Missing visual choreography is therefore safe. The graph-wide coverage API
+accepts the authoritative runtime transitions and classifies each one by
+calling that resolver; fallback is an intentional supported coverage level,
+not an error condition.
 
 Recipes declaratively compose reusable pure motion primitives, timing offsets,
 ordered intermediate phases, and narrowly scoped local skeleton overrides. The
@@ -347,6 +350,7 @@ connected renderer geometry:
 authoritative semantic transition
     -> explicit recipe OR family compilation OR fallback
     -> resolved animation (source, recipe, duration)
+    -> graph coverage classifier + generated authoring report
     -> primitive-driven motion phases + local authored overrides
     -> constrained skeleton keyframes
     -> prioritized contact correction
@@ -354,8 +358,8 @@ authoritative semantic transition
     -> renderer
 ```
 
-The hip bump sweep, flower sweep, elbow escape, and mount-to-side-control
-animations are recipe data and retain their existing choreography. Contact
+Active authored transitions use either a focused explicit recipe (currently the
+Butterfly Sweep) or reusable family-backed choreography. Contact
 correction translates a contacted grappler as a bounded whole and does
 not rotate joints, solve limb chains, or attempt to satisfy every declaration.
 It is deterministic and immutable, and preserves already-valid local joint
@@ -365,6 +369,12 @@ generation so their resolved poses remain exact, including grip-modified
 endpoints. Missing transition choreography uses the safe interpolation fallback.
 Coverage classification (`explicit`, `family`, or `fallback`) calls the same
 resolver as playback and cannot drift into a separate source of truth.
+`frontend/npm.cmd run animation:coverage` regenerates
+`docs/animation-coverage.md`; `animation:coverage:check` fails when that report
+is stale. The same audit rejects authored IDs missing from the graph, duplicate
+animation ownership, invalid family references, and definitions that do not
+compile. To add coverage, author a unique recipe only for unique choreography,
+or add a transition ID plus validated parameters to a reusable family.
 Semantic controls now resolve through an immutable visual control registry.
 Each reusable definition relates controller/opponent landmarks (hand, wrist,
 arm, torso, leg, and similar small regions) and compiles to ordinary weighted
@@ -544,9 +554,13 @@ the family-agnostic interpolation pipeline.
 
 Families never define semantic outcomes: backend transitions remain
 authoritative, unknown family IDs fail during authoring, and unusual movement
-can stay explicit. The initial registry contains rotation-sweep, hip-escape,
-and step-over-advance patterns. Iteration 12E centralizes resolution and safe
-coverage; graph-wide coverage authoring and reporting remain deferred to 12F.
+can stay explicit. In addition to rotation-sweep, hip-escape, and
+step-over-advance, the audited registry includes pressure-pass, guard-recovery,
+spin-behind advance, and rotational back-take patterns. Iteration 12F derives a
+reviewable coverage report from the runtime graph and validates staleness while
+leaving unresolved or questionable choreography on deterministic fallback.
+Generalized IK, collision/force physics, and broad realism work remain future
+work.
 
 Iteration 11 closes on one runtime equation:
 

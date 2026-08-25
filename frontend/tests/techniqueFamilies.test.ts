@@ -9,6 +9,7 @@ import {
 } from '../src/grappling/animationRecipes/familyRegistry.ts'
 import type { FamilyBackedAnimationRecipe } from '../src/grappling/animationRecipes/types.ts'
 import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
+import { authoredAnimationRecipes } from '../src/grappling/animationRecipes/recipes.ts'
 import {
   resolveTransitionContactTargets,
   resolveTransitionSkeletonKeyframes,
@@ -71,7 +72,7 @@ test('compilation is deterministic, parameterized by side, and does not mutate f
 })
 
 test('distinct transitions reuse one family and compile different choreography', () => {
-  const mount = getAnimationRecipe('elbow_escape')
+  const mount = getAnimationRecipe('mount_bottom_elbow_knee_escape_to_half_guard')
   const sideControl = getAnimationRecipe('side_control_bottom_elbow_escape_to_closed_guard')
   assert.ok(mount)
   assert.ok(sideControl)
@@ -80,8 +81,50 @@ test('distinct transitions reuse one family and compile different choreography',
   assert.notDeepEqual(mount.phases, sideControl.phases)
 })
 
+test('12F families validate parameters, compile deterministically, mirror, and serve multiple transitions', () => {
+  for (const familyId of [
+    'pass.pressure',
+    'guard.recovery',
+    'advance.spinBehind',
+    'backTake.rotation',
+  ]) {
+    const authorings = authoredAnimationRecipes.filter(
+      (entry): entry is FamilyBackedAnimationRecipe =>
+        'familyId' in entry && entry.familyId === familyId,
+    )
+    assert.ok(authorings.length >= 2, `${familyId} should be reused`)
+    const first = compileFamilyRecipe(authorings[0])
+    assert.deepEqual(first, compileFamilyRecipe(authorings[0]))
+    assert.equal(first.family, familyId)
+    assert.notDeepEqual(first.phases, compileFamilyRecipe(authorings[1]).phases)
+
+    const paramsWithoutSide = Object.fromEntries(
+      Object.entries(authorings[0].params).filter(([name]) => name !== 'side'),
+    )
+    assert.throws(
+      () => compileFamilyRecipe({ ...authorings[0], params: paramsWithoutSide }),
+      /required parameter "side"/,
+    )
+    const numericParameter = Object.entries(authorings[0].params)
+      .find(([, value]) => typeof value === 'number')?.[0]
+    assert.ok(numericParameter)
+    assert.throws(() => compileFamilyRecipe({
+      ...authorings[0],
+      params: { ...authorings[0].params, [numericParameter]: Number.NaN },
+    }), /must be number/)
+    const side = authorings[0].params.side
+    assert.ok(side === 'left' || side === 'right')
+    const mirrored = compileFamilyRecipe({
+      ...authorings[0],
+      transitionId: `${authorings[0].transitionId}:mirrored`,
+      params: { ...authorings[0].params, side: side === 'left' ? 'right' : 'left' },
+    })
+    assert.notDeepEqual(first.phases, mirrored.phases)
+  }
+})
+
 test('family-backed recipes preserve endpoints, constraints, and control lifecycle', () => {
-  const recipe = getAnimationRecipe('hip_bump_sweep')
+  const recipe = getAnimationRecipe('closed_guard_bottom_hip_bump_to_mount_top')
   const startVisual = getPositionVisual('closed_guard_bottom')
   const endVisual = getPositionVisual('mount_top')
   assert.ok(recipe)
@@ -107,8 +150,8 @@ test('family-backed recipes preserve endpoints, constraints, and control lifecyc
 })
 
 test('explicit recipes compile through the same registry shape', () => {
-  const flower = getAnimationRecipe('flower_sweep')
-  assert.ok(flower)
-  assert.equal(flower.family, undefined)
-  assert.equal(flower.recipeId, 'flower-sweep-v1')
+  const butterfly = getAnimationRecipe('open_guard_bottom_butterfly_sweep_to_side_control_top')
+  assert.ok(butterfly)
+  assert.equal(butterfly.family, undefined)
+  assert.equal(butterfly.recipeId, 'butterfly-sweep-v1')
 })
