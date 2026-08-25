@@ -83,6 +83,9 @@ test('every repository position resolves a complete core visual', () => {
     'closed_guard_bottom',
     'mount_top',
     'side_control_top',
+    'open_guard_bottom',
+    'half_guard_bottom',
+    'back_control_top',
   ])
 
   for (const positionId of corePositionVisualIds) {
@@ -165,7 +168,7 @@ test('pose variants preserve the base pose and unchanged segments', () => {
 })
 
 test('expanded runtime positions without artwork use the visual fallback', () => {
-  assert.equal(getPositionVisual('half_guard_bottom'), null)
+  assert.equal(getPositionVisual('turtle_bottom'), null)
 })
 
 test('side control intentionally layers the top player over the bottom player', () => {

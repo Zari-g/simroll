@@ -120,6 +120,18 @@ test('core positions define focused contact and occlusion metadata', () => {
       contactTypes: ['pressure', 'control'],
       overrideCount: 1,
     },
+    open_guard_bottom: {
+      contactTypes: ['hook', 'hook'],
+      overrideCount: 2,
+    },
+    half_guard_bottom: {
+      contactTypes: ['hook', 'control'],
+      overrideCount: 2,
+    },
+    back_control_top: {
+      contactTypes: ['hook', 'hook', 'control'],
+      overrideCount: 2,
+    },
   } as const
 
   for (const positionId of corePositionVisualIds) {
