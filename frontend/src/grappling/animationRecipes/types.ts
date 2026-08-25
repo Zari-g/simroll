@@ -4,6 +4,7 @@ import type {
   MotionTimingGroup,
   SkeletonPoseOverride,
 } from '../types.ts'
+import type { ControlSide } from '../controlTargets.ts'
 
 export interface AnimationPlayerChoreography {
   readonly primitives?: readonly MotionPrimitive[]
@@ -27,9 +28,14 @@ export interface AnimationContactRequirement {
   readonly maintainedUntil?: number
 }
 
-/** Reserved declarative metadata for later semantic-control-aware compilation. */
 export interface AnimationControlRequirement {
   readonly controlId: string
+  /** Visual lifecycle only; it never mutates authoritative semantic state. */
+  readonly action?: 'preserve' | 'release' | 'acquire'
+  readonly controller?: GrapplerId
+  readonly opponent?: GrapplerId
+  readonly side?: ControlSide
+  readonly strength?: number
   readonly activeFrom?: number
   readonly activeUntil?: number
 }

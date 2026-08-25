@@ -9,6 +9,7 @@ import {
 } from '../grappling/displayState'
 import { getAnimationRecipe } from '../grappling/animationRecipes/registry'
 import type { GrapplingContact } from '../grappling/types'
+import type { ActiveVisualControl } from '../grappling/controlTargets'
 
 interface PlayPoseAnimationOptions {
   transitionId: string
@@ -19,6 +20,8 @@ interface PlayPoseAnimationOptions {
   endState: GrapplingDisplayState
   startContacts: readonly GrapplingContact[]
   endContacts: readonly GrapplingContact[]
+  startControls: readonly ActiveVisualControl[]
+  endControls: readonly ActiveVisualControl[]
 }
 
 interface PoseAnimationDisplay {
@@ -55,6 +58,8 @@ export function usePoseAnimation() {
       endState,
       startContacts,
       endContacts,
+      startControls,
+      endControls,
     }: PlayPoseAnimationOptions): Promise<boolean> => {
       const recipe = getAnimationRecipe(transitionId)
       const reduceMotion = window.matchMedia(
@@ -68,7 +73,12 @@ export function usePoseAnimation() {
 
       cancel()
       const animationGeneration = generation.current
-      const contactContext = { startContacts, endContacts }
+      const contactContext = {
+        startContacts,
+        endContacts,
+        startControls,
+        endControls,
+      }
 
       return new Promise((resolve) => {
         pendingResolution.current = resolve

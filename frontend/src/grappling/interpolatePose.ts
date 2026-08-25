@@ -12,6 +12,7 @@ import type {
 import type {
   AnimationPlayerChoreography,
   AnimationRecipe,
+  AnimationControlRequirement,
 } from './animationRecipes/types.ts'
 import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
 import { composeMotionPrimitives } from './motionPrimitives.ts'
@@ -21,6 +22,10 @@ import {
   type ContactCorrectionTarget,
 } from './contactCorrection.ts'
 import type { MotionTimingGroup, TransitionContactContext } from './types.ts'
+import {
+  compileControlsToContacts,
+  type ActiveVisualControl,
+} from './controlTargets.ts'
 
 export type GrapplerPosePair = Record<GrapplerId, GrapplerPose>
 
@@ -259,16 +264,101 @@ const emptyContactContext: TransitionContactContext = {
   endContacts: [],
 }
 
-function contactTargets(
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value))
+}
+
+function controlKey(control: ActiveVisualControl) {
+  return `${control.controlId}:${control.controller}:${control.opponent}:${control.side ?? 'left'}`
+}
+
+function requirementMatches(
+  requirement: AnimationControlRequirement,
+  control: ActiveVisualControl,
+) {
+  return requirement.controlId === control.controlId &&
+    (requirement.controller ?? 'playerA') === control.controller &&
+    (requirement.opponent ?? 'playerB') === control.opponent &&
+    (requirement.side ?? 'left') === (control.side ?? 'left')
+}
+
+function controlInfluence(
+  control: ActiveVisualControl,
+  requirement: AnimationControlRequirement | undefined,
+  inSource: boolean,
+  inDestination: boolean,
+  progress: number,
+) {
+  const sourceStrength = clamp01(1 - progress / 0.72)
+  const destinationStrength = clamp01((progress - 0.28) / 0.72)
+  let influence = Math.max(
+    inSource ? sourceStrength : 0,
+    inDestination ? destinationStrength : 0,
+  )
+  if (requirement?.action === 'preserve') influence = 1
+  if (requirement?.action === 'release') {
+    const until = requirement.activeUntil ?? 0.72
+    influence = until <= 0 ? 0 : clamp01(1 - progress / until)
+  }
+  if (requirement?.action === 'acquire') {
+    const from = requirement.activeFrom ?? 0.28
+    influence = from >= 1 ? 0 : clamp01((progress - from) / (1 - from))
+  }
+  if (!requirement?.action && requirement) {
+    const from = requirement.activeFrom ?? 0
+    const until = requirement.activeUntil ?? 1
+    const fade = 0.12
+    influence = Math.min(
+      clamp01((progress - from + fade) / fade),
+      clamp01((until - progress + fade) / fade),
+    )
+  }
+  return influence * (requirement?.strength ?? control.strength ?? 1)
+}
+
+export function resolveTransitionContactTargets(
+  recipe: AnimationRecipe,
   context: TransitionContactContext,
   baseProgress: number,
 ): readonly ContactCorrectionTarget[] {
-  const sourceStrength = Math.max(0, Math.min(1, 1 - baseProgress / 0.72))
-  const destinationStrength = Math.max(0, Math.min(1, (baseProgress - 0.28) / 0.72))
-  return [
+  const sourceStrength = clamp01(1 - baseProgress / 0.72)
+  const destinationStrength = clamp01((baseProgress - 0.28) / 0.72)
+  const targets: ContactCorrectionTarget[] = [
     ...context.startContacts.map((contact) => ({ contact, strength: sourceStrength })),
     ...context.endContacts.map((contact) => ({ contact, strength: destinationStrength })),
   ]
+  const sourceControls = context.startControls ?? []
+  const destinationControls = context.endControls ?? []
+  const controls = new Map<string, ActiveVisualControl>()
+  for (const control of [...sourceControls, ...destinationControls]) {
+    controls.set(controlKey(control), control)
+  }
+  for (const requirement of recipe.requirements?.controls ?? []) {
+    const control: ActiveVisualControl = {
+      controlId: requirement.controlId,
+      controller: requirement.controller ?? 'playerA',
+      opponent: requirement.opponent ?? 'playerB',
+      side: requirement.side,
+    }
+    if (!controls.has(controlKey(control))) controls.set(controlKey(control), control)
+  }
+  for (const control of controls.values()) {
+    const requirement = recipe.requirements?.controls?.find((entry) =>
+      requirementMatches(entry, control),
+    )
+    const key = controlKey(control)
+    const strength = controlInfluence(
+      control,
+      requirement,
+      sourceControls.some((entry) => controlKey(entry) === key),
+      destinationControls.some((entry) => controlKey(entry) === key),
+      baseProgress,
+    )
+    for (const compiled of compileControlsToContacts([{ ...control, strength }])) {
+      targets.push({ contact: compiled.contact, strength: compiled.strength })
+    }
+  }
+  return targets
 }
 
 function compileTransitionFrames(
@@ -308,7 +398,7 @@ function compileTransitionFrames(
         }
         const skeletons = correctSkeletonContacts(
           constrainedSkeletons,
-          contactTargets(contactContext, baseProgress),
+          resolveTransitionContactTargets(recipe, contactContext, baseProgress),
         )
         return {
           progress: phase.progress,

@@ -135,6 +135,30 @@ test('validation rejects duplicate and out-of-order phases', () => {
   }
 })
 
+test('validation rejects unknown, malformed, and duplicate semantic control changes', () => {
+  assert.throws(() => validateAnimationRecipe({
+    ...validRecipe,
+    requirements: { controls: [{ controlId: 'not_registered', action: 'acquire' }] },
+  }), /controlId is unknown/)
+  assert.throws(() => validateAnimationRecipe({
+    ...validRecipe,
+    requirements: { controls: [{
+      controlId: 'wrist_control', controller: 'playerA', opponent: 'playerA', action: 'preserve',
+    }] },
+  }), /must differ/)
+  assert.throws(() => validateAnimationRecipe({
+    ...validRecipe,
+    requirements: { controls: [{ controlId: 'underhook', strength: 1.1 }] },
+  }), /strength must be within/)
+  assert.throws(() => validateAnimationRecipe({
+    ...validRecipe,
+    requirements: { controls: [
+      { controlId: 'wrist_control', action: 'preserve' },
+      { controlId: 'wrist_control', action: 'release' },
+    ] },
+  }), /duplicates an incompatible control change/)
+})
+
 test('migrated recipes preserve endpoints and deterministic finite intermediate poses', () => {
   const endpoints = {
     hip_bump_sweep: ['closed_guard_bottom', 'mount_top'],

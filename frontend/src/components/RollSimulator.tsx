@@ -34,6 +34,7 @@ import { formatSimulationResult } from '../utils/simulationResult'
 import {
   activeControlIds,
   activeControlKey,
+  activeVisualControls,
   starterControls,
 } from '../utils/activeControls'
 import { AvailableMovesPanel } from './AvailableMovesPanel'
@@ -73,6 +74,7 @@ function resolveStateVisual(state: GrapplingStateResponse) {
     displayState: displayStateFromResponse(state),
     poses: resolved.poses,
     contacts: [...resolvePositionContacts(visual), ...resolved.gripContacts],
+    controls: activeVisualControls(state.active_controls),
   }
 }
 
@@ -473,6 +475,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
           endState: endVisual.displayState,
           startContacts: startVisual.contacts,
           endContacts: endVisual.contacts,
+          startControls: startVisual.controls,
+          endControls: endVisual.controls,
         })
       }
 
@@ -574,6 +578,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
               endState: endVisual.displayState,
               startContacts: startVisual.contacts,
               endContacts: endVisual.contacts,
+              startControls: startVisual.controls,
+              endControls: endVisual.controls,
             })
           }
 
@@ -741,6 +747,8 @@ export function RollSimulator({ positions }: RollSimulatorProps) {
         endState: endVisual.displayState,
         startContacts: startVisual.contacts,
         endContacts: endVisual.contacts,
+        startControls: startVisual.controls,
+        endControls: endVisual.controls,
       })
     }
 
