@@ -558,6 +558,33 @@ coverage for every transition, and broad animation realism remain deferred.
 
 ---
 
+# Iteration 13 — Ground-Relative Pose Anchoring
+
+## 13A — Grounded Anchor Primitive
+
+- [x] Add a mat-relative vertical anchor declaration for one or more joints
+  of a single authored pose, kept independent from existing pose, grip, and
+  recipe data.
+- [x] Add a pure deterministic helper that grounds declared joints by
+  translating the skeleton in root space, never touching local rotations or
+  bone lengths.
+- [x] Keep grounding inside the existing joint constraint profile and
+  resolve multiple declared anchors deterministically in canonical joint
+  order rather than attempting simultaneous multi-anchor solving.
+- [x] Cover no-op backward compatibility, finite output, determinism,
+  immutability, and constraint compliance with focused tests.
+- [x] Leave every authored pose's visual output pixel-exact; grounding is
+  opt-in and not yet wired into any position visual or recipe.
+
+13A Status:
+Complete
+
+Wiring grounded anchors into authored position visuals and recipes, general
+inverse kinematics, and broader mat/ground contact modeling remain deferred
+to later Iteration 13 work.
+
+---
+
 # Future Ideas
 
 Potential future systems:
