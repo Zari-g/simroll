@@ -47,15 +47,32 @@ test('control validation rejects invalid landmarks and strengths', () => {
   assert.throws(() => compileControlsToContacts([{
     controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', strength: 1.1,
   }]), /strength must be within/)
+  assert.throws(() => validateControlTargetDefinition({
+    id: 'invalid-anchor',
+    contacts: [{
+      id: 'bad-anchor', type: 'grip',
+      source: { participant: 'controller', landmark: 'hand' },
+      target: { participant: 'opponent', landmark: 'wrist' },
+      relationalAnchor: 'full-body-ik' as never,
+    }],
+  }), /invalid relational anchor/)
 })
 
-test('wrist, underhook, and butterfly controls compile to semantic body landmarks', () => {
+test('supported hand grips and hooks compile their relational correction modes', () => {
   const [wrist] = compileControlsToContacts([{
     controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', side: 'left',
   }])
   assert.equal(wrist.contact.source.bodyPart, 'leftHand')
   assert.equal(wrist.contact.target.bodyPart, 'rightForearm')
   assert.equal(wrist.contact.target.anchor, 'end')
+  assert.equal(wrist.relationalAnchor, 'hand-to-grip-target')
+
+  for (const controlId of ['sleeve_grip', 'collar_grip', 'ankle_control']) {
+    const [compiled] = compileControlsToContacts([{
+      controlId, controller: 'playerA', opponent: 'playerB', side: 'right',
+    }])
+    assert.equal(compiled.relationalAnchor, 'hand-to-grip-target')
+  }
 
   const underhook = compileControlsToContacts([{
     controlId: 'underhook', controller: 'playerB', opponent: 'playerA', side: 'right',
@@ -63,6 +80,7 @@ test('wrist, underhook, and butterfly controls compile to semantic body landmark
   assert.equal(underhook[0].contact.source.bodyPart, 'rightForearm')
   assert.equal(underhook[0].contact.target.bodyPart, 'torso')
   assert.ok(underhook.some(({ contact }) => contact.target.bodyPart === 'leftUpperArm'))
+  assert.ok(underhook.every(({ relationalAnchor }) => relationalAnchor === undefined))
 
   const [butterfly] = compileControlsToContacts([{
     controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB', side: 'right',
@@ -70,6 +88,19 @@ test('wrist, underhook, and butterfly controls compile to semantic body landmark
   assert.equal(butterfly.contact.type, 'hook')
   assert.equal(butterfly.contact.source.bodyPart, 'rightFoot')
   assert.equal(butterfly.contact.target.bodyPart, 'leftThigh')
+  assert.equal(butterfly.relationalAnchor, 'foot-to-inner-thigh')
+})
+
+test('unsupported arm-wrap and guard controls retain non-relational fallback contacts', () => {
+  for (const controlId of [
+    'underhook', 'overhook', 'seatbelt', 'closed_guard_connection',
+  ]) {
+    const compiled = compileControlsToContacts([{
+      controlId, controller: 'playerA', opponent: 'playerB',
+    }])
+    assert.ok(compiled.length > 0)
+    assert.ok(compiled.every(({ relationalAnchor }) => relationalAnchor === undefined))
+  }
 })
 
 test('left and right control variants resolve deterministically', () => {
@@ -114,8 +145,8 @@ const lifecycleRecipe: AnimationRecipe = {
   phases: [{ progress: 0.25 }, { progress: 0.5 }, { progress: 0.75 }],
   requirements: { controls: [
     { controlId: 'wrist_control', action: 'preserve' },
-    { controlId: 'closed_guard_connection', action: 'release', activeUntil: 0.7 },
-    { controlId: 'underhook', action: 'acquire', activeFrom: 0.3 },
+    { controlId: 'sleeve_grip', action: 'release', activeUntil: 0.7 },
+    { controlId: 'butterfly_hook', action: 'acquire', activeFrom: 0.3 },
   ] },
 }
 
@@ -123,11 +154,11 @@ const lifecycleContext = {
   startContacts: [], endContacts: [],
   startControls: [
     { controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB' },
-    { controlId: 'closed_guard_connection', controller: 'playerA', opponent: 'playerB' },
+    { controlId: 'sleeve_grip', controller: 'playerA', opponent: 'playerB' },
   ],
   endControls: [
     { controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB' },
-    { controlId: 'underhook', controller: 'playerA', opponent: 'playerB' },
+    { controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB' },
   ],
 } as const
 
@@ -142,11 +173,17 @@ test('recipe controls persist, release, acquire, and blend without changing endp
   assert.equal(strengthFor(early, 'wrist_control'), 1)
   assert.equal(strengthFor(middle, 'wrist_control'), 1)
   assert.equal(strengthFor(late, 'wrist_control'), 1)
-  assert.ok(strengthFor(early, 'closed_guard_connection') > strengthFor(middle, 'closed_guard_connection'))
-  assert.equal(strengthFor(late, 'closed_guard_connection'), 0)
-  assert.equal(strengthFor(early, 'underhook'), 0)
-  assert.ok(strengthFor(middle, 'underhook') > 0)
-  assert.ok(strengthFor(late, 'underhook') > strengthFor(middle, 'underhook'))
+  assert.ok(strengthFor(early, 'sleeve_grip') > strengthFor(middle, 'sleeve_grip'))
+  assert.equal(strengthFor(late, 'sleeve_grip'), 0)
+  assert.equal(strengthFor(early, 'butterfly_hook'), 0)
+  assert.ok(strengthFor(middle, 'butterfly_hook') > 0)
+  assert.ok(strengthFor(late, 'butterfly_hook') > strengthFor(middle, 'butterfly_hook'))
+  assert.ok(early.some((target) =>
+    target.contact.id.includes('control:wrist_control:') &&
+    target.relationalAnchor === 'hand-to-grip-target'))
+  assert.ok(middle.some((target) =>
+    target.contact.id.includes('control:butterfly_hook:') &&
+    target.relationalAnchor === 'foot-to-inner-thigh'))
 
   const startVisual = getPositionVisual('closed_guard_bottom')
   const endVisual = getPositionVisual('mount_top')
@@ -164,5 +201,39 @@ test('recipe controls persist, release, acquire, and blend without changing endp
     assert.equal(validateSkeletonPose(frame.skeletons.playerB).valid, true)
     assert.ok(Number.isFinite(frame.skeletons.playerA.root.position.x))
     assert.ok(Number.isFinite(frame.skeletons.playerB.root.position.y))
+  }
+})
+
+test('a preserved relational control changes its limb without translating the root', () => {
+  const visual = getPositionVisual('closed_guard_bottom')
+  assert.ok(visual)
+  const poses = { playerA: visual.playerAPose, playerB: visual.playerBPose }
+  const plainRecipe: AnimationRecipe = {
+    transitionId: 'plain_relational_control_test',
+    durationMs: 500,
+    phases: [{ progress: 0.25 }, { progress: 0.5 }, { progress: 0.75 }],
+  }
+  const recipe: AnimationRecipe = {
+    transitionId: 'persistent_relational_control_test',
+    durationMs: 500,
+    phases: [{ progress: 0.25 }, { progress: 0.5 }, { progress: 0.75 }],
+    requirements: { controls: [{ controlId: 'collar_grip', action: 'preserve' }] },
+  }
+  const context = {
+    startContacts: [], endContacts: [],
+    startControls: [{ controlId: 'collar_grip', controller: 'playerA', opponent: 'playerB' }],
+    endControls: [{ controlId: 'collar_grip', controller: 'playerA', opponent: 'playerB' }],
+  } as const
+  const plain = resolveTransitionSkeletonKeyframes(plainRecipe, poses, poses)
+  const corrected = resolveTransitionSkeletonKeyframes(recipe, poses, poses, context)
+
+  assert.equal(corrected.length, 3)
+  for (let index = 0; index < corrected.length; index += 1) {
+    assert.deepEqual(corrected[index].skeletons.playerA.root, plain[index].skeletons.playerA.root)
+    assert.notEqual(
+      corrected[index].skeletons.playerA.joints.leftElbow.rotation,
+      plain[index].skeletons.playerA.joints.leftElbow.rotation,
+    )
+    assert.equal(validateSkeletonPose(corrected[index].skeletons.playerA).valid, true)
   }
 })

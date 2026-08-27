@@ -4,6 +4,7 @@ import type {
   GrapplerId,
   GrapplingContact,
 } from './types.ts'
+import type { RelationalAnchorMode } from './contactCorrection.ts'
 
 export type ControlSide = 'left' | 'right'
 
@@ -41,6 +42,8 @@ export interface SemanticContactTarget {
   readonly source: SemanticContactPoint
   readonly target: SemanticContactPoint
   readonly strength?: number
+  /** Optional bounded joint correction supplied to the contact solver. */
+  readonly relationalAnchor?: RelationalAnchorMode
 }
 
 export interface ControlTargetDefinition {
@@ -61,6 +64,7 @@ export interface CompiledControlContact {
   readonly controlId: string
   readonly contact: GrapplingContact
   readonly strength: number
+  readonly relationalAnchor?: RelationalAnchorMode
 }
 
 const point = (
@@ -71,16 +75,16 @@ const point = (
 
 const definitions = [
   { id: 'wrist_control', contacts: [
-    { id: 'hand-to-wrist', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'wrist', 'oppositeSide') },
+    { id: 'hand-to-wrist', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'wrist', 'oppositeSide'), relationalAnchor: 'hand-to-grip-target' },
   ] },
   { id: 'sleeve_grip', contacts: [
-    { id: 'hand-to-sleeve', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'forearm', 'oppositeSide') },
+    { id: 'hand-to-sleeve', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'forearm', 'oppositeSide'), relationalAnchor: 'hand-to-grip-target' },
   ] },
   { id: 'collar_grip', contacts: [
-    { id: 'hand-to-collar', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'chest') },
+    { id: 'hand-to-collar', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'chest'), relationalAnchor: 'hand-to-grip-target' },
   ] },
   { id: 'ankle_control', contacts: [
-    { id: 'hand-to-ankle', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'ankle', 'oppositeSide') },
+    { id: 'hand-to-ankle', type: 'grip', source: point('controller', 'hand', 'controlSide'), target: point('opponent', 'ankle', 'oppositeSide'), relationalAnchor: 'hand-to-grip-target' },
   ] },
   { id: 'underhook', contacts: [
     { id: 'under-arm-to-torso', type: 'control', source: point('controller', 'forearm', 'controlSide'), target: point('opponent', 'torso') },
@@ -105,7 +109,7 @@ const definitions = [
     { id: 'under-arm-to-waist', type: 'control', source: point('controller', 'forearm', 'oppositeSide'), target: point('opponent', 'waist') },
   ] },
   { id: 'butterfly_hook', contacts: [
-    { id: 'foot-to-inside-thigh', type: 'hook', source: point('controller', 'foot', 'controlSide'), target: point('opponent', 'thigh', 'oppositeSide') },
+    { id: 'foot-to-inside-thigh', type: 'hook', source: point('controller', 'foot', 'controlSide'), target: point('opponent', 'thigh', 'oppositeSide'), relationalAnchor: 'foot-to-inner-thigh' },
   ] },
   { id: 'closed_guard_connection', contacts: [
     { id: 'left-shin-to-waist', type: 'hook', source: point('controller', 'shin', 'left'), target: point('opponent', 'waist') },
@@ -124,6 +128,9 @@ const sideSelectors = new Set<SideSelector>([
 ])
 const contactTypes = new Set<GrapplingContact['type']>([
   'grip', 'hook', 'pressure', 'control',
+])
+const relationalAnchorModes = new Set<RelationalAnchorMode>([
+  'hand-to-grip-target', 'knee-to-hip-line', 'foot-to-inner-thigh',
 ])
 
 export function validateControlTargetDefinition(
@@ -146,6 +153,12 @@ export function validateControlTargetDefinition(
       (!Number.isFinite(contact.strength) || contact.strength < 0 || contact.strength > 1)
     ) {
       throw new Error(`Control target "${definition.id}" strength must be within [0, 1]`)
+    }
+    if (
+      contact.relationalAnchor !== undefined &&
+      !relationalAnchorModes.has(contact.relationalAnchor)
+    ) {
+      throw new Error(`Control target "${definition.id}" has an invalid relational anchor`)
     }
     for (const reference of [contact.source, contact.target]) {
       if (
@@ -255,6 +268,7 @@ export function compileControlsToContacts(
     return definition.contacts.map((target): CompiledControlContact => ({
       controlId: control.controlId,
       strength: Math.min(1, strength) * (target.strength ?? 1),
+      relationalAnchor: target.relationalAnchor,
       contact: {
         id: `control:${control.controlId}:${control.controller}:${controlSide}:${target.id}`,
         type: target.type,
