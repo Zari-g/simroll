@@ -7,7 +7,6 @@ import type {
   GrapplerId,
   GrapplerPose,
   GrapplerSegmentName,
-  SkeletonPoseOverride,
 } from './types'
 import type {
   AnimationPlayerChoreography,
@@ -15,17 +14,16 @@ import type {
   AnimationControlRequirement,
 } from './animationRecipes/types.ts'
 import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
-import { composeMotionPrimitives } from './motionPrimitives.ts'
-import { constrainSkeletonPose } from './poseValidation.ts'
-import {
-  correctSkeletonContacts,
-  type ContactCorrectionTarget,
-} from './contactCorrection.ts'
+import type { ContactCorrectionTarget } from './contactCorrection.ts'
 import type { MotionTimingGroup, TransitionContactContext } from './types.ts'
 import {
   compileControlsToContacts,
   type ActiveVisualControl,
 } from './controlTargets.ts'
+import {
+  composeAnimationSkeleton,
+  resolveAnimationFrame,
+} from './resolveAnimationFrame.ts'
 
 export type GrapplerPosePair = Record<GrapplerId, GrapplerPose>
 
@@ -195,7 +193,7 @@ function interpolateTimedSkeletonPose(
   const groupProgress = (group: MotionTimingGroup) =>
     easeInOutCubic(offsetPhaseProgress(progress, timing[group]))
   const rootProgress = groupProgress('hips')
-  return constrainSkeletonPose({
+  return {
     root: {
       position: {
         x: lerpNumber(start.root.position.x, end.root.position.x, rootProgress),
@@ -215,25 +213,6 @@ function interpolateTimedSkeletonPose(
         }]
       }),
     ) as Record<GrapplerChildJointName, LocalJointTransform>,
-  })
-}
-
-function applySkeletonOverride(
-  pose: GrapplerSkeletonPose,
-  override?: SkeletonPoseOverride,
-): GrapplerSkeletonPose {
-  if (!override) return pose
-  const joints = { ...pose.joints }
-  for (const [name, transform] of Object.entries(override.joints ?? {})) {
-    const jointName = name as GrapplerChildJointName
-    joints[jointName] = { ...joints[jointName], ...transform }
-  }
-  return {
-    root: {
-      position: { ...pose.root.position, ...override.root?.position },
-      rotation: override.root?.rotation ?? pose.root.rotation,
-    },
-    joints,
   }
 }
 
@@ -244,13 +223,12 @@ function resolveChoreographedSkeleton(
   choreography?: AnimationPlayerChoreography,
 ): GrapplerSkeletonPose {
   const blended = interpolateSkeletonPose(start, end, baseProgress)
-  const moved = composeMotionPrimitives(blended, choreography?.primitives ?? [])
-  return constrainSkeletonPose(applySkeletonOverride(moved, choreography?.override))
+  return composeAnimationSkeleton(blended, choreography)
 }
 
 interface CompiledTransitionFrame {
   readonly progress: number
-  readonly poses: GrapplerPosePair
+  readonly baseProgress: number
   readonly skeletons: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>
 }
 
@@ -369,7 +347,6 @@ function compileTransitionFrames(
   recipe: AnimationRecipe,
   start: GrapplerPosePair,
   end: GrapplerPosePair,
-  contactContext: TransitionContactContext,
 ): readonly CompiledTransitionFrame[] {
   const startSkeletons = {
     playerA: grapplerPoseToSkeleton(start.playerA),
@@ -381,12 +358,12 @@ function compileTransitionFrames(
   }
 
   return [
-    { progress: 0, skeletons: startSkeletons, poses: { playerA: cloneGrapplerPose(start.playerA), playerB: cloneGrapplerPose(start.playerB) } },
+    { progress: 0, baseProgress: 0, skeletons: startSkeletons },
     ...recipe.phases
       .filter((phase) => phase.progress > 0 && phase.progress < 1)
       .map((phase) => {
         const baseProgress = phase.baseProgress ?? phase.progress
-        const constrainedSkeletons = {
+        const skeletons = {
           playerA: resolveChoreographedSkeleton(
             startSkeletons.playerA,
             endSkeletons.playerA,
@@ -400,20 +377,13 @@ function compileTransitionFrames(
             phase.playerB,
           ),
         }
-        const skeletons = correctSkeletonContacts(
-          constrainedSkeletons,
-          resolveTransitionContactTargets(recipe, contactContext, baseProgress),
-        )
         return {
           progress: phase.progress,
+          baseProgress,
           skeletons,
-          poses: {
-            playerA: skeletonToGrapplerPose(skeletons.playerA),
-            playerB: skeletonToGrapplerPose(skeletons.playerB),
-          },
         }
       }),
-    { progress: 1, skeletons: endSkeletons, poses: { playerA: cloneGrapplerPose(end.playerA), playerB: cloneGrapplerPose(end.playerB) } },
+    { progress: 1, baseProgress: 1, skeletons: endSkeletons },
   ].sort((left, right) => left.progress - right.progress)
 }
 
@@ -440,7 +410,7 @@ function getCompiledTransitionFrames(
   }
   let frames = byContacts.get(contactContext)
   if (!frames) {
-    frames = compileTransitionFrames(recipe, start, end, contactContext)
+    frames = compileTransitionFrames(recipe, start, end)
     byContacts.set(contactContext, frames)
   }
   return frames
@@ -453,9 +423,25 @@ export function resolveTransitionSkeletonKeyframes(
   end: GrapplerPosePair,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
-  return getCompiledTransitionFrames(recipe, start, end, contactContext)
+  const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
+  const sourceSkeletons = frames[0].skeletons
+  const destinationSkeletons = frames[frames.length - 1].skeletons
+  return frames
     .filter((frame) => frame.progress > 0 && frame.progress < 1)
-    .map((frame) => ({ progress: frame.progress, skeletons: frame.skeletons }))
+    .map((frame) => ({
+      progress: frame.progress,
+      skeletons: resolveAnimationFrame({
+        skeletons: frame.skeletons,
+        progress: frame.progress,
+        sourceSkeletons,
+        destinationSkeletons,
+        contactTargets: resolveTransitionContactTargets(
+          recipe,
+          contactContext,
+          frame.baseProgress,
+        ),
+      }),
+    }))
 }
 
 export function resolveTransitionPoses(
@@ -500,8 +486,28 @@ export function resolveTransitionPoses(
     recipe.timing?.playerB,
   )
 
+  const baseProgress = lerpNumber(
+    leftFrame.baseProgress,
+    rightFrame.baseProgress,
+    localProgress,
+  )
+  const skeletons = resolveAnimationFrame({
+    skeletons: {
+      playerA: playerASkeleton,
+      playerB: playerBSkeleton,
+    },
+    progress,
+    sourceSkeletons: frames[0].skeletons,
+    destinationSkeletons: frames[frames.length - 1].skeletons,
+    contactTargets: resolveTransitionContactTargets(
+      recipe,
+      contactContext,
+      baseProgress,
+    ),
+  })
+
   return {
-    playerA: skeletonToGrapplerPose(playerASkeleton),
-    playerB: skeletonToGrapplerPose(playerBSkeleton),
+    playerA: skeletonToGrapplerPose(skeletons.playerA),
+    playerB: skeletonToGrapplerPose(skeletons.playerB),
   }
 }

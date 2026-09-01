@@ -765,13 +765,53 @@ complete.
 14B Status:
 Complete
 
+## 14C — Centralized Constraint Solve Pipeline
+
+- [x] Add `resolveAnimationFrame()` as the authoritative immutable frame
+  constraint path. Production recipe playback now interpolates an unsolved
+  motion/choreography frame and sends it through this resolver exactly once.
+- [x] Fix and publish the deterministic order: base/interpolated skeleton,
+  motion primitives and authored overrides, grounding, active relational and
+  contact correction, final joint constraints, then finite/structural
+  validation. Recipe phase construction uses the same shared choreography
+  composer instead of owning a second constraint pass.
+- [x] Preserve exact authoritative source and destination skeletons by
+  bypassing grounding, contacts, IK, fallback correction, and clamping at
+  exact progress 0 and 1. The public transition path retains its equivalent
+  exact pose endpoint guard.
+- [x] Add the small generic `critical`, `high`, `medium`, and `low` priority
+  model. Explicit metadata wins; otherwise grips default to critical, hooks
+  to high, and pressure/control contacts to medium. Equal priorities use a
+  canonical semantic contact key and original index as the final stable tie.
+- [x] Feed the already lifecycle-resolved 14A contact targets into the frame
+  resolver. Preserve/release/acquire strength and upstream Gi/No-Gi filtering
+  remain owned by their existing compilation paths; the solver does not
+  inspect technique, transition, control, or garment IDs.
+- [x] Reuse 14B two-bone arm/leg IK and its bounded 13C single-joint fallback
+  through `correctSkeletonContacts()`. Priority ordering is preserved by one
+  contact-correction call, avoiding hidden IK or root-correction repeats.
+- [x] Reuse root-translation grounding before relational correction and the
+  existing joint-constraint profile after it. Static position authoring still
+  calls the smaller grounding helper once while constructing immutable source
+  poses because it is not animation-frame playback; those grounded endpoint
+  transforms then remain authoritative.
+- [x] Cover solve order, exact endpoints, grounding plus IK plus final
+  clamping, conflicting priorities, canonical same-priority ordering, single
+  application, immutability, determinism, finite/valid output, and IK fallback.
+
+14C Status:
+Complete
+
 Iteration 14 Status:
 In Progress
 
 Explicitly deferred: full-body, torso, spine, iterative, physics, collision,
 and center-of-mass solving; new positions or transitions; broader relational
 types such as seatbelts, underhooks, and closed-guard body locks; and any
-centralized 14C solve-pipeline work.
+recursive two-grappler solving. Grounding remains sequential root translation,
+so conflicting simultaneous anchors are not solved globally. Iteration 14D
+may coordinate constraints across both grapplers instead of treating each
+skeleton correction independently.
 
 ---
 
