@@ -355,7 +355,11 @@ export function resolveTransitionContactTargets(
       baseProgress,
     )
     for (const compiled of compileControlsToContacts([{ ...control, strength }])) {
-      targets.push({ contact: compiled.contact, strength: compiled.strength })
+      targets.push({
+        contact: compiled.contact,
+        strength: compiled.strength,
+        relationalAnchor: compiled.relationalAnchor,
+      })
     }
   }
   return targets

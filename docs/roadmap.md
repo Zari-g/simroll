@@ -693,6 +693,49 @@ per pose all remain deferred to later work.
 
 ---
 
+# Iteration 14 — Limb-Aware Relational Animation
+
+## 14A — Persistent Relational Controls
+
+- [x] Extend reusable control-contact targets with optional
+  `relationalAnchor` metadata and carry it through production target
+  compilation into `correctSkeletonContacts()` without transition-ID or
+  control-ID branches in the animation executor or solver.
+- [x] Wire the landmark-safe controls supported by the Iteration 13C
+  single-joint rules:
+  - `wrist_control`, `sleeve_grip`, `collar_grip`, and `ankle_control` use
+    `hand-to-grip-target`.
+  - `butterfly_hook` uses `foot-to-inner-thigh`.
+- [x] Keep `underhook`, `overhook`, `seatbelt`, and
+  `closed_guard_connection` on their existing non-relational fallback.
+  Their current semantic contacts originate at forearm/upper-arm or shin
+  landmarks, which do not safely match the hand, knee, or foot anchor pairs
+  available in 13C. They are intentionally not force-fit.
+- [x] Reuse the existing recipe lifecycle: preserved source controls remain
+  active through intermediate phases, released controls fade until
+  `activeUntil`, and acquired controls begin at `activeFrom`. The resulting
+  phase strength gates the same compiled relational target; no second
+  lifecycle was introduced.
+- [x] Preserve the shared Gi/No-Gi position graph and backend authority.
+  Sleeve and collar controls remain garment controls and are removed from
+  No-Gi active controls by the existing mode-validation/filtering path;
+  wrist, ankle, and butterfly controls remain mode-compatible.
+- [x] Preserve safe fallback behavior for unknown controls, missing visual
+  definitions, unsupported landmarks, zero-strength targets, and contacts
+  without relational metadata.
+- [x] Cover registry mapping, unsupported fallback, multi-phase persistence,
+  release/acquire timing, deterministic immutable finite output, constraint
+  validity, and limb-only correction with an unchanged grappler root.
+
+14A Status:
+Complete
+
+Deferred to 14B: reusable two-bone arm/leg IK, including safe relational
+support for forearm/upper-arm wrap controls and shin-based closed-guard
+connections. Iteration 14 as a whole is not complete.
+
+---
+
 # Future Ideas
 
 Potential future systems:

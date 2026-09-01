@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
+import { compileControlsToContacts } from '../src/grappling/controlTargets.ts'
 import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
 import type {
   GrapplingPath,
@@ -12,6 +13,7 @@ import type {
   Transition,
 } from '../src/types/api.ts'
 import {
+  activeVisualControls,
   filterActiveControlsForMode,
   formatActiveControl,
 } from '../src/utils/activeControls.ts'
@@ -118,17 +120,24 @@ test('all controls retain readable ownership and No-Gi removes garment controls'
 
   const sleeve = grips.find((grip) => grip.id === 'sleeve_grip')
   assert.ok(sleeve?.gi_required)
+  const noGiControls = filterActiveControlsForMode(
+    [
+      { control_id: 'sleeve_grip', owner: 'player_a', target: 'player_b' },
+      { control_id: 'wrist_control', owner: 'player_b', target: 'player_a' },
+    ],
+    grips,
+    'no_gi',
+  )
   assert.deepEqual(
-    filterActiveControlsForMode(
-      [
-        { control_id: 'sleeve_grip', owner: 'player_a', target: 'player_b' },
-        { control_id: 'wrist_control', owner: 'player_b', target: 'player_a' },
-      ],
-      grips,
-      'no_gi',
-    ),
+    noGiControls,
     [{ control_id: 'wrist_control', owner: 'player_b', target: 'player_a' }],
   )
+  const noGiTargets = compileControlsToContacts(activeVisualControls(noGiControls))
+  assert.ok(noGiTargets.length > 0)
+  assert.ok(noGiTargets.every(({ controlId }) => controlId === 'wrist_control'))
+  assert.ok(noGiTargets.every(
+    ({ relationalAnchor }) => relationalAnchor === 'hand-to-grip-target',
+  ))
 })
 
 test('unknown transitions do not borrow choreography and mixed playback keeps endpoints', () => {
