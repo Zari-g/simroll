@@ -4,12 +4,18 @@ import test from 'node:test'
 import { defaultGrapplerAnatomy } from '../src/grappling/anatomy.ts'
 import { correctSkeletonContacts } from '../src/grappling/contactCorrection.ts'
 import { resolveContactPoint } from '../src/grappling/contactGeometry.ts'
+import { compileControlsToContacts } from '../src/grappling/controlTargets.ts'
 import {
   offsetPhaseProgress,
   resolveTransitionPoses,
   resolveTransitionSkeletonKeyframes,
 } from '../src/grappling/interpolatePose.ts'
-import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from '../src/grappling/kinematics.ts'
+import {
+  grapplerPoseToSkeleton,
+  resolveSkeletonPose,
+  skeletonToGrapplerPose,
+} from '../src/grappling/kinematics.ts'
+import { normalizeAngleDegrees } from '../src/grappling/jointConstraints.ts'
 import { constrainSkeletonPose, validateSkeletonPose } from '../src/grappling/poseValidation.ts'
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
 import { resolvePositionContacts } from '../src/grappling/contacts.ts'
@@ -37,6 +43,37 @@ function contactDistance(
     geometry.target.x - geometry.source.x,
     geometry.target.y - geometry.source.y,
   )
+}
+
+function oldSingleJointCorrection(
+  skeletons: Parameters<typeof correctSkeletonContacts>[0],
+  contact: GrapplingContact,
+  joint: 'leftElbow' | 'rightElbow' | 'leftKnee' | 'rightKnee',
+  influence: number,
+) {
+  const sourceId = contact.source.grapplerId
+  const geometry = resolveContactPoint(contact, {
+    playerA: skeletonToGrapplerPose(skeletons.playerA),
+    playerB: skeletonToGrapplerPose(skeletons.playerB),
+  }, anatomies)
+  const pivot = resolveSkeletonPose(skeletons[sourceId]).joints[joint]
+  const current = Math.atan2(geometry.source.y - pivot.y, geometry.source.x - pivot.x)
+  const desired = Math.atan2(geometry.target.y - pivot.y, geometry.target.x - pivot.x)
+  const error = normalizeAngleDegrees(((desired - current) * 180) / Math.PI)
+  const delta = Math.sign(error) * Math.min(30, Math.abs(error) * influence)
+  return {
+    ...skeletons,
+    [sourceId]: constrainSkeletonPose({
+      ...skeletons[sourceId],
+      joints: {
+        ...skeletons[sourceId].joints,
+        [joint]: {
+          ...skeletons[sourceId].joints[joint],
+          rotation: skeletons[sourceId].joints[joint].rotation + delta,
+        },
+      },
+    }),
+  }
 }
 
 test('contact correction is bounded, deterministic, immutable, and constraint-valid', () => {
@@ -117,7 +154,7 @@ const handToChestContact: GrapplingContact = {
   target: { grapplerId: 'playerB', bodyPart: 'torso', anchor: 'end' },
 }
 
-test('relational correction rotates a single joint toward the target and leaves the root fixed', () => {
+test('relational correction uses the arm chain and leaves the root fixed', () => {
   const skeletons = closedGuardSkeletons()
   const snapshot = structuredClone(skeletons)
   const targets = [
@@ -138,10 +175,10 @@ test('relational correction rotates a single joint toward the target and leaves 
   for (const jointName of Object.keys(skeletons.playerA.joints) as Array<
     keyof typeof skeletons.playerA.joints
   >) {
-    if (jointName === 'leftElbow') {
+    if (jointName === 'leftShoulder' || jointName === 'leftElbow') {
       assert.notEqual(
-        corrected.playerA.joints.leftElbow.rotation,
-        skeletons.playerA.joints.leftElbow.rotation,
+        corrected.playerA.joints[jointName].rotation,
+        skeletons.playerA.joints[jointName].rotation,
       )
     } else {
       assert.deepEqual(
@@ -152,6 +189,14 @@ test('relational correction rotates a single joint toward the target and leaves 
   }
   assert.equal(validateSkeletonPose(corrected.playerA).valid, true)
   assert.equal(validateSkeletonPose(corrected.playerB).valid, true)
+
+  const oldCorrection = oldSingleJointCorrection(
+    skeletons, handToChestContact, 'leftElbow', 0.82,
+  )
+  assert.ok(
+    contactDistance(handToChestContact, corrected) <
+      contactDistance(handToChestContact, oldCorrection),
+  )
 })
 
 test('relational correction bounds the rotation delta even for a far-away target', () => {
@@ -241,6 +286,72 @@ test('relational correction generalizes to the knee-to-hip-line and foot-to-inne
       }
     }
   }
+})
+
+test('production butterfly hook uses leg IK in Open Guard', () => {
+  const visual = getPositionVisual('open_guard_bottom')
+  assert.ok(visual)
+  const resolved = resolveVisualPose(visual, [])
+  const skeletons = {
+    playerA: constrainSkeletonPose(grapplerPoseToSkeleton(resolved.poses.playerA)),
+    playerB: constrainSkeletonPose(grapplerPoseToSkeleton(resolved.poses.playerB)),
+  }
+  const target = compileControlsToContacts([{
+    controlId: 'butterfly_hook',
+    controller: 'playerA',
+    opponent: 'playerB',
+    side: 'left',
+  }])[0]
+  const corrected = correctSkeletonContacts(skeletons, [target])
+
+  assert.deepEqual(corrected.playerA.root, skeletons.playerA.root)
+  assert.notEqual(
+    corrected.playerA.joints.leftHip.rotation,
+    skeletons.playerA.joints.leftHip.rotation,
+  )
+  assert.ok(contactDistance(target.contact, corrected) < contactDistance(target.contact, skeletons))
+  assert.equal(validateSkeletonPose(corrected.playerA).valid, true)
+})
+
+test('a coincident IK target falls back to the bounded 13C joint correction', () => {
+  const skeletons = closedGuardSkeletons()
+  const sourceRoot = resolveSkeletonPose(skeletons.playerA).joints.leftShoulder
+  const contact: GrapplingContact = {
+    id: 'test-ik-fallback',
+    type: 'grip',
+    source: { grapplerId: 'playerA', bodyPart: 'leftHand', anchor: 'center' },
+    target: { grapplerId: 'playerB', bodyPart: 'head', anchor: 'center' },
+  }
+  const targetBefore = resolveContactPoint(contact, {
+    playerA: skeletonToGrapplerPose(skeletons.playerA),
+    playerB: skeletonToGrapplerPose(skeletons.playerB),
+  }, anatomies).target
+  skeletons.playerB = {
+    ...skeletons.playerB,
+    root: {
+      ...skeletons.playerB.root,
+      position: {
+        x: skeletons.playerB.root.position.x + sourceRoot.x - targetBefore.x,
+        y: skeletons.playerB.root.position.y + sourceRoot.y - targetBefore.y,
+      },
+    },
+  }
+  const corrected = correctSkeletonContacts(skeletons, [{
+    contact,
+    strength: 1,
+    relationalAnchor: 'hand-to-grip-target',
+  }])
+
+  assert.equal(
+    corrected.playerA.joints.leftShoulder.rotation,
+    skeletons.playerA.joints.leftShoulder.rotation,
+  )
+  assert.notEqual(
+    corrected.playerA.joints.leftElbow.rotation,
+    skeletons.playerA.joints.leftElbow.rotation,
+  )
+  assert.deepEqual(corrected.playerA.root, skeletons.playerA.root)
+  assert.equal(validateSkeletonPose(corrected.playerA).valid, true)
 })
 
 test('whole-root correction still applies by default when relationalAnchor is not set', () => {
