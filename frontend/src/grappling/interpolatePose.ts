@@ -22,8 +22,8 @@ import {
 } from './controlTargets.ts'
 import {
   composeAnimationSkeleton,
-  resolveAnimationFrame,
 } from './resolveAnimationFrame.ts'
+import { resolveGrapplerPairFrame } from './resolveGrapplerPairFrame.ts'
 
 export type GrapplerPosePair = Record<GrapplerId, GrapplerPose>
 
@@ -430,7 +430,7 @@ export function resolveTransitionSkeletonKeyframes(
     .filter((frame) => frame.progress > 0 && frame.progress < 1)
     .map((frame) => ({
       progress: frame.progress,
-      skeletons: resolveAnimationFrame({
+      skeletons: resolveGrapplerPairFrame({
         skeletons: frame.skeletons,
         progress: frame.progress,
         sourceSkeletons,
@@ -491,7 +491,7 @@ export function resolveTransitionPoses(
     rightFrame.baseProgress,
     localProgress,
   )
-  const skeletons = resolveAnimationFrame({
+  const skeletons = resolveGrapplerPairFrame({
     skeletons: {
       playerA: playerASkeleton,
       playerB: playerBSkeleton,
