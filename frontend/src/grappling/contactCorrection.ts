@@ -50,6 +50,8 @@ export interface ContactCorrectionOptions {
   readonly maxCorrection?: number
   /** Bound, in degrees, for a single relational joint-rotation adjustment. */
   readonly maxAngleCorrection?: number
+  /** Keep caller ordering; used by the centralized priority pipeline. */
+  readonly preserveTargetOrder?: boolean
 }
 
 interface RelationalAnchorRule {
@@ -280,12 +282,13 @@ export function correctSkeletonContacts(
       Number.isFinite(strength) &&
       strength > 0,
     )
-    .sort((left, right) =>
-      typePriority[right.contact.type] * clamp01(right.strength) -
-        typePriority[left.contact.type] * clamp01(left.strength) ||
-      left.contact.id.localeCompare(right.contact.id) ||
-      left.index - right.index,
-    )
+    .sort(options.preserveTargetOrder
+      ? (left, right) => left.index - right.index
+      : (left, right) =>
+          typePriority[right.contact.type] * clamp01(right.strength) -
+            typePriority[left.contact.type] * clamp01(left.strength) ||
+          left.contact.id.localeCompare(right.contact.id) ||
+          left.index - right.index)
     .slice(0, maxContacts)
 
   const correctionsBySource = new Map<GrapplerId, number>()
