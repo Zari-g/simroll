@@ -802,6 +802,49 @@ Complete
 14C Status:
 Complete
 
+## 14D — Two-Grappler Relational Solving
+
+- [x] Add `resolveGrapplerPairFrame()` as the production pair-level
+  orchestration boundary while retaining `resolveAnimationFrame()` as the
+  reusable Iteration 14C frame pipeline.
+- [x] Keep relational targets semantic: every compiled contact carries its
+  explicit source grappler/body landmark and target grappler/body landmark.
+  Contact geometry is resolved from the current working skeleton pair
+  immediately before each correction, so no world-space target or previous
+  rendered frame is cached.
+- [x] Use three bounded stages: one 14C choreography/grounding/ordinary-contact
+  pass, one primary relational pass, and one opponent-follow refresh at 35%
+  strength. The relational pass count is the exported constant
+  `PAIR_RELATIONAL_PASS_COUNT = 2`; there is no recursion, convergence test,
+  or data-dependent pass count.
+- [x] Reuse the 14C `critical` / `high` / `medium` / `low` priority ordering
+  and canonical semantic tie-break in both relational passes. That canonical
+  order establishes primary ownership when both grapplers have relationships;
+  the reduced pass repeats the same order instead of alternating ownership or
+  ping-ponging until convergence.
+- [x] Reuse 14B analytic arm/leg IK for hand and foot following and the bounded
+  13C single-joint correction when IK cannot safely solve. Relational targets
+  do not translate a grappler root; existing ordinary contact correction and
+  grounding retain their prior behavior.
+- [x] Route recipe keyframes and normal intermediate playback through the pair
+  resolver. Preserve exact authoritative source and destination skeletons by
+  returning the 14C endpoint bypass before relational passes.
+- [x] Support the existing landmark-safe `wrist_control`, `sleeve_grip`,
+  `collar_grip`, `ankle_control`, and `butterfly_hook` targets in either
+  ownership direction. Preserve/release/acquire strengths and Gi/No-Gi
+  filtering remain upstream and unchanged.
+- [x] Keep underhooks, overhooks, seatbelts, and closed-guard connections on
+  their existing ordinary-contact fallback; their torso/arm-region semantics
+  are not force-fit onto hand or leg IK.
+- [x] Cover moving current-frame wrist and thigh targets, reverse ownership,
+  endpoint fidelity, fixed pass count, ordering, determinism, immutability,
+  grounding, finite/constrained output, bone geometry, and unsupported-control
+  fallback. Existing lifecycle, No-Gi, IK-failure, and joint-limit suites run
+  through the same production dependencies.
+
+14D Status:
+Complete
+
 Iteration 14 Status:
 In Progress
 
@@ -810,8 +853,9 @@ and center-of-mass solving; new positions or transitions; broader relational
 types such as seatbelts, underhooks, and closed-guard body locks; and any
 recursive two-grappler solving. Grounding remains sequential root translation,
 so conflicting simultaneous anchors are not solved globally. Iteration 14D
-may coordinate constraints across both grapplers instead of treating each
-skeleton correction independently.
+now coordinates current-frame limb relationships across both grapplers;
+Iteration 14E can use this infrastructure to improve a focused set of showcase
+transitions without adding another low-level solver layer.
 
 ---
 
