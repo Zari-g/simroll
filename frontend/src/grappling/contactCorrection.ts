@@ -4,6 +4,11 @@ import { normalizeAngleDegrees } from './jointConstraints.ts'
 import { resolveSkeletonPose, skeletonToGrapplerPose } from './kinematics.ts'
 import { constrainSkeletonPose } from './poseValidation.ts'
 import type { GrapplerChildJointName, GrapplerSkeletonPose } from './skeleton.ts'
+import {
+  solveTwoBoneIK,
+  twoBoneIKChains,
+  type TwoBoneIKChain,
+} from './twoBoneIK.ts'
 import type {
   GrapplerBodyPartName,
   GrapplerId,
@@ -16,15 +21,10 @@ export type GrapplerSkeletonPair = Readonly<
 >
 
 /**
- * A small named set of two-anchor relational adjustments. Each mode rotates
- * exactly one proximal joint of the contact's SOURCE grappler so its
- * declared anchor (a hand, a knee, a foot) swings toward the contact's
- * target anchor, instead of translating the whole body toward it. This is
- * deliberately not a chain/IK solver: only the single joint that
- * geometrically controls the named anchor is touched, the rotation delta is
- * bounded exactly like the existing root-space correction, and the result
- * is always re-clamped inside the existing joint constraint profile via
- * `constrainSkeletonPose`.
+ * A small named set of two-anchor relational adjustments. Compatible hand
+ * and foot modes first use deterministic two-bone IK; all modes retain the
+ * bounded single-joint correction as a safe fallback. Neither path translates
+ * the source grappler's root, and both reuse the shared joint constraints.
  */
 export type RelationalAnchorMode =
   | 'hand-to-grip-target'
@@ -36,8 +36,8 @@ export interface ContactCorrectionTarget {
   /** Phase-level influence in the inclusive 0..1 range. */
   readonly strength: number
   /**
-   * Opts this contact into a bounded single-joint relational adjustment
-   * instead of the default whole-root translation. Only applies when the
+   * Opts this contact into a bounded limb-relative adjustment instead of the
+   * default whole-root translation. Only applies when the
    * contact's source body part matches the mode's declared anchor pair;
    * otherwise the target is skipped rather than silently falling back to
    * root translation.
@@ -57,6 +57,8 @@ interface RelationalAnchorRule {
   readonly right: GrapplerBodyPartName
   readonly leftJoint: GrapplerChildJointName
   readonly rightJoint: GrapplerChildJointName
+  readonly leftChain?: TwoBoneIKChain
+  readonly rightChain?: TwoBoneIKChain
 }
 
 const relationalAnchorRules: Readonly<
@@ -68,6 +70,8 @@ const relationalAnchorRules: Readonly<
     right: 'rightHand',
     leftJoint: 'leftElbow',
     rightJoint: 'rightElbow',
+    leftChain: twoBoneIKChains.leftArm,
+    rightChain: twoBoneIKChains.rightArm,
   },
   // The hip's own rotation swings the thigh (and its knee endpoint) around it.
   'knee-to-hip-line': {
@@ -82,7 +86,79 @@ const relationalAnchorRules: Readonly<
     right: 'rightFoot',
     leftJoint: 'leftKnee',
     rightJoint: 'rightKnee',
+    leftChain: twoBoneIKChains.leftLeg,
+    rightChain: twoBoneIKChains.rightLeg,
   },
+}
+
+function resolveRelationalChain(
+  mode: RelationalAnchorMode,
+  bodyPart: GrapplerBodyPartName,
+): TwoBoneIKChain | null {
+  const rule = relationalAnchorRules[mode]
+  if (bodyPart === rule.left) return rule.leftChain ?? null
+  if (bodyPart === rule.right) return rule.rightChain ?? null
+  return null
+}
+
+function boundedRotationToward(
+  current: number,
+  desired: number,
+  influence: number,
+  maxAngleCorrection: number,
+): number {
+  const error = normalizeAngleDegrees(desired - current)
+  if (!Number.isFinite(error)) return current
+  const delta = Math.sign(error) * Math.min(maxAngleCorrection, Math.abs(error) * influence)
+  return current + delta
+}
+
+function applyTwoBoneRelationalCorrection(
+  skeleton: GrapplerSkeletonPose,
+  chain: TwoBoneIKChain,
+  target: PointPose,
+  influence: number,
+  maxAngleCorrection: number,
+): GrapplerSkeletonPose | null {
+  // Stay on the limb's authored side of the analytic triangle. This keeps
+  // bent poses continuous while the chain-level default remains available
+  // to callers starting from a straight limb.
+  const currentMidRotation = normalizeAngleDegrees(
+    skeleton.joints[chain.mid].rotation,
+  )
+  const bendDirection = currentMidRotation === 0
+    ? chain.bendDirection
+    : currentMidRotation > 0 ? 'negative' : 'positive'
+  const solved = solveTwoBoneIK({ skeleton, chain, target, bendDirection })
+  if (!solved.ok) return null
+
+  return constrainSkeletonPose({
+    root: {
+      position: { ...skeleton.root.position },
+      rotation: skeleton.root.rotation,
+    },
+    joints: {
+      ...skeleton.joints,
+      [chain.root]: {
+        ...skeleton.joints[chain.root],
+        rotation: boundedRotationToward(
+          skeleton.joints[chain.root].rotation,
+          solved.skeleton.joints[chain.root].rotation,
+          influence,
+          maxAngleCorrection,
+        ),
+      },
+      [chain.mid]: {
+        ...skeleton.joints[chain.mid],
+        rotation: boundedRotationToward(
+          skeleton.joints[chain.mid].rotation,
+          solved.skeleton.joints[chain.mid].rotation,
+          influence,
+          maxAngleCorrection,
+        ),
+      },
+    },
+  })
 }
 
 function resolveRelationalJoint(
@@ -181,10 +257,9 @@ function clamp01(value: number) {
  * Apply a bounded, deterministic correction to the strongest declared
  * contacts. By default this translates a grappler's whole root toward the
  * contact target and never touches local joint transforms. A target that
- * opts into a `relationalAnchor` instead rotates the single named joint
- * that controls its declared anchor, leaving the root untouched. Either
- * path is deliberately not a general limb/IK solver: both stay bounded,
- * deterministic, and inside the existing joint constraint profile.
+ * opts into a compatible `relationalAnchor` instead uses two-bone IK, with
+ * the Iteration 13C single-joint adjustment retained when IK cannot solve.
+ * Both paths stay bounded, deterministic, root-stable, and constrained.
  */
 export function correctSkeletonContacts(
   skeletons: GrapplerSkeletonPair,
@@ -241,14 +316,18 @@ export function correctSkeletonContacts(
         contact.source.bodyPart,
       )
       if (!relationalJoint) continue
-      const adjusted = applyRelationalCorrection(
-        result[source],
-        relationalJoint,
-        geometry.source,
-        geometry.target,
-        influence,
-        maxAngleCorrection,
-      )
+      const chain = resolveRelationalChain(relationalAnchor, contact.source.bodyPart)
+      const adjusted = chain
+        ? applyTwoBoneRelationalCorrection(
+            result[source], chain, geometry.target, influence, maxAngleCorrection,
+          ) ?? applyRelationalCorrection(
+            result[source], relationalJoint, geometry.source, geometry.target,
+            influence, maxAngleCorrection,
+          )
+        : applyRelationalCorrection(
+            result[source], relationalJoint, geometry.source, geometry.target,
+            influence, maxAngleCorrection,
+          )
       if (!adjusted) continue
       result[source] = adjusted
       correctionsBySource.set(source, previousCorrections + 1)

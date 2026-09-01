@@ -730,9 +730,48 @@ per pose all remain deferred to later work.
 14A Status:
 Complete
 
-Deferred to 14B: reusable two-bone arm/leg IK, including safe relational
-support for forearm/upper-arm wrap controls and shin-based closed-guard
-connections. Iteration 14 as a whole is not complete.
+Deferred to 14B: reusable two-bone arm/leg IK for the already compatible hand
+and foot relational targets. Broader forearm/upper-arm wraps and shin-based
+closed-guard connections remain outside 14B. Iteration 14 as a whole is not
+complete.
+
+## 14B — Two-Bone IK Solver
+
+- [x] Add a reusable O(1) analytic solver for `leftArm`, `rightArm`,
+  `leftLeg`, and `rightLeg`, expressed entirely through the existing local
+  shoulder/elbow and hip/knee transforms.
+- [x] Preserve the authored root and segment offsets exactly. Reachable
+  targets solve to the requested end-joint point; targets outside the
+  triangle's maximum or minimum radius clamp to the closest geometric reach.
+- [x] Make both bend branches explicit and deterministic. Production
+  correction retains the limb's authored bend side, using each chain's fixed
+  semantic preference when the middle joint is straight, so elbows and knees
+  do not choose a branch randomly between frames.
+- [x] Return typed failures for invalid targets, malformed chains, structural
+  pose errors, zero-length segments, and coincident root/target geometry
+  instead of throwing from the animation path.
+- [x] Reuse `constrainSkeletonPose()` after the analytic solve rather than
+  introducing a second joint-limit profile.
+- [x] Route `hand-to-grip-target` through arm IK and
+  `foot-to-inner-thigh` through leg IK. Keep the bounded Iteration 13C
+  single-joint adjustment as the fallback whenever IK cannot solve safely;
+  `knee-to-hip-line` remains on its existing single-hip correction.
+- [x] Preserve exact authoritative animation endpoints, upstream Gi/No-Gi
+  legality, and the existing control preserve/release/acquire lifecycle.
+- [x] Cover arm and leg placement, exact and clamped reach, bend determinism,
+  constraints, degenerate inputs, immutability, production wrist and
+  butterfly targets, and the 13C fallback.
+
+14B Status:
+Complete
+
+Iteration 14 Status:
+In Progress
+
+Explicitly deferred: full-body, torso, spine, iterative, physics, collision,
+and center-of-mass solving; new positions or transitions; broader relational
+types such as seatbelts, underhooks, and closed-guard body locks; and any
+centralized 14C solve-pipeline work.
 
 ---
 
