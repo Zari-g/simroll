@@ -6,6 +6,13 @@
 - Explicit: 1
 - Family: 27
 - Fallback: 37
+- Constraint-enhanced: 3
+
+## Constraint-enhanced transitions
+
+- `back_control_top_opponent_turn_in_to_half_guard_bottom` (back_control_top â†’ half_guard_bottom) â€” `escape.hip`
+- `half_guard_bottom_old_school_sweep_to_side_control_top` (half_guard_bottom â†’ side_control_top) â€” `sweep.rotation`
+- `open_guard_bottom_butterfly_sweep_to_side_control_top` (open_guard_bottom â†’ side_control_top)
 
 ## Explicit transitions
 

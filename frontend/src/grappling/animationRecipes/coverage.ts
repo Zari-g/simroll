@@ -22,6 +22,7 @@ export interface AnimationCoverageEntry extends AnimationCoverageTransition {
   readonly coverage: AnimationCoverage
   readonly familyId?: string
   readonly durationMs: number
+  readonly constraintEnhanced: boolean
 }
 
 export interface AnimationCoverageReport {
@@ -29,6 +30,7 @@ export interface AnimationCoverageReport {
   readonly explicit: number
   readonly family: number
   readonly fallback: number
+  readonly constraintEnhanced: number
   readonly transitions: readonly AnimationCoverageEntry[]
 }
 
@@ -153,6 +155,7 @@ export function createAnimationCoverageReport(
       coverage: resolved.source,
       ...(resolved.recipe?.family ? { familyId: resolved.recipe.family } : {}),
       durationMs: resolved.durationMs,
+      constraintEnhanced: Boolean(resolved.recipe?.constraintEnhancements),
     }
   })
 
@@ -163,6 +166,7 @@ export function createAnimationCoverageReport(
     explicit: count('explicit'),
     family: count('family'),
     fallback: count('fallback'),
+    constraintEnhanced: entries.filter((entry) => entry.constraintEnhanced).length,
     transitions: entries,
   }
   if (report.explicit + report.family + report.fallback !== report.total) {

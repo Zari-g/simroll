@@ -9,11 +9,16 @@ import type {
   GrapplerSegmentName,
 } from './types'
 import type {
+  AnimationPhase,
   AnimationPlayerChoreography,
   AnimationRecipe,
   AnimationControlRequirement,
 } from './animationRecipes/types.ts'
-import { grapplerPoseToSkeleton, skeletonToGrapplerPose } from './kinematics.ts'
+import {
+  grapplerPoseToSkeleton,
+  resolveSkeletonPose,
+  skeletonToGrapplerPose,
+} from './kinematics.ts'
 import type { ContactCorrectionTarget } from './contactCorrection.ts'
 import type { MotionTimingGroup, TransitionContactContext } from './types.ts'
 import {
@@ -294,6 +299,13 @@ function controlInfluence(
   return influence * (requirement?.strength ?? control.strength ?? 1)
 }
 
+function recipeControlRequirements(recipe: AnimationRecipe) {
+  return [
+    ...(recipe.requirements?.controls ?? []),
+    ...(recipe.constraintEnhancements?.controls ?? []),
+  ]
+}
+
 export function resolveTransitionContactTargets(
   recipe: AnimationRecipe,
   context: TransitionContactContext,
@@ -311,7 +323,8 @@ export function resolveTransitionContactTargets(
   for (const control of [...sourceControls, ...destinationControls]) {
     controls.set(controlKey(control), control)
   }
-  for (const requirement of recipe.requirements?.controls ?? []) {
+  const controlRequirements = recipeControlRequirements(recipe)
+  for (const requirement of controlRequirements) {
     const control: ActiveVisualControl = {
       controlId: requirement.controlId,
       controller: requirement.controller ?? 'playerA',
@@ -321,7 +334,7 @@ export function resolveTransitionContactTargets(
     if (!controls.has(controlKey(control))) controls.set(controlKey(control), control)
   }
   for (const control of controls.values()) {
-    const requirement = recipe.requirements?.controls?.find((entry) =>
+    const requirement = controlRequirements.find((entry) =>
       requirementMatches(entry, control),
     )
     const key = controlKey(control)
@@ -343,6 +356,53 @@ export function resolveTransitionContactTargets(
   return targets
 }
 
+function mergeChoreography(
+  base: AnimationPhase['playerA'],
+  enhancement: AnimationPhase['playerA'],
+) {
+  if (!enhancement) return base
+  if (!base) return enhancement
+  return {
+    primitives: [...(base.primitives ?? []), ...(enhancement.primitives ?? [])],
+    override: enhancement.override ?? base.override,
+  }
+}
+
+function enhancedPhases(recipe: AnimationRecipe): readonly AnimationPhase[] {
+  const overlays = new Map(
+    (recipe.constraintEnhancements?.phases ?? []).map((phase) => [phase.progress, phase]),
+  )
+  return recipe.phases.map((phase) => {
+    const enhancement = overlays.get(phase.progress)
+    if (!enhancement) return phase
+    return {
+      ...phase,
+      playerA: mergeChoreography(phase.playerA, enhancement.playerA),
+      playerB: mergeChoreography(phase.playerB, enhancement.playerB),
+    }
+  })
+}
+
+function enhancementGrounding(
+  recipe: AnimationRecipe,
+  source: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>,
+  destination: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>,
+  progress: number,
+) {
+  return Object.fromEntries(
+    Object.entries(recipe.constraintEnhancements?.groundedJoints ?? {}).map(
+      ([player, joint]) => {
+        const grappler = player as GrapplerId
+        const sourceJoint = resolveSkeletonPose(source[grappler]).joints[joint]
+        const destinationJoint = resolveSkeletonPose(destination[grappler]).joints[joint]
+        return [grappler, {
+          [joint]: { baselineY: lerpNumber(sourceJoint.y, destinationJoint.y, progress) },
+        }]
+      },
+    ),
+  )
+}
+
 function compileTransitionFrames(
   recipe: AnimationRecipe,
   start: GrapplerPosePair,
@@ -359,7 +419,7 @@ function compileTransitionFrames(
 
   return [
     { progress: 0, baseProgress: 0, skeletons: startSkeletons },
-    ...recipe.phases
+    ...enhancedPhases(recipe)
       .filter((phase) => phase.progress > 0 && phase.progress < 1)
       .map((phase) => {
         const baseProgress = phase.baseProgress ?? phase.progress
@@ -435,6 +495,12 @@ export function resolveTransitionSkeletonKeyframes(
         progress: frame.progress,
         sourceSkeletons,
         destinationSkeletons,
+        grounding: enhancementGrounding(
+          recipe,
+          sourceSkeletons,
+          destinationSkeletons,
+          frame.baseProgress,
+        ),
         contactTargets: resolveTransitionContactTargets(
           recipe,
           contactContext,
@@ -499,6 +565,12 @@ export function resolveTransitionPoses(
     progress,
     sourceSkeletons: frames[0].skeletons,
     destinationSkeletons: frames[frames.length - 1].skeletons,
+    grounding: enhancementGrounding(
+      recipe,
+      frames[0].skeletons,
+      frames[frames.length - 1].skeletons,
+      baseProgress,
+    ),
     contactTargets: resolveTransitionContactTargets(
       recipe,
       contactContext,

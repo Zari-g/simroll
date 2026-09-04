@@ -8,6 +8,7 @@ import type {
   MotionTimingGroup,
   SkeletonPoseOverride,
 } from '../types.ts'
+import type { GrapplerJointName } from '../skeleton.ts'
 import type { ControlSide } from '../controlTargets.ts'
 
 export interface AnimationPlayerChoreography {
@@ -23,6 +24,17 @@ export interface AnimationPhase {
   readonly baseProgress?: number
   readonly playerA?: AnimationPlayerChoreography
   readonly playerB?: AnimationPlayerChoreography
+}
+
+/**
+ * Phase overlays and supported semantic relationships for recipes that
+ * intentionally exercise the centralized constraint pipeline.
+ */
+export interface AnimationConstraintEnhancements {
+  readonly phases?: readonly AnimationPhase[]
+  readonly controls?: readonly AnimationControlRequirement[]
+  /** Anchors follow the source-to-destination baseline while primitives act. */
+  readonly groundedJoints?: Readonly<Partial<Record<GrapplerId, GrapplerJointName>>>
 }
 
 /** Reserved declarative metadata for later contact-aware recipe compilation. */
@@ -55,6 +67,7 @@ export interface AnimationRecipe {
     Partial<Record<GrapplerId, Readonly<Partial<Record<MotionTimingGroup, number>>>>>
   >
   readonly phases: readonly AnimationPhase[]
+  readonly constraintEnhancements?: AnimationConstraintEnhancements
   readonly requirements?: {
     readonly contacts?: readonly AnimationContactRequirement[]
     readonly controls?: readonly AnimationControlRequirement[]
@@ -106,6 +119,7 @@ export interface FamilyRecipeOverrides {
   readonly durationMs?: number
   readonly timing?: AnimationRecipe['timing']
   readonly requirements?: AnimationRecipe['requirements']
+  readonly constraintEnhancements?: AnimationConstraintEnhancements
 }
 
 export interface FamilyBackedAnimationRecipe {
