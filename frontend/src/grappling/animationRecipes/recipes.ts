@@ -36,6 +36,28 @@ export const authoredAnimationRecipes = [
         { type: 'dropWeight', amount: 8, lean: 7 },
       ] }, playerB: { primitives: [{ type: 'weightShift', forward: -8, lateral: -8 }] } },
     ],
+    constraintEnhancements: {
+      groundedJoints: { playerA: 'pelvis' },
+      controls: [
+        {
+          controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB',
+          side: 'right', strength: 0.95, activeFrom: 0.08, activeUntil: 0.8,
+        },
+      ],
+      phases: [
+        { progress: 0.48, playerA: { primitives: [
+          { type: 'pull', direction: 'right', distance: 7, side: 'left' },
+        ] }, playerB: { primitives: [
+          { type: 'bodyRotation', amount: -12, torsoFollow: 0.7 },
+        ] } },
+        { progress: 0.75, playerA: { primitives: [
+          { type: 'bodyRotation', amount: 12, torsoFollow: 0.65 },
+        ] }, playerB: { primitives: [
+          { type: 'bodyRotation', amount: -10, torsoFollow: 0.65 },
+          { type: 'follow', direction: 'left', distance: 7 },
+        ] } },
+      ],
+    },
   },
   {
     transitionId: 'mount_bottom_elbow_knee_escape_to_half_guard',
@@ -137,6 +159,32 @@ export const authoredAnimationRecipes = [
     transitionId: 'half_guard_bottom_old_school_sweep_to_side_control_top',
     familyId: 'sweep.rotation',
     params: { side: 'right', rotation: -45, hipDrive: 24, followDirection: 'forward' },
+    overrides: {
+      constraintEnhancements: {
+        groundedJoints: { playerB: 'leftAnkle' },
+        controls: [
+          {
+            controlId: 'ankle_control', controller: 'playerA', opponent: 'playerB',
+            side: 'right', strength: 0.84, activeFrom: 0, activeUntil: 0.7,
+          },
+        ],
+        phases: [
+          { progress: 0.24, playerA: { primitives: [
+            { type: 'pull', direction: 'backward', distance: 7, side: 'right' },
+          ] }, playerB: { primitives: [
+            { type: 'offBalance', direction: 'forward', amount: 5, turn: 8 },
+          ] } },
+          { progress: 0.52, playerA: { primitives: [
+            { type: 'bodyRotation', amount: -10, torsoFollow: 0.7 },
+          ] }, playerB: { primitives: [
+            { type: 'bodyRotation', amount: 12, torsoFollow: 0.7 },
+          ] } },
+          { progress: 0.76, playerB: { primitives: [
+            { type: 'follow', direction: 'backward', distance: 6 },
+          ] } },
+        ],
+      },
+    },
   },
   {
     transitionId: 'half_guard_bottom_underhook_knee_tap_sweep',
@@ -173,6 +221,35 @@ export const authoredAnimationRecipes = [
     transitionId: 'back_control_top_opponent_turn_in_to_half_guard_bottom',
     familyId: 'escape.hip',
     params: { side: 'left', bridgeLift: 12, escapeDistance: 18, followDirection: 'backward' },
+    overrides: {
+      constraintEnhancements: {
+        groundedJoints: { playerA: 'pelvis', playerB: 'pelvis' },
+        controls: [
+          {
+            controlId: 'seatbelt', controller: 'playerA', opponent: 'playerB',
+            side: 'left', strength: 0.72, activeFrom: 0, activeUntil: 0.55,
+          },
+        ],
+        phases: [
+          { progress: 0.2, playerA: { primitives: [
+            { type: 'follow', direction: 'forward', distance: 5 },
+          ] }, playerB: { primitives: [
+            { type: 'bodyRotation', amount: 10, torsoFollow: 0.75 },
+          ] } },
+          { progress: 0.45, playerA: { primitives: [
+            { type: 'bodyRotation', amount: -12, torsoFollow: 0.7 },
+            { type: 'follow', direction: 'left', distance: 6 },
+          ] }, playerB: { primitives: [
+            { type: 'bodyRotation', amount: 16, torsoFollow: 0.75 },
+          ] } },
+          { progress: 0.7, playerA: { primitives: [
+            { type: 'follow', direction: 'backward', distance: 5 },
+          ] }, playerB: { primitives: [
+            { type: 'bodyRotation', amount: 8, torsoFollow: 0.65 },
+          ] } },
+        ],
+      },
+    },
   },
   {
     transitionId: 'open_guard_top_force_half_guard',

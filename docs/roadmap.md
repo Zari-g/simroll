@@ -845,6 +845,46 @@ Complete
 14D Status:
 Complete
 
+## Iteration 14E â€” Constraint-Enhanced Showcase Techniques
+
+- [x] Add the orthogonal `constraintEnhancements` recipe layer for semantic
+  control relationships, reusable primitive overlays at existing phases, and
+  source-to-destination grounding anchors. No second executor, solver, or
+  per-frame pose system was introduced.
+- [x] Enhance exactly three canonical transitions:
+  - `open_guard_bottom_butterfly_sweep_to_side_control_top` retains explicit
+    `butterfly-sweep-v1`; a lifecycle-gated right `butterfly_hook`, leg IK,
+    grounding, paired rotation, pull, and follow motion keep the sweep coupled.
+  - `half_guard_bottom_old_school_sweep_to_side_control_top` remains
+    `sweep.rotation`; right `ankle_control` plus paired off-balance, rotation,
+    pull, follow, and grounding motion carries both grapplers through reversal.
+    Underhook behavior remains approximate rather than gaining a new solver.
+  - `back_control_top_opponent_turn_in_to_half_guard_bottom` remains
+    `escape.hip`; a releasing seatbelt contact and paired follow/rotation plus
+    grounding maintain approximate close-body movement toward Half Guard.
+    Seatbelt stays outside limb IK.
+- [x] Keep exact authoritative progress 0/1 endpoints and route every enhanced
+  frame through `resolveGrapplerPairFrame()` and the 14C/14D constraint order.
+- [x] Report the enhancement metric independently: 65 total, 1 explicit, 27
+  family, 37 fallback, and exactly 3 constraint-enhanced transitions.
+- [x] Add intermediate progress and phase-boundary tests for target error,
+  pair participation, finite/constrained output, bone lengths, grounding,
+  determinism, immutability, Gi/No-Gi compatibility, and endpoint fidelity.
+  The butterfly hook is measured at 0.2/0.4/0.6/0.8 with a 150px rig-scale
+  ceiling and must improve on the same choreography with the hook disabled.
+- [x] Preserve one mode-compatible recipe per transition. No Gi-only garment
+  control is required by the enhancement layer; existing upstream filtering
+  continues to remove incidental garment grips in No-Gi.
+
+14E Status:
+Complete
+
+Known visual limitations: torso/spine IK, collision, physics, center of mass,
+and global multi-contact solving remain deferred. Underhook and seatbelt stay
+approximate; Old-School uses supported ankle control and family motion rather
+than a new trapped-leg solver. The in-app browser was unavailable during the
+14E verification session, so visual realism was not manually certified.
+
 Iteration 14 Status:
 In Progress
 
@@ -854,8 +894,8 @@ types such as seatbelts, underhooks, and closed-guard body locks; and any
 recursive two-grappler solving. Grounding remains sequential root translation,
 so conflicting simultaneous anchors are not solved globally. Iteration 14D
 now coordinates current-frame limb relationships across both grapplers;
-Iteration 14E can use this infrastructure to improve a focused set of showcase
-transitions without adding another low-level solver layer.
+Iteration 14E uses this infrastructure for three focused showcase transitions
+without adding another low-level solver layer.
 
 ---
 

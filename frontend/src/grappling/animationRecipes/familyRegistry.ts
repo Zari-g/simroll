@@ -156,6 +156,7 @@ export function compileFamilyRecipe(authoring: FamilyBackedAnimationRecipe): Ani
     durationMs: authoring.overrides?.durationMs ?? family.durationMs,
     timing: authoring.overrides?.timing ?? family.timing,
     phases: family.phases,
+    constraintEnhancements: authoring.overrides?.constraintEnhancements,
     requirements: authoring.overrides?.requirements ?? (family.controls ? { controls: family.controls } : undefined),
   }, params) as AnimationRecipe
   return validateAnimationRecipe(recipe)

@@ -30,6 +30,13 @@ const lines = [
   `- Explicit: ${report.explicit}`,
   `- Family: ${report.family}`,
   `- Fallback: ${report.fallback}`,
+  `- Constraint-enhanced: ${report.constraintEnhanced}`,
+  '',
+  '## Constraint-enhanced transitions',
+  '',
+  ...report.transitions
+    .filter(({ constraintEnhanced }) => constraintEnhanced)
+    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} â†’ ${entry.destinationPositionId})${entry.familyId ? ` â€” \`${entry.familyId}\`` : ''}`),
   '',
   '## Explicit transitions',
   '',
@@ -62,8 +69,8 @@ if (process.argv.includes('--check')) {
   if (current !== content) {
     throw new Error('Animation coverage report is stale; run npm.cmd run animation:coverage')
   }
-  console.log(`Animation coverage is current: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback`)
+  console.log(`Animation coverage is current: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
 } else {
   writeFileSync(outputUrl, content)
-  console.log(`Wrote ${outputUrl.pathname}: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback`)
+  console.log(`Wrote ${outputUrl.pathname}: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
 }

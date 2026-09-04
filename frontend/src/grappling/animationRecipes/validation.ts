@@ -2,6 +2,7 @@ import type { MotionPrimitive } from '../motionPrimitives.ts'
 import type { SkeletonPoseOverride } from '../types.ts'
 import type { AnimationRecipe } from './types.ts'
 import { getControlTargetDefinition } from '../controlTargets.ts'
+import { grapplerJointNames } from '../skeleton.ts'
 
 function fail(recipe: AnimationRecipe, message: string): never {
   throw new Error(`Invalid animation recipe "${recipe.transitionId || '<empty>'}": ${message}`)
@@ -254,6 +255,38 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     }
   }
 
+  for (const [player, joint] of Object.entries(
+    recipe.constraintEnhancements?.groundedJoints ?? {},
+  )) {
+    if (!['playerA', 'playerB'].includes(player) || !grapplerJointNames.includes(joint)) {
+      fail(recipe, `constraintEnhancements.groundedJoints.${player} is invalid`)
+    }
+  }
+
+  let previousEnhancementProgress = 0
+  for (const [phaseIndex, phase] of (recipe.constraintEnhancements?.phases ?? []).entries()) {
+    const path = `constraintEnhancements.phases[${phaseIndex}]`
+    if (!Number.isFinite(phase.progress) || phase.progress <= previousEnhancementProgress) {
+      fail(recipe, `${path}.progress must be strictly ordered and unique`)
+    }
+    previousEnhancementProgress = phase.progress
+    if (!recipe.phases.some((basePhase) => basePhase.progress === phase.progress)) {
+      fail(recipe, `${path}.progress must overlay an existing recipe phase`)
+    }
+    if (phase.baseProgress !== undefined) {
+      fail(recipe, `${path}.baseProgress is inherited from the recipe phase`)
+    }
+    for (const player of ['playerA', 'playerB'] as const) {
+      const choreography = phase[player]
+      choreography?.primitives?.forEach((primitive, primitiveIndex) =>
+        validatePrimitive(recipe, primitive, `${path}.${player}.primitives[${primitiveIndex}]`),
+      )
+      if (choreography?.override) {
+        fail(recipe, `${path}.${player}.override is not allowed in constraint enhancements`)
+      }
+    }
+  }
+
   for (const [index, contact] of (recipe.requirements?.contacts ?? []).entries()) {
     if (contact.contactId.trim() === '') {
       fail(recipe, `requirements.contacts[${index}].contactId must be non-empty`)
@@ -274,36 +307,46 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     }
   }
 
-  for (const [index, control] of (recipe.requirements?.controls ?? []).entries()) {
+  const controlRequirements = [
+    ...(recipe.requirements?.controls ?? []).map((control, index) => ({
+      control,
+      path: `requirements.controls[${index}]`,
+    })),
+    ...(recipe.constraintEnhancements?.controls ?? []).map((control, index) => ({
+      control,
+      path: `constraintEnhancements.controls[${index}]`,
+    })),
+  ]
+  for (const { control, path } of controlRequirements) {
     if (control.controlId.trim() === '') {
-      fail(recipe, `requirements.controls[${index}].controlId must be non-empty`)
+      fail(recipe, `${path}.controlId must be non-empty`)
     }
     if (!getControlTargetDefinition(control.controlId)) {
-      fail(recipe, `requirements.controls[${index}].controlId is unknown`)
+      fail(recipe, `${path}.controlId is unknown`)
     }
     if (control.action !== undefined) {
-      requireEnum(recipe, control.action, ['preserve', 'release', 'acquire'], `requirements.controls[${index}].action`)
+      requireEnum(recipe, control.action, ['preserve', 'release', 'acquire'], `${path}.action`)
     }
     for (const [role, value] of [['controller', control.controller], ['opponent', control.opponent]] as const) {
       if (value !== undefined) {
-        requireEnum(recipe, value, ['playerA', 'playerB'], `requirements.controls[${index}].${role}`)
+        requireEnum(recipe, value, ['playerA', 'playerB'], `${path}.${role}`)
       }
     }
     if (control.controller !== undefined && control.controller === control.opponent) {
-      fail(recipe, `requirements.controls[${index}] controller and opponent must differ`)
+      fail(recipe, `${path} controller and opponent must differ`)
     }
     if (control.side !== undefined) {
-      requireSide(recipe, control.side, `requirements.controls[${index}].side`)
+      requireSide(recipe, control.side, `${path}.side`)
     }
-    requireFinite(recipe, control.strength, `requirements.controls[${index}].strength`)
+    requireFinite(recipe, control.strength, `${path}.strength`)
     if (control.strength !== undefined && (control.strength < 0 || control.strength > 1)) {
-      fail(recipe, `requirements.controls[${index}].strength must be within [0, 1]`)
+      fail(recipe, `${path}.strength must be within [0, 1]`)
     }
-    requireFinite(recipe, control.activeFrom, `requirements.controls[${index}].activeFrom`)
-    requireFinite(recipe, control.activeUntil, `requirements.controls[${index}].activeUntil`)
+    requireFinite(recipe, control.activeFrom, `${path}.activeFrom`)
+    requireFinite(recipe, control.activeUntil, `${path}.activeUntil`)
     for (const value of [control.activeFrom, control.activeUntil]) {
       if (value !== undefined && (value < 0 || value > 1)) {
-        fail(recipe, `requirements.controls[${index}] progress must be within [0, 1]`)
+        fail(recipe, `${path} progress must be within [0, 1]`)
       }
     }
     if (
@@ -311,15 +354,15 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
       control.activeUntil !== undefined &&
       control.activeFrom > control.activeUntil
     ) {
-      fail(recipe, `requirements.controls[${index}] range must be ordered`)
+      fail(recipe, `${path} range must be ordered`)
     }
   }
 
   const controlRequirementKeys = new Set<string>()
-  for (const [index, control] of (recipe.requirements?.controls ?? []).entries()) {
+  for (const [index, { control, path }] of controlRequirements.entries()) {
     const key = `${control.controlId}:${control.controller ?? 'playerA'}:${control.opponent ?? 'playerB'}:${control.side ?? 'left'}`
     if (controlRequirementKeys.has(key)) {
-      fail(recipe, `requirements.controls[${index}] duplicates an incompatible control change`)
+      fail(recipe, `${path} duplicates an incompatible control change at index ${index}`)
     }
     controlRequirementKeys.add(key)
   }
