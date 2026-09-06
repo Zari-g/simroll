@@ -1,7 +1,9 @@
 import type { GrapplingDisplayState } from '../grappling/displayState'
 import type { GrapplerId, GrapplerPose } from '../grappling/types'
 import { formatActiveControls } from '../utils/activeControls'
+import { activeVisualControls } from '../utils/activeControls'
 import { GrapplingPositionVisual } from './grappling/GrapplingPositionVisual'
+import { useState } from 'react'
 
 interface GrapplingStageProps {
   displayState: GrapplingDisplayState
@@ -28,6 +30,7 @@ export function GrapplingStage({
   resolvePositionName,
   resolveGripName,
 }: GrapplingStageProps) {
+  const [showDiagnostics, setShowDiagnostics] = useState(false)
   const positionName = resolvePositionName(displayState.positionId)
   const activeControlNames = formatActiveControls(
     displayState.activeControls,
@@ -66,6 +69,16 @@ export function GrapplingStage({
       </div>
 
       <div className="grappling-stage__mat">
+        {import.meta.env.DEV && (
+          <button
+            className="grappling-stage__diagnostics-toggle"
+            type="button"
+            aria-pressed={showDiagnostics}
+            onClick={() => setShowDiagnostics((shown) => !shown)}
+          >
+            {showDiagnostics ? 'Hide constraints' : 'Show constraints'}
+          </button>
+        )}
         <div className="grappling-stage__position">
           <p className="section-label">
             {isPlaybackActive
@@ -90,6 +103,8 @@ export function GrapplingStage({
           activeGripIds={displayState.activeGripIds}
           mode={displayState.mode}
           displayPoses={animatedPoses ?? undefined}
+          showDiagnostics={import.meta.env.DEV && showDiagnostics}
+          activeControls={activeVisualControls(displayState.activeControls)}
         />
 
         <dl className="grappling-stage__details">

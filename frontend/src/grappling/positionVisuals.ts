@@ -1,6 +1,15 @@
 import type { GrapplingPositionVisualDefinition } from './types'
 import { defaultGrapplerAnatomy } from './anatomy.ts'
 import { createArticulatedSkeletonPose } from './coreKinematics.ts'
+import {
+  createUnplacedBasePair,
+  resolveConstraintDrivenPosition,
+  type ConstraintDrivenPosition,
+} from './constraintDrivenPositions.ts'
+import {
+  compileControlsToContacts,
+  type ActiveVisualControl,
+} from './controlTargets.ts'
 import type { GroundedAnchorSet } from './groundedAnchors.ts'
 import { groundSkeletonPose } from './groundedAnchors.ts'
 import { skeletonToGrapplerPose } from './kinematics.ts'
@@ -460,19 +469,38 @@ const backControlTopSkeleton = articulatedSkeleton({
   },
 }, 'Back Control Top')
 
-export const articulatedPositionSkeletons = {
-  closed_guard_bottom: {
-    playerA: closedGuardBottomSkeleton,
-    playerB: closedGuardTopSkeleton,
-  },
-  mount_top: {
-    playerA: mountTopSkeleton,
-    playerB: mountBottomSkeleton,
-  },
-  side_control_top: {
-    playerA: sideControlTopSkeleton,
-    playerB: sideControlBottomSkeleton,
-  },
+function relationship(
+  control: ActiveVisualControl,
+  priority: 'critical' | 'high' | 'medium' | 'low',
+) {
+  const compiled = compileControlsToContacts([control])[0]
+  if (!compiled) throw new Error(`Unknown position relationship "${control.controlId}"`)
+  return { ...compiled, priority }
+}
+
+function sameSideFootToThighRelationship(side: 'left' | 'right') {
+  return {
+    contact: {
+      id: `position:back-control:${side}-foot-to-inner-thigh`,
+      type: 'hook' as const,
+      source: {
+        grapplerId: 'playerA' as const,
+        bodyPart: `${side}Foot` as const,
+        anchor: 'center' as const,
+      },
+      target: {
+        grapplerId: 'playerB' as const,
+        bodyPart: `${side}Thigh` as const,
+        anchor: 'midpoint' as const,
+      },
+    },
+    strength: 1,
+    relationalAnchor: 'foot-to-inner-thigh' as const,
+    priority: 'high' as const,
+  }
+}
+
+const authoredPositionPairs = {
   open_guard_bottom: {
     playerA: openGuardBottomSkeleton,
     playerB: openGuardTopSkeleton,
@@ -487,18 +515,100 @@ export const articulatedPositionSkeletons = {
   },
 } as const
 
+export const constraintDrivenPositionIds = [
+  'open_guard_bottom',
+  'half_guard_bottom',
+  'back_control_top',
+] as const
+
+export const constraintDrivenPositions: Readonly<
+  Record<(typeof constraintDrivenPositionIds)[number], ConstraintDrivenPosition>
+> = {
+  open_guard_bottom: {
+    basePose: createUnplacedBasePair(authoredPositionPairs.open_guard_bottom),
+    placement: {
+      playerA: { x: 500, y: 340 },
+      playerB: { x: 500, y: 220 },
+    },
+    grounding: { playerB: { leftKnee: { baselineY: 327 } } },
+    relationships: [
+      relationship({
+        controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB', side: 'left',
+      }, 'high'),
+      relationship({
+        controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB', side: 'right',
+      }, 'high'),
+    ],
+  },
+  half_guard_bottom: {
+    basePose: createUnplacedBasePair(authoredPositionPairs.half_guard_bottom),
+    placement: {
+      playerA: { x: 500, y: 330 },
+      playerB: { x: 500, y: 278 },
+    },
+    grounding: { playerB: { rightKnee: { baselineY: 359 } } },
+    relationships: [
+      relationship({
+        controlId: 'wrist_control', controller: 'playerB', opponent: 'playerA', side: 'left',
+      }, 'critical'),
+    ],
+  },
+  back_control_top: {
+    basePose: createUnplacedBasePair(authoredPositionPairs.back_control_top),
+    placement: {
+      playerA: { x: 560, y: 300 },
+      playerB: { x: 460, y: 330 },
+    },
+    relationships: [
+      sameSideFootToThighRelationship('left'),
+      sameSideFootToThighRelationship('right'),
+    ],
+  },
+}
+
+const resolvedConstraintDrivenPairs = Object.fromEntries(
+  constraintDrivenPositionIds.map((positionId) => [
+    positionId,
+    resolveConstraintDrivenPosition(constraintDrivenPositions[positionId]),
+  ]),
+) as Record<(typeof constraintDrivenPositionIds)[number], ReturnType<typeof resolveConstraintDrivenPosition>>
+
+export const articulatedPositionSkeletons = {
+  closed_guard_bottom: {
+    playerA: closedGuardBottomSkeleton,
+    playerB: closedGuardTopSkeleton,
+  },
+  mount_top: {
+    playerA: mountTopSkeleton,
+    playerB: mountBottomSkeleton,
+  },
+  side_control_top: {
+    playerA: sideControlTopSkeleton,
+    playerB: sideControlBottomSkeleton,
+  },
+  open_guard_bottom: {
+    ...resolvedConstraintDrivenPairs.open_guard_bottom,
+  },
+  half_guard_bottom: {
+    ...resolvedConstraintDrivenPairs.half_guard_bottom,
+  },
+  back_control_top: {
+    ...resolvedConstraintDrivenPairs.back_control_top,
+  },
+} as const
+
 const closedGuardBottomPose = skeletonToGrapplerPose(closedGuardBottomSkeleton)
 const closedGuardTopPose = skeletonToGrapplerPose(closedGuardTopSkeleton)
 const mountBottomPose = skeletonToGrapplerPose(mountBottomSkeleton)
 const mountTopPose = skeletonToGrapplerPose(mountTopSkeleton)
 const sideControlBottomPose = skeletonToGrapplerPose(sideControlBottomSkeleton)
 const sideControlTopPose = skeletonToGrapplerPose(sideControlTopSkeleton)
-const openGuardBottomPose = skeletonToGrapplerPose(openGuardBottomSkeleton)
-const openGuardTopPose = skeletonToGrapplerPose(openGuardTopSkeleton)
-const halfGuardBottomPose = skeletonToGrapplerPose(halfGuardBottomSkeleton)
-const halfGuardTopPose = skeletonToGrapplerPose(halfGuardTopSkeleton)
-const backControlBottomPose = skeletonToGrapplerPose(backControlBottomSkeleton)
-const backControlTopPose = skeletonToGrapplerPose(backControlTopSkeleton)
+const openGuardBottomPose = skeletonToGrapplerPose(articulatedPositionSkeletons.open_guard_bottom.playerA)
+const openGuardTopPose = skeletonToGrapplerPose(articulatedPositionSkeletons.open_guard_bottom.playerB)
+const halfGuardBottomPose = skeletonToGrapplerPose(articulatedPositionSkeletons.half_guard_bottom.playerA)
+const halfGuardTopPose = skeletonToGrapplerPose(articulatedPositionSkeletons.half_guard_bottom.playerB)
+const backControlBottomPose = skeletonToGrapplerPose(articulatedPositionSkeletons.back_control_top.playerB)
+const backControlTopPose = skeletonToGrapplerPose(articulatedPositionSkeletons.back_control_top.playerA)
 
 export const corePositionVisualIds = [
   'closed_guard_bottom',
@@ -869,4 +979,16 @@ const positionVisuals: Readonly<
 
 export function getPositionVisual(positionId: string) {
   return positionVisuals[positionId] ?? null
+}
+
+export function getConstraintDrivenPosition(positionId: string) {
+  return positionId in constraintDrivenPositions
+    ? constraintDrivenPositions[positionId as keyof typeof constraintDrivenPositions]
+    : null
+}
+
+export function getPositionSkeletons(positionId: string) {
+  return positionId in articulatedPositionSkeletons
+    ? articulatedPositionSkeletons[positionId as keyof typeof articulatedPositionSkeletons]
+    : null
 }

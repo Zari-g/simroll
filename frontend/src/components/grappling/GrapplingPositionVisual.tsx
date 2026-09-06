@@ -2,7 +2,14 @@ import {
   resolveGrapplerAnatomy,
   type GrapplerAnatomyOverrides,
 } from '../../grappling/anatomy'
-import { getPositionVisual } from '../../grappling/positionVisuals'
+import {
+  getConstraintDrivenPosition,
+  getPositionSkeletons,
+  getPositionVisual,
+} from '../../grappling/positionVisuals'
+import { createConstraintDiagnostics } from '../../grappling/constraintDiagnostics'
+import { compileControlsToContacts, type ActiveVisualControl } from '../../grappling/controlTargets'
+import { grapplerPoseToSkeleton } from '../../grappling/kinematics'
 import { useMemo } from 'react'
 
 import {
@@ -20,6 +27,7 @@ import type {
 } from '../../grappling/types'
 import { GrapplerBodyPart } from './GrapplerRig'
 import { GrapplingContacts } from './GrapplingContacts'
+import { ConstraintDiagnosticsOverlay } from './ConstraintDiagnosticsOverlay'
 
 interface GrapplingPositionVisualProps {
   positionId: string
@@ -28,6 +36,8 @@ interface GrapplingPositionVisualProps {
   mode: GrapplerApparelMode
   displayPoses?: Record<GrapplerId, GrapplerPose>
   anatomies?: GrapplerAnatomyOverrides
+  showDiagnostics?: boolean
+  activeControls?: readonly ActiveVisualControl[]
 }
 
 const playerNames: Record<GrapplerId, string> = {
@@ -42,6 +52,8 @@ export function GrapplingPositionVisual({
   mode,
   displayPoses,
   anatomies,
+  showDiagnostics = false,
+  activeControls = [],
 }: GrapplingPositionVisualProps) {
   const visual = getPositionVisual(positionId)
   const resolvedVisual = useMemo(
@@ -83,6 +95,30 @@ export function GrapplingPositionVisual({
         : [],
     [resolvedVisual, visual],
   )
+  const diagnostics = useMemo(() => {
+    if (!showDiagnostics || !resolvedVisual) return null
+    const staticDefinition = getConstraintDrivenPosition(positionId)
+    const staticSkeletons = getPositionSkeletons(positionId)
+    const poses = displayPoses ?? resolvedVisual.poses
+    const skeletons = displayPoses || !staticSkeletons
+      ? {
+          playerA: grapplerPoseToSkeleton(poses.playerA),
+          playerB: grapplerPoseToSkeleton(poses.playerB),
+        }
+      : staticSkeletons
+    const relationships = [
+      ...(staticDefinition?.relationships ?? []),
+      ...compileControlsToContacts(activeControls),
+    ]
+    const uniqueRelationships = [
+      ...new Map(relationships.map((target) => [target.contact.id, target])).values(),
+    ]
+    return createConstraintDiagnostics(
+      skeletons,
+      uniqueRelationships,
+      staticDefinition?.grounding,
+    )
+  }, [activeControls, displayPoses, positionId, resolvedVisual, showDiagnostics])
 
   if (!visual || !resolvedVisual) {
     return (
@@ -124,6 +160,7 @@ export function GrapplingPositionVisual({
           poses={poses}
           anatomies={resolvedAnatomies}
         />
+        {diagnostics && <ConstraintDiagnosticsOverlay diagnostics={diagnostics} />}
       </svg>
 
       <div className="grappling-position-visual__legend" aria-label="Grappler legend">

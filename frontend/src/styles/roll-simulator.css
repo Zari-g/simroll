@@ -272,6 +272,22 @@
   background-size: auto, 3rem 3rem, 3rem 3rem, auto, auto;
 }
 
+.grappling-stage__diagnostics-toggle {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-3);
+  right: var(--space-3);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.65rem;
+  color: var(--color-text-accent);
+  background: rgba(8, 11, 18, 0.82);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .grappling-stage__position {
   position: relative;
   z-index: 1;
