@@ -383,7 +383,8 @@ function enhancedPhases(recipe: AnimationRecipe): readonly AnimationPhase[] {
   })
 }
 
-function enhancementGrounding(
+/** Production grounding targets for a resolved transition sample. */
+export function resolveTransitionGrounding(
   recipe: AnimationRecipe,
   source: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>,
   destination: Readonly<Record<GrapplerId, GrapplerSkeletonPose>>,
@@ -495,7 +496,7 @@ export function resolveTransitionSkeletonKeyframes(
         progress: frame.progress,
         sourceSkeletons,
         destinationSkeletons,
-        grounding: enhancementGrounding(
+        grounding: resolveTransitionGrounding(
           recipe,
           sourceSkeletons,
           destinationSkeletons,
@@ -508,6 +509,90 @@ export function resolveTransitionSkeletonKeyframes(
         ),
       }),
     }))
+}
+
+/**
+ * Exposes the production lifecycle and grounding inputs for read-only
+ * validation. Local base progress is derived from the same compiled phase
+ * frames as playback, so validation does not invent separate timing rules.
+ */
+export function resolveTransitionConstraintInputs(
+  recipe: AnimationRecipe,
+  start: GrapplerPosePair,
+  end: GrapplerPosePair,
+  progress: number,
+  contactContext: TransitionContactContext = emptyContactContext,
+) {
+  const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
+  let baseProgress = progress <= 0 ? 0 : progress >= 1 ? 1 : progress
+  if (progress > 0 && progress < 1) {
+    const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
+    const leftFrame = frames[rightIndex - 1]
+    const rightFrame = frames[rightIndex]
+    const localProgress = (progress - leftFrame.progress) /
+      (rightFrame.progress - leftFrame.progress)
+    baseProgress = lerpNumber(
+      leftFrame.baseProgress,
+      rightFrame.baseProgress,
+      localProgress,
+    )
+  }
+  return {
+    baseProgress,
+    grounding: resolveTransitionGrounding(
+      recipe,
+      frames[0].skeletons,
+      frames[frames.length - 1].skeletons,
+      baseProgress,
+    ),
+    contactTargets: resolveTransitionContactTargets(
+      recipe,
+      contactContext,
+      baseProgress,
+    ),
+  }
+}
+
+/** Final constrained skeleton geometry for an authored intermediate frame. */
+export function resolveAuthoredTransitionSkeletons(
+  recipe: AnimationRecipe,
+  start: GrapplerPosePair,
+  end: GrapplerPosePair,
+  progress: number,
+  contactContext: TransitionContactContext = emptyContactContext,
+) {
+  const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
+  if (progress <= 0) return frames[0].skeletons
+  if (progress >= 1) return frames[frames.length - 1].skeletons
+  const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
+  const leftFrame = frames[rightIndex - 1]
+  const rightFrame = frames[rightIndex]
+  const localProgress = (progress - leftFrame.progress) /
+    (rightFrame.progress - leftFrame.progress)
+  const constraintInputs = resolveTransitionConstraintInputs(
+    recipe, start, end, progress, contactContext,
+  )
+  return resolveGrapplerPairFrame({
+    skeletons: {
+      playerA: interpolateTimedSkeletonPose(
+        leftFrame.skeletons.playerA,
+        rightFrame.skeletons.playerA,
+        localProgress,
+        recipe.timing?.playerA,
+      ),
+      playerB: interpolateTimedSkeletonPose(
+        leftFrame.skeletons.playerB,
+        rightFrame.skeletons.playerB,
+        localProgress,
+        recipe.timing?.playerB,
+      ),
+    },
+    progress,
+    sourceSkeletons: frames[0].skeletons,
+    destinationSkeletons: frames[frames.length - 1].skeletons,
+    grounding: constraintInputs.grounding,
+    contactTargets: constraintInputs.contactTargets,
+  })
 }
 
 export function resolveTransitionPoses(
@@ -531,52 +616,9 @@ export function resolveTransitionPoses(
     playerB: interpolateGrapplerPose(start.playerB, end.playerB, easeInOutCubic(progress)),
   }
 
-  const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
-
-  const rightIndex = frames.findIndex((frame) => frame.progress >= progress)
-  const leftFrame = frames[rightIndex - 1]
-  const rightFrame = frames[rightIndex]
-  const localProgress = (progress - leftFrame.progress) /
-    (rightFrame.progress - leftFrame.progress)
-
-  const playerASkeleton = interpolateTimedSkeletonPose(
-    leftFrame.skeletons.playerA,
-    rightFrame.skeletons.playerA,
-    localProgress,
-    recipe.timing?.playerA,
+  const skeletons = resolveAuthoredTransitionSkeletons(
+    recipe, start, end, progress, contactContext,
   )
-  const playerBSkeleton = interpolateTimedSkeletonPose(
-    leftFrame.skeletons.playerB,
-    rightFrame.skeletons.playerB,
-    localProgress,
-    recipe.timing?.playerB,
-  )
-
-  const baseProgress = lerpNumber(
-    leftFrame.baseProgress,
-    rightFrame.baseProgress,
-    localProgress,
-  )
-  const skeletons = resolveGrapplerPairFrame({
-    skeletons: {
-      playerA: playerASkeleton,
-      playerB: playerBSkeleton,
-    },
-    progress,
-    sourceSkeletons: frames[0].skeletons,
-    destinationSkeletons: frames[frames.length - 1].skeletons,
-    grounding: enhancementGrounding(
-      recipe,
-      frames[0].skeletons,
-      frames[frames.length - 1].skeletons,
-      baseProgress,
-    ),
-    contactTargets: resolveTransitionContactTargets(
-      recipe,
-      contactContext,
-      baseProgress,
-    ),
-  })
 
   return {
     playerA: skeletonToGrapplerPose(skeletons.playerA),
