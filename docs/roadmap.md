@@ -879,6 +879,58 @@ Complete
 14E Status:
 Complete
 
+## Iteration 14F — Constraint-Driven Position Authoring & Diagnostics
+
+- [x] Add the intentionally small `ConstraintDrivenPosition` authoring model:
+  an unplaced rough skeleton pair, explicit pelvis placement, optional ground
+  anchors, and optional semantic relationships. This separates scene layout
+  from posture without introducing a generic constraint language.
+- [x] Add `resolveConstraintDrivenPosition()` as a thin static composition
+  path over `resolveGrapplerPairFrame()`. Static visuals therefore reuse the
+  14C/14D grounding, priority ordering, relational correction, two-bone IK,
+  joint limits, validation, and deterministic fixed-pass pair policy.
+- [x] Migrate exactly three existing canonical visual IDs without adding
+  semantic states: `open_guard_bottom`, `half_guard_bottom`, and
+  `back_control_top`.
+  - `open_guard_bottom` refines both authored guard legs with semantic
+    feet-to-opponent-inner-thigh relationships and grounds Player B's lead
+    knee.
+  - `half_guard_bottom` refines Player B's left hand toward Player A's
+    opposite wrist and grounds Player B's free driving knee.
+  - `back_control_top` refines both authored hooks toward the corresponding
+    opponent inner thighs.
+- [x] Preserve authored pelvis/spine/head direction, approximate torso
+  orientation, and rough shoulder/hip/elbow/knee articulation. Relationships
+  replace manually tuned endpoint coordinates; base limb bends remain useful
+  as deterministic IK branch and silhouette hints.
+- [x] Keep unsupported torso-region relationships approximate. Seatbelt,
+  underhook, overhook, body-lock, and closed-guard torso connection metadata
+  are not force-fit into arm/leg IK and remain future work.
+- [x] Add reusable read-only constraint diagnostics derived from resolved
+  production geometry: color-separated Player A/B joints and bones, semantic
+  source/target landmarks, relational contact lines, stage-pixel target error,
+  existing `critical`/`high`/`medium`/`low` priority, relational anchor type,
+  ground baselines, and grounded anchor error.
+- [x] Add a development-only `Show constraints` toggle on the grappling stage.
+  It is compiled behind `import.meta.env.DEV`; diagnostics are absent by
+  default and cannot enter or modify the solve pipeline.
+- [x] Cover canonical-ID preservation, determinism, finite/valid skeletons,
+  bone lengths, grounding, bounded target error, input immutability, semantic
+  authoring without endpoint offsets, read-only diagnostic parity, both
+  relationship ownership directions, and safe malformed-target handling.
+  Existing apparel filtering remains upstream, so the same resolved static
+  pairs render in Gi and No-Gi.
+
+Known 14F limitations: diagnostics label relational constraints rather than
+every joint to avoid stage clutter (joint names remain available as SVG
+tooltips). Animation overlays reconstruct skeleton debug geometry from the
+already-rendered pose compatibility shape; they do not expose mutable solver
+internals. Grounding is still sequential root translation, and target error is
+a screen-space tuning metric rather than a claim of physical accuracy.
+
+14F Status:
+Complete
+
 Known visual limitations: torso/spine IK, collision, physics, center of mass,
 and global multi-contact solving remain deferred. Underhook and seatbelt stay
 approximate; Old-School uses supported ankle control and family motion rather
