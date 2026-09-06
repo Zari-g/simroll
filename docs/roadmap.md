@@ -931,14 +931,63 @@ a screen-space tuning metric rather than a claim of physical accuracy.
 14F Status:
 Complete
 
+## Iteration 14G — Validation, Visual QA & Iteration Closeout
+
+- [x] Consolidate deterministic validation metrics for finite geometry, arm and
+  leg bone-length drift, production-resolved relational target error, grounding
+  error, joint validity, endpoint fidelity, root/end-effector jumps, phase
+  discontinuity, and coarse pelvis separation.
+- [x] Sample the three 14E showcases at representative progress values and at
+  phase boundaries. Preserve exact endpoints and validate both grapplers,
+  supported semantic relationships, grounding, bone geometry, pair connection,
+  Gi, and No-Gi.
+- [x] Revalidate `open_guard_bottom`, `half_guard_bottom`, and
+  `back_control_top` for deterministic immutable output, finite/constrained
+  geometry, grounding, bone lengths, semantic relationship error, and
+  diagnostics that read final geometry without changing it.
+- [x] Add a 12-transition pure animation-layer sequence regression covering
+  authored and fallback playback, finite frames, and endpoint-to-endpoint
+  continuity without adding a browser/E2E framework.
+- [x] Extend the existing generated animation coverage artifact with orthogonal
+  position-visual and showcase-quality reporting. Keep coverage unchanged at 65
+  total / 1 explicit / 27 family / 37 fallback / 3 constraint-enhanced.
+- [x] Report the 19 live position visuals accurately: 3 manually authored
+  articulated, 3 constraint-driven articulated, 0 reused/opposite-orientation,
+  and 13 intentional placeholders.
+- [x] Document exact local backend/frontend startup commands, Roll Simulator
+  navigation, the development-only read-only constraint overlay, static/showcase
+  review points, and a 10-15 transition Gi/No-Gi Auto Roll checklist in
+  `docs/visual-qa.md`.
+- [ ] Complete local human visual certification. Automated solved-geometry
+  validation passes, but it does not certify realism or visual weight transfer.
+
+Iteration 14 delivered persistent relational controls, deterministic two-bone
+arm/leg IK, one centralized solve order, bounded current-frame two-grappler
+relational solving, three constraint-enhanced showcase transitions, a lightweight
+constraint-driven static position model with three representative migrations,
+and read-only joint/bone/target/grounding/priority diagnostics.
+
+Remaining limitations are intentional scope boundaries: 37 transitions retain
+fallback animation; 13 live position orientations retain placeholders; there is
+no full-body, torso, or spine IK; underhook, overhook, seatbelt, body-lock, and
+closed-guard torso relationships are not generalized torso constraints; there is
+no collision, gravity, friction, rigid-body, weight, or center-of-mass model; Gi
+clothing is not physically simulated; and manually authored recipes can still
+look procedural or robotic. Sequential grounding and bounded limb reach mean a
+declared relationship or anchor can retain a measured residual rather than
+converging exactly.
+
+14G Status:
+Implementation complete; local visual certification pending
+
+Iteration 14 Status:
+Implementation complete; local visual certification pending
+
 Known visual limitations: torso/spine IK, collision, physics, center of mass,
 and global multi-contact solving remain deferred. Underhook and seatbelt stay
 approximate; Old-School uses supported ankle control and family motion rather
 than a new trapped-leg solver. The in-app browser was unavailable during the
 14E verification session, so visual realism was not manually certified.
-
-Iteration 14 Status:
-In Progress
 
 Explicitly deferred: full-body, torso, spine, iterative, physics, collision,
 and center-of-mass solving; new positions or transitions; broader relational
