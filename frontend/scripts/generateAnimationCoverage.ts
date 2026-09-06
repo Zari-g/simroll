@@ -1,8 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 import { createAnimationCoverageReport } from '../src/grappling/animationRecipes/coverage.ts'
+import { constraintDrivenPositionIds, corePositionVisualIds } from '../src/grappling/positionVisuals.ts'
+import { createShowcaseValidationReport } from '../src/grappling/showcaseValidation.ts'
+import { animationValidationTolerances } from '../src/grappling/validationMetrics.ts'
 
 interface RuntimeDataset {
+  readonly positions: readonly { readonly id: string; readonly terminal: boolean }[]
   readonly positional_transitions: readonly {
     readonly id: string
     readonly display_name: string
@@ -13,6 +17,7 @@ interface RuntimeDataset {
 
 const datasetUrl = new URL('../../data/generated/simroll_bjj_mvp.normalized.json', import.meta.url)
 const outputUrl = new URL('../../docs/animation-coverage.md', import.meta.url)
+const qualityOutputUrl = new URL('../../docs/animation-quality.json', import.meta.url)
 const dataset = JSON.parse(readFileSync(datasetUrl, 'utf8')) as RuntimeDataset
 const report = createAnimationCoverageReport(dataset.positional_transitions.map((transition) => ({
   id: transition.id,
@@ -20,6 +25,31 @@ const report = createAnimationCoverageReport(dataset.positional_transitions.map(
   sourcePositionId: transition.source_position,
   destinationPositionId: transition.destination_position,
 })))
+
+const livePositions = dataset.positions.filter(({ terminal }) => !terminal)
+const constraintDriven = new Set<string>(constraintDrivenPositionIds)
+const articulated = new Set<string>(corePositionVisualIds)
+const manualPositionIds = livePositions
+  .filter(({ id }) => articulated.has(id) && !constraintDriven.has(id)).map(({ id }) => id)
+const constraintPositionIds = livePositions
+  .filter(({ id }) => constraintDriven.has(id)).map(({ id }) => id)
+const fallbackPositionIds = livePositions
+  .filter(({ id }) => !articulated.has(id)).map(({ id }) => id)
+const showcaseValidation = createShowcaseValidationReport()
+const pass = (value: boolean) => value ? 'pass' : 'fail'
+const qualityReport = {
+  validationTolerances: animationValidationTolerances,
+  positionVisualCoverage: {
+    live: livePositions.length,
+    articulated: articulated.size,
+    manuallyAuthored: manualPositionIds,
+    constraintDriven: constraintPositionIds,
+    reusedOrOppositeOrientation: [] as string[],
+    placeholderOrFallback: fallbackPositionIds,
+  },
+  showcaseValidation,
+}
+const qualityContent = `${JSON.stringify(qualityReport, null, 2)}\n`
 
 const lines = [
   '# Animation Coverage',
@@ -34,43 +64,69 @@ const lines = [
   '',
   '## Constraint-enhanced transitions',
   '',
-  ...report.transitions
-    .filter(({ constraintEnhanced }) => constraintEnhanced)
-    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} â†’ ${entry.destinationPositionId})${entry.familyId ? ` â€” \`${entry.familyId}\`` : ''}`),
+  ...report.transitions.filter(({ constraintEnhanced }) => constraintEnhanced)
+    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} -> ${entry.destinationPositionId})${entry.familyId ? ` - \`${entry.familyId}\`` : ''}`),
   '',
   '## Explicit transitions',
   '',
-  ...report.transitions
-    .filter(({ coverage }) => coverage === 'explicit')
-    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} → ${entry.destinationPositionId})`),
+  ...report.transitions.filter(({ coverage }) => coverage === 'explicit')
+    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} -> ${entry.destinationPositionId})`),
   '',
   '## Family-backed transitions',
   '',
-  ...report.transitions
-    .filter(({ coverage }) => coverage === 'family')
-    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} → ${entry.destinationPositionId}) — \`${entry.familyId}\``),
+  ...report.transitions.filter(({ coverage }) => coverage === 'family')
+    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} -> ${entry.destinationPositionId}) - \`${entry.familyId}\``),
   '',
   '## Fallback transitions',
   '',
-  ...report.transitions
-    .filter(({ coverage }) => coverage === 'fallback')
-    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} → ${entry.destinationPositionId})`),
+  ...report.transitions.filter(({ coverage }) => coverage === 'fallback')
+    .map((entry) => `- \`${entry.id}\` (${entry.sourcePositionId} -> ${entry.destinationPositionId})`),
+  '',
+  '## Position visual coverage',
+  '',
+  `- Live semantic positions: ${livePositions.length}`,
+  `- Fully articulated visuals: ${articulated.size}`,
+  `- Manually authored articulated: ${manualPositionIds.length} (${manualPositionIds.map((id) => `\`${id}\``).join(', ')})`,
+  `- Constraint-driven articulated: ${constraintPositionIds.length} (${constraintPositionIds.map((id) => `\`${id}\``).join(', ')})`,
+  '- Reused/opposite-orientation representations: 0',
+  `- Placeholder/fallback: ${fallbackPositionIds.length} (${fallbackPositionIds.map((id) => `\`${id}\``).join(', ')})`,
+  '',
+  '## Showcase validation',
+  '',
+  '| Technique | Family | Relational controls | Max target error | Grounding | Bones | Continuity | Pair separation | Endpoints | Gi | No-Gi |',
+  '| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |',
+  ...showcaseValidation.map((entry) => [
+    `| ${entry.name}`,
+    entry.techniqueFamily ? `\`${entry.techniqueFamily}\`` : 'explicit',
+    entry.supportedRelationalControls.length
+      ? entry.supportedRelationalControls.map((id) => `\`${id}\``).join(', ')
+      : 'none supported',
+    entry.maxRelationalTargetError === null ? 'n/a' : `${entry.maxRelationalTargetError.toFixed(2)} px`,
+    pass(entry.groundingValid), pass(entry.boneLengthsValid), pass(entry.phaseContinuityValid),
+    pass(entry.pairSeparationValid), pass(entry.endpointValid), pass(entry.giValid),
+    `${pass(entry.noGiValid)} |`,
+  ].join(' | ')),
+  '',
+  'The machine-readable form of position and showcase quality data is in `docs/animation-quality.json`.',
   '',
 ]
 const content = lines.join('\n')
 
 if (process.argv.includes('--check')) {
   let current = ''
+  let currentQuality = ''
   try {
     current = readFileSync(outputUrl, 'utf8')
+    currentQuality = readFileSync(qualityOutputUrl, 'utf8')
   } catch {
-    // The comparison below emits the same actionable freshness error.
+    // The comparisons below emit the actionable freshness error.
   }
-  if (current !== content) {
-    throw new Error('Animation coverage report is stale; run npm.cmd run animation:coverage')
+  if (current !== content || currentQuality !== qualityContent) {
+    throw new Error('Animation coverage/quality report is stale; run npm.cmd run animation:coverage')
   }
-  console.log(`Animation coverage is current: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
+  console.log(`Animation coverage and quality are current: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
 } else {
   writeFileSync(outputUrl, content)
-  console.log(`Wrote ${outputUrl.pathname}: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
+  writeFileSync(qualityOutputUrl, qualityContent)
+  console.log(`Wrote coverage and quality reports: ${report.total} total, ${report.explicit} explicit, ${report.family} family, ${report.fallback} fallback, ${report.constraintEnhanced} constraint-enhanced`)
 }

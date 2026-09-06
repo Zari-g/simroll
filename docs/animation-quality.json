@@ -1,0 +1,97 @@
+{
+  "validationTolerances": {
+    "boneLengthDrift": 0.001,
+    "relationalTargetError": 250,
+    "groundingError": 25,
+    "phaseBoundaryDelta": 5,
+    "pairSeparation": 190,
+    "endpointDelta": 0.001
+  },
+  "positionVisualCoverage": {
+    "live": 19,
+    "articulated": 6,
+    "manuallyAuthored": [
+      "closed_guard_bottom",
+      "mount_top",
+      "side_control_top"
+    ],
+    "constraintDriven": [
+      "back_control_top",
+      "half_guard_bottom",
+      "open_guard_bottom"
+    ],
+    "reusedOrOppositeOrientation": [],
+    "placeholderOrFallback": [
+      "back_control_bottom",
+      "closed_guard_top",
+      "front_headlock_bottom",
+      "front_headlock_top",
+      "half_guard_top",
+      "knee_on_belly_bottom",
+      "knee_on_belly_top",
+      "mount_bottom",
+      "open_guard_top",
+      "side_control_bottom",
+      "standing_neutral",
+      "turtle_bottom",
+      "turtle_top"
+    ]
+  },
+  "showcaseValidation": [
+    {
+      "transitionId": "open_guard_bottom_butterfly_sweep_to_side_control_top",
+      "name": "Butterfly Sweep",
+      "techniqueFamily": null,
+      "constraintEnhanced": true,
+      "supportedRelationalControls": [
+        "butterfly_hook"
+      ],
+      "maxRelationalTargetError": 141.06992466910452,
+      "groundingValid": true,
+      "boneLengthsValid": true,
+      "phaseContinuityValid": true,
+      "pairSeparationValid": true,
+      "endpointValid": true,
+      "finiteGeometryValid": true,
+      "jointConstraintsValid": true,
+      "giValid": true,
+      "noGiValid": true
+    },
+    {
+      "transitionId": "half_guard_bottom_old_school_sweep_to_side_control_top",
+      "name": "Half Guard Old-School Sweep",
+      "techniqueFamily": "sweep.rotation",
+      "constraintEnhanced": true,
+      "supportedRelationalControls": [
+        "ankle_control"
+      ],
+      "maxRelationalTargetError": 242.72611105322036,
+      "groundingValid": true,
+      "boneLengthsValid": true,
+      "phaseContinuityValid": true,
+      "pairSeparationValid": true,
+      "endpointValid": true,
+      "finiteGeometryValid": true,
+      "jointConstraintsValid": true,
+      "giValid": true,
+      "noGiValid": true
+    },
+    {
+      "transitionId": "back_control_top_opponent_turn_in_to_half_guard_bottom",
+      "name": "Back-Control Turn-In Escape",
+      "techniqueFamily": "escape.hip",
+      "constraintEnhanced": true,
+      "supportedRelationalControls": [],
+      "maxRelationalTargetError": null,
+      "groundingValid": true,
+      "boneLengthsValid": true,
+      "phaseContinuityValid": true,
+      "pairSeparationValid": true,
+      "endpointValid": true,
+      "finiteGeometryValid": true,
+      "jointConstraintsValid": true,
+      "giValid": true,
+      "noGiValid": true
+    }
+  ]
+}

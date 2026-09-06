@@ -1,0 +1,3 @@
+# Generated artifacts are byte-compared in tests and must be platform-stable.
+data/curated/**/*.json text eol=lf
+data/generated/*.json text eol=lf
