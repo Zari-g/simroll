@@ -1019,3 +1019,17 @@ Potential future systems:
 - "How cooked am I?" position danger meter
 - Roll statistics
 - Community submissions
+
+## Iteration 15A - Technique animation schema
+
+- [x] Add an authoring-only technique definition above the Iteration 14 pipeline:
+  ordered weighted phases, fixed A/B actions, existing motion primitives, visual
+  control lifecycle, semantic relationships, grounding intent and position anchors.
+- [x] Add deterministic schema/graph-reference validation and focused tests.
+- [x] Author only butterfly sweep, old-school sweep and back-control turn-in escape.
+- [x] Preserve existing rendering and canonical graph behavior.
+
+15B will implement a generic phase interpreter consuming this contract through
+existing primitives, mode-filtered controls and the centralized frame/pair solver.
+Runtime interpretation, full migration, editor UI and solver redesign are deferred.
+See `docs/architecture.md` for phase, lifecycle and baseline semantics.
