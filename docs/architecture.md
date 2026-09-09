@@ -593,7 +593,7 @@ and optional description/tags. The graph owns source, destination, actor and mod
 eligibility; animation data never creates edges or changes semantic roll state.
 Three examples in `techniqueAnimations.ts` cover butterfly sweep, old-school
 sweep and the Player B turn-in escape from Player A's back-control perspective.
-These definitions are not registered with the current animation resolver.
+These definitions execute through the technique runtime before the existing recipe fallback.
 
 Each phase has a unique ID and positive finite relative duration. Divide each
 weight by the total to obtain its timeline fraction; playback milliseconds remain
@@ -629,10 +629,67 @@ removes the phase-specific grounding intent.
 
 `validateTechniqueAnimationDefinition` checks authored data against supplied
 canonical transition/position ID sets and reuses primitive/contact validation.
-It returns the original definition without solving or mutation. The future 15B
-interpreter should normalize phase weights, evaluate these intents deterministically
-from endpoints and progress, filter controls with existing mode rules, and pass
-primitives/contacts/grounding through the centralized frame and pair solver.
-Technique-specific choreography belongs in this data, not renderer functions.
-15A does not implement interpolation, lifecycle execution, or new solver behavior;
-existing explicit/family/fallback animation continues unchanged.
+It returns the original definition without solving or mutation.
+`compileTechniqueAnimation` validates once and freezes a cloned definition with
+precomputed timing. Only this compiled contract can enter the interpreter; changes
+to the original authoring object cannot invalidate the compiled snapshot.
+
+### Iteration 15B - Executable technique interpretation
+
+`techniqueAnimationRegistry.ts` compiles the three definitions against the
+canonical generated dataset at module initialization. The same dataset supplies
+the canonical `Grip.gi_required` projection used by the existing No-Gi filter.
+Adding a valid definition to `techniqueAnimations.ts` needs no renderer branch.
+The old recipe resolver continues supplying playback duration and legacy coverage;
+technique availability is queried separately, including when no recipe exists.
+
+`normalizePhaseTiming` divides cumulative weights by their total. Ranges are
+half-open: an exact internal boundary selects the next phase at local zero.
+Global zero selects the first phase, one selects the last phase at local one.
+Progress is clamped; NaN becomes zero. Positive weights that cannot produce a
+representable nonempty normalized range are rejected at compilation.
+
+`interpretTechniqueAnimation` exposes phase ID/index, raw and eased local progress,
+fixed A/B primitive instructions with original parameters, active controls,
+compiled contact relationships, grounding anchors and the optional position target.
+Control changes replay through the selected phase from authoritative transition-entry
+controls, so seeking backwards has no history dependence. Preserve never invents a
+control; acquire and release apply at phase entry. Canonical mode filtering applies
+to incoming controls and acquisitions; authored `modes` only further restricts
+operations. Relationships with a control ID require matching ownership and side.
+
+`techniqueRuntime.ts` adapts this intent to `resolveGrapplerPairFrame`, which still
+owns grounding, contact correction, IK, constraints and validation. Semantic
+relationships reuse `compileControlsToContacts` with an explicit definition resolver;
+there is no alternate contact compiler. Grounding resolves to `FrameGrounding`.
+No primitive, pair solver, grounding algorithm or contact solver is rewritten.
+
+Phase-end poses are compiled once per source/destination pair using the existing
+primitive composer against the endpoint blend, or an optional canonical position
+anchor. Eased interpolation travels from the preceding phase-end pose to the
+active phase-end pose. The prior pose provides continuity, but its actions are
+never replayed or accumulated. The final phase interpolates to the authoritative
+destination and applies its primitives with a sine envelope that returns to zero.
+This permits final settling actions without endpoint drift. A final authored anchor
+cannot override the graph destination.
+
+Control membership changes discretely, while solver influence eases in/out over
+12% of each phase to avoid constraint-switch jumps. Grounding similarly blends
+from the current joint Y to its declared baseline over that short binding interval;
+inside the phase it uses the full phase-entry or transition-blend baseline.
+The interpreter exposes control membership separately from constraint influence.
+This policy preserves discrete lifecycle semantics and continuous phase boundaries.
+
+`resolveTransitionPoses`, authored skeleton resolution and validation input helpers
+select the technique path by transition ID. The hook passes transition ID and mode;
+the source controls retain authoritative A/B ownership. Unmigrated transitions
+continue through the original explicit/family recipe or plain interpolation path.
+Exact visual endpoints bypass interpretation, and the existing centralized skeleton
+endpoint bypass protects direct skeleton callers. Source/destination display state
+continues to come from the authoritative state handoff.
+
+Tests cover weighted boundaries, validation, easing, parameter/identity retention,
+control lifecycle and mode filtering, canonical anchors, solver routing, all three
+techniques and unchanged fallback. Showcase diagnostics use the new weighted
+boundaries and actual production constraint inputs. Primitive-library expansion
+remains deferred to 15C; these examples require no new primitives.

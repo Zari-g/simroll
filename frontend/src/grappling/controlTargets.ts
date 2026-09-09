@@ -247,9 +247,10 @@ function resolvePoint(
 /** Compile semantic relationships into the existing contact-correction contract. */
 export function compileControlsToContacts(
   controls: readonly ActiveVisualControl[],
+  resolveDefinition: (id: string) => ControlTargetDefinition | null = getControlTargetDefinition,
 ): readonly CompiledControlContact[] {
   return controls.flatMap((control) => {
-    const definition = getControlTargetDefinition(control.controlId)
+    const definition = resolveDefinition(control.controlId)
     if (!definition) return []
     if (
       !['playerA', 'playerB'].includes(control.controller) ||

@@ -55,7 +55,7 @@ export interface TechniqueAnimationPhase {
   readonly easing?: AnimationEasing
 }
 
-/** Authoring-only contract for 15B; not registered with the current renderer. */
+/** Authoring contract compiled once and interpreted by the technique runtime. */
 export interface TechniqueAnimationDefinition {
   readonly transitionId: string
   /** Nonempty, sequential phases. Overall playback milliseconds remain external. */

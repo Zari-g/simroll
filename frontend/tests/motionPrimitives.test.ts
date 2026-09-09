@@ -1,3 +1,4 @@
+import { getTechniqueAnimation } from '../src/grappling/techniqueAnimationRegistry.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
@@ -276,21 +277,32 @@ test('authored phases depart meaningfully from direct pose interpolation', () =>
     assert.ok(source)
     assert.ok(destination)
     const phase = transition.phases[Math.floor(transition.phases.length / 2)]
+    const timing = getTechniqueAnimation(transitionId)?.timing
+    const middle = timing?.[Math.floor(timing.length / 2)]
+    const progress = middle ? (middle.start + middle.end) / 2 : phase.progress
     const choreographed = resolveTransitionPoses(
       transition,
       { playerA: source.playerAPose, playerB: source.playerBPose },
       { playerA: destination.playerAPose, playerB: destination.playerBPose },
-      phase.progress,
+      progress,
     )
-    const direct = interpolateGrapplerPose(
-      source.playerAPose,
-      destination.playerAPose,
-      phase.progress,
-    )
-    const displacement = Math.hypot(
-      choreographed.playerA.segments.torso.x - direct.segments.torso.x,
-      choreographed.playerA.segments.torso.y - direct.segments.torso.y,
-    )
+    // Limb motion and Player B motion also distinguish choreography from a slide.
+    const displacement = Math.max(...(['playerA', 'playerB'] as const).flatMap(player => {
+      const direct = interpolateGrapplerPose(
+        player === 'playerA' ? source.playerAPose : source.playerBPose,
+        player === 'playerA' ? destination.playerAPose : destination.playerBPose,
+        progress,
+      )
+      return Object.entries(choreographed[player].segments).map(([name, segment]) => {
+        const baseline = direct.segments[name as keyof typeof direct.segments]
+        const endpoint = (pose: typeof segment) => ({
+          x: pose.x + Math.cos(pose.rotation * Math.PI / 180) * pose.length,
+          y: pose.y + Math.sin(pose.rotation * Math.PI / 180) * pose.length,
+        })
+        const moved = endpoint(segment), original = endpoint(baseline)
+        return Math.hypot(moved.x - original.x, moved.y - original.y)
+      })
+    }))
 
     assert.ok(displacement > 3, `${transitionId} should not read as a direct slide`)
   }

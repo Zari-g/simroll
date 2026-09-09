@@ -81,6 +81,8 @@ export function usePoseAnimation() {
       cancel()
       const animationGeneration = generation.current
       const contactContext = {
+        transitionId,
+        mode: startState.mode,
         startContacts,
         endContacts,
         startControls,
