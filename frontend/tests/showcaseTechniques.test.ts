@@ -1,3 +1,7 @@
+import { getTechniqueAnimation } from '../src/grappling/techniqueAnimationRegistry.ts'
+import { resolveTechniqueFrameInputs } from '../src/grappling/techniqueRuntime.ts'
+import { resolveGrapplerPairFrame } from '../src/grappling/resolveGrapplerPairFrame.ts'
+import { skeletonToGrapplerPose } from '../src/grappling/kinematics.ts'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
@@ -7,7 +11,6 @@ import { createAnimationCoverageReport } from '../src/grappling/animationRecipes
 import { getAnimationRecipe } from '../src/grappling/animationRecipes/registry.ts'
 import { resolveTransitionAnimation } from '../src/grappling/animationRecipes/resolver.ts'
 import { resolveContactPoint } from '../src/grappling/contactGeometry.ts'
-import { compileControlsToContacts } from '../src/grappling/controlTargets.ts'
 import {
   resolveTransitionContactTargets,
   resolveTransitionPoses,
@@ -126,19 +129,15 @@ test('butterfly hook follows the moving thigh with bounded target error', () => 
     startControls: [{ controlId: 'underhook', controller: 'playerA', opponent: 'playerB' }],
     endControls: [],
   }
-  const compiled = compileControlsToContacts([{
-    controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB', side: 'right',
-  }])[0]
-  assert.ok(compiled)
-  assert.equal(compiled.relationalAnchor, 'foot-to-inner-thigh')
-  const withoutHook = {
-    ...recipe,
-    constraintEnhancements: { ...recipe.constraintEnhancements, controls: [] },
-  }
-
+  const technique = getTechniqueAnimation(transitionId)!
   for (const progress of [0.2, 0.4, 0.6, 0.8]) {
+    const inputs = resolveTechniqueFrameInputs(technique, start, end, progress, context)
+    const compiled = inputs.contactTargets.find(target => target.contact.type === 'hook')
+    if (progress >= 5 / 7) { assert.equal(compiled, undefined); continue }
+    assert.ok(compiled)
     const frame = resolveTransitionPoses(recipe, start, end, progress, context)
-    const baseline = resolveTransitionPoses(withoutHook, start, end, progress, context)
+    const unhooked = resolveGrapplerPairFrame({ ...inputs, contactTargets: inputs.contactTargets.filter(target => target.contact.type !== 'hook') })
+    const baseline = { playerA: skeletonToGrapplerPose(unhooked.playerA), playerB: skeletonToGrapplerPose(unhooked.playerB) }
     const geometry = resolveContactPoint(compiled.contact, frame, {
       playerA: defaultGrapplerAnatomy, playerB: defaultGrapplerAnatomy,
     })
@@ -181,12 +180,12 @@ test('showcases preserve endpoints, bones, determinism, immutability, and connec
   }
 })
 
-test('showcase phase overlays stay continuous at their existing boundaries', () => {
+test('showcase techniques stay continuous at their weighted phase boundaries', () => {
   for (const [transitionId, definition] of Object.entries(showcases)) {
     const recipe = getAnimationRecipe(transitionId)
     assert.ok(recipe)
     const { start, end } = endpoints(definition.source, definition.destination)
-    for (const { progress } of recipe.constraintEnhancements?.phases ?? []) {
+    for (const { end: progress } of getTechniqueAnimation(transitionId)!.timing.slice(0, -1)) {
       const before = resolveTransitionPoses(recipe, start, end, progress - 0.001, emptyContext)
       const boundary = resolveTransitionPoses(recipe, start, end, progress, emptyContext)
       const after = resolveTransitionPoses(recipe, start, end, progress + 0.001, emptyContext)

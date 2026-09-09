@@ -1,6 +1,6 @@
 import type { TechniqueAnimationDefinition } from './techniqueAnimationTypes.ts'
 
-/** Representative authoring data only. Intentionally absent from the runtime registry. */
+/** Representative definitions registered with the generic technique runtime. */
 export const techniqueAnimations = [
   {
     transitionId: 'open_guard_bottom_butterfly_sweep_to_side_control_top',

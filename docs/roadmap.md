@@ -1029,7 +1029,20 @@ Potential future systems:
 - [x] Author only butterfly sweep, old-school sweep and back-control turn-in escape.
 - [x] Preserve existing rendering and canonical graph behavior.
 
-15B will implement a generic phase interpreter consuming this contract through
-existing primitives, mode-filtered controls and the centralized frame/pair solver.
-Runtime interpretation, full migration, editor UI and solver redesign are deferred.
 See `docs/architecture.md` for phase, lifecycle and baseline semantics.
+
+## Iteration 15B - Generic technique animation interpreter
+
+- [x] Compile validated immutable definitions and normalize weighted phase timing.
+- [x] Resolve deterministic phase-local easing, fixed A/B actions, controls,
+  semantic relationships, grounding and canonical phase targets.
+- [x] Execute butterfly sweep, old-school sweep and Player B turn-in escape through
+  the existing primitive composer and centralized frame/pair solver.
+- [x] Preserve authoritative endpoints, canonical Gi/No-Gi filtering and the legacy
+  recipe/plain-interpolation fallback for unmigrated transitions.
+- [x] Validate actual weighted boundaries and ease constraint binding at phase edges.
+- [x] Pass all 176 frontend tests, compile/type checks, lint and production build.
+
+15C can expand authoring incrementally. No additional primitives were required for
+these three definitions. Full migration, editor UI and solver redesign remain out
+of scope. The build reports Vite's large-chunk advisory.

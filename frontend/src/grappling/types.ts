@@ -137,6 +137,9 @@ export interface SkeletonPoseOverride {
 export type MotionTimingGroup = 'hips' | 'torso' | 'arms' | 'head'
 
 export interface TransitionContactContext {
+  readonly transitionId?: string
+  readonly mode?: import('../types/api.ts').GrapplingMode
+  readonly grips?: readonly import('../types/api.ts').Grip[]
   readonly startContacts: readonly GrapplingContact[]
   readonly endContacts: readonly GrapplingContact[]
   readonly startControls?: readonly ActiveVisualControl[]

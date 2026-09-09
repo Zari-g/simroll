@@ -1,3 +1,4 @@
+import { getTechniqueAnimation } from './techniqueAnimationRegistry.ts'
 import { resolveTransitionAnimation } from './animationRecipes/resolver.ts'
 import type { AnimationRecipe } from './animationRecipes/types.ts'
 import type { GrapplerSkeletonPair } from './contactCorrection.ts'
@@ -109,7 +110,11 @@ export function createShowcaseValidationReport(): readonly ShowcaseValidationRes
         .map(({ error }) => error))
     const groundingErrors = samples.flatMap(({ solved, inputs }) =>
       measureGroundingErrors(solved, inputs.grounding).map(({ error }) => error))
-    const boundaryDeltas = (recipe.constraintEnhancements?.phases ?? []).flatMap(({ progress }) => {
+    const technique = getTechniqueAnimation(transitionId)
+    const boundaries = technique
+      ? technique.timing.slice(0, -1).map(range => range.end)
+      : (recipe.constraintEnhancements?.phases ?? []).map(phase => phase.progress)
+    const boundaryDeltas = boundaries.flatMap((progress) => {
       const epsilon = 0.001
       const before = resolveAuthoredTransitionSkeletons(recipe, start, end, progress - epsilon, emptyContext)
       const boundary = resolveAuthoredTransitionSkeletons(recipe, start, end, progress, emptyContext)

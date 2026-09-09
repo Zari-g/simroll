@@ -1,3 +1,7 @@
+import { lerpNumber, interpolateAngle, easeInOutCubic, interpolateSkeletonPose } from './animationInterpolation.ts'
+export { lerpNumber, interpolateAngle, easeInOutCubic, interpolateSkeletonPose } from './animationInterpolation.ts'
+import { getTechniqueAnimation } from './techniqueAnimationRegistry.ts'
+import { resolveTechniqueFrameInputs, resolveTechniqueSkeletons } from './techniqueRuntime.ts'
 import type {
   GrapplerChildJointName,
   GrapplerSkeletonPose,
@@ -43,28 +47,6 @@ const segmentNames: readonly GrapplerSegmentName[] = [
   'rightThigh',
   'rightShin',
 ]
-
-export function lerpNumber(start: number, end: number, progress: number) {
-  return start + (end - start) * progress
-}
-
-export function interpolateAngle(
-  start: number,
-  end: number,
-  progress: number,
-) {
-  if (progress <= 0) return start
-  if (progress >= 1) return end
-
-  const delta = ((end - start + 540) % 360) - 180
-  return start + delta * progress
-}
-
-export function easeInOutCubic(progress: number) {
-  return progress < 0.5
-    ? 4 * progress * progress * progress
-    : 1 - Math.pow(-2 * progress + 2, 3) / 2
-}
 
 function cloneGrapplerPose(pose: GrapplerPose): GrapplerPose {
   return {
@@ -136,36 +118,6 @@ export function interpolateGrapplerPose(
           }
         : undefined,
     segments,
-  }
-}
-
-function interpolateSkeletonPose(
-  start: GrapplerSkeletonPose,
-  end: GrapplerSkeletonPose,
-  progress: number,
-): GrapplerSkeletonPose {
-  return {
-    root: {
-      position: {
-        x: lerpNumber(start.root.position.x, end.root.position.x, progress),
-        y: lerpNumber(start.root.position.y, end.root.position.y, progress),
-      },
-      rotation: interpolateAngle(start.root.rotation, end.root.rotation, progress),
-    },
-    joints: Object.fromEntries(
-      Object.entries(start.joints).map(([name, transform]) => {
-        const jointName = name as GrapplerChildJointName
-        const target = end.joints[jointName]
-        return [
-          jointName,
-          {
-            x: lerpNumber(transform.x, target.x, progress),
-            y: lerpNumber(transform.y, target.y, progress),
-            rotation: interpolateAngle(transform.rotation, target.rotation, progress),
-          },
-        ]
-      }),
-    ) as Record<GrapplerChildJointName, LocalJointTransform>,
   }
 }
 
@@ -484,6 +436,11 @@ export function resolveTransitionSkeletonKeyframes(
   end: GrapplerPosePair,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
+  const technique = getTechniqueAnimation(contactContext.transitionId ?? recipe.transitionId)
+  if (technique) return technique.timing.slice(0, -1).map(range => ({
+    progress: range.end,
+    skeletons: resolveTechniqueSkeletons(technique, start, end, range.end, contactContext),
+  }))
   const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
   const sourceSkeletons = frames[0].skeletons
   const destinationSkeletons = frames[frames.length - 1].skeletons
@@ -523,6 +480,8 @@ export function resolveTransitionConstraintInputs(
   progress: number,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
+  const technique = getTechniqueAnimation(contactContext.transitionId ?? recipe.transitionId)
+  if (technique) return resolveTechniqueFrameInputs(technique, start, end, progress, contactContext)
   const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
   let baseProgress = progress <= 0 ? 0 : progress >= 1 ? 1 : progress
   if (progress > 0 && progress < 1) {
@@ -561,6 +520,8 @@ export function resolveAuthoredTransitionSkeletons(
   progress: number,
   contactContext: TransitionContactContext = emptyContactContext,
 ) {
+  const technique = getTechniqueAnimation(contactContext.transitionId ?? recipe.transitionId)
+  if (technique) return resolveTechniqueSkeletons(technique, start, end, progress, contactContext)
   const frames = getCompiledTransitionFrames(recipe, start, end, contactContext)
   if (progress <= 0) return frames[0].skeletons
   if (progress >= 1) return frames[frames.length - 1].skeletons
@@ -609,6 +570,12 @@ export function resolveTransitionPoses(
   if (progress >= 1) return {
     playerA: cloneGrapplerPose(end.playerA),
     playerB: cloneGrapplerPose(end.playerB),
+  }
+
+  const technique = getTechniqueAnimation(contactContext.transitionId ?? recipe?.transitionId ?? '')
+  if (technique) {
+    const solved = resolveTechniqueSkeletons(technique, start, end, progress, contactContext)
+    return { playerA: skeletonToGrapplerPose(solved.playerA), playerB: skeletonToGrapplerPose(solved.playerB) }
   }
 
   if (!recipe) return {
