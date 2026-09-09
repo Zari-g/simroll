@@ -4,12 +4,12 @@ import type { AnimationRecipe } from './types.ts'
 import { getControlTargetDefinition } from '../controlTargets.ts'
 import { grapplerJointNames } from '../skeleton.ts'
 
-function fail(recipe: AnimationRecipe, message: string): never {
+function fail(recipe: Pick<AnimationRecipe, 'transitionId'>, message: string): never {
   throw new Error(`Invalid animation recipe "${recipe.transitionId || '<empty>'}": ${message}`)
 }
 
 function requireFinite(
-  recipe: AnimationRecipe,
+  recipe: Pick<AnimationRecipe, 'transitionId'>,
   value: number | undefined,
   path: string,
 ) {
@@ -19,21 +19,21 @@ function requireFinite(
 }
 
 function requireFiniteValue(
-  recipe: AnimationRecipe,
+  recipe: Pick<AnimationRecipe, 'transitionId'>,
   value: number | undefined,
   path: string,
 ) {
   if (!Number.isFinite(value)) fail(recipe, `${path} must be finite`)
 }
 
-function requireSide(recipe: AnimationRecipe, value: unknown, path: string) {
+function requireSide(recipe: Pick<AnimationRecipe, 'transitionId'>, value: unknown, path: string) {
   if (value !== 'left' && value !== 'right') {
     fail(recipe, `${path} must be left or right`)
   }
 }
 
 function requireEnum(
-  recipe: AnimationRecipe,
+  recipe: Pick<AnimationRecipe, 'transitionId'>,
   value: unknown,
   allowed: readonly string[],
   path: string,
@@ -43,8 +43,8 @@ function requireEnum(
   }
 }
 
-function validatePrimitive(
-  recipe: AnimationRecipe,
+export function validateMotionPrimitive(
+  recipe: Pick<AnimationRecipe, 'transitionId'>,
   primitive: MotionPrimitive,
   path: string,
 ) {
@@ -201,7 +201,7 @@ function validatePrimitive(
 }
 
 function validateOverride(
-  recipe: AnimationRecipe,
+  recipe: Pick<AnimationRecipe, 'transitionId'>,
   override: SkeletonPoseOverride | undefined,
   path: string,
 ) {
@@ -243,7 +243,7 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     for (const player of ['playerA', 'playerB'] as const) {
       const choreography = phase[player]
       choreography?.primitives?.forEach((primitive, primitiveIndex) =>
-        validatePrimitive(recipe, primitive, `${path}.${player}.primitives[${primitiveIndex}]`),
+        validateMotionPrimitive(recipe, primitive, `${path}.${player}.primitives[${primitiveIndex}]`),
       )
       validateOverride(recipe, choreography?.override, `${path}.${player}.override`)
     }
@@ -279,7 +279,7 @@ export function validateAnimationRecipe(recipe: AnimationRecipe): AnimationRecip
     for (const player of ['playerA', 'playerB'] as const) {
       const choreography = phase[player]
       choreography?.primitives?.forEach((primitive, primitiveIndex) =>
-        validatePrimitive(recipe, primitive, `${path}.${player}.primitives[${primitiveIndex}]`),
+        validateMotionPrimitive(recipe, primitive, `${path}.${player}.primitives[${primitiveIndex}]`),
       )
       if (choreography?.override) {
         fail(recipe, `${path}.${player}.override is not allowed in constraint enhancements`)

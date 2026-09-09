@@ -584,3 +584,55 @@ scoped to setup selectors and are marked as legacy; live and historical states
 use owned controls.
 
 This keeps the project realistic and expandable.
+
+## Iteration 15A: declarative technique animation contract
+
+`frontend/src/grappling/techniqueAnimationTypes.ts` defines
+`TechniqueAnimationDefinition`: a transition ID, a nonempty ordered phase tuple,
+and optional description/tags. The graph owns source, destination, actor and mode
+eligibility; animation data never creates edges or changes semantic roll state.
+Three examples in `techniqueAnimations.ts` cover butterfly sweep, old-school
+sweep and the Player B turn-in escape from Player A's back-control perspective.
+These definitions are not registered with the current animation resolver.
+
+Each phase has a unique ID and positive finite relative duration. Divide each
+weight by the total to obtain its timeline fraction; playback milliseconds remain
+external. Easing is phase-local (`linear` or the existing `easeInOutCubic`, default
+cubic). `playerA` and `playerB` remain fixed identities throughout role changes.
+Actions use the existing discriminated `MotionPrimitive` union, including its
+parameter units and composition order. Primitive values describe phase-end motion
+intent relative to the position baseline, not per-frame coordinates or cumulative
+changes applied repeatedly to the previous rendered frame. Optional
+`targetPosition` selects a canonical phase-end pose/placement anchor; the final
+rendered endpoint must still be the graph destination. Separate raw pose overrides
+and a new pose registry are intentionally unnecessary for these examples.
+
+Control changes require an explicit controller/opponent pair and reuse existing
+control IDs, sides, strengths and preserve/acquire/release vocabulary. At phase
+entry, preserve retains an existing visual control (it does not create one),
+acquire adds it, and release removes it. Visual controls persist until release or
+transition end. Missing side means left, as in `ActiveVisualControl`; duplicate
+changes for the same ID/ownership/side in a phase are rejected. Canonical
+`Grip.gi_required` filtering remains authoritative for No-Gi; optional `modes`
+can only further restrict applicability. No separate Gi position nodes exist.
+
+Relational targets bind existing `ControlTargetDefinition` semantic contacts to
+an explicit A/B pair. They are phase-local. An optional `controlId` gates the
+relationship on that mode-filtered active control with matching ownership/side;
+garment relationships must use this link. No second target compiler is needed.
+Grounding uses existing skeleton joint names (wrist for hand, ankle for foot) and
+Y-only intent: `phaseStart` freezes the phase-entry baseline, while
+`transitionBlend` follows the source/destination baseline used in Iteration 14.
+One anchor per grappler per phase avoids implying simultaneous multi-anchor
+solving. Changing the joint in the next phase transfers the anchor; omitting it
+removes the phase-specific grounding intent.
+
+`validateTechniqueAnimationDefinition` checks authored data against supplied
+canonical transition/position ID sets and reuses primitive/contact validation.
+It returns the original definition without solving or mutation. The future 15B
+interpreter should normalize phase weights, evaluate these intents deterministically
+from endpoints and progress, filter controls with existing mode rules, and pass
+primitives/contacts/grounding through the centralized frame and pair solver.
+Technique-specific choreography belongs in this data, not renderer functions.
+15A does not implement interpolation, lifecycle execution, or new solver behavior;
+existing explicit/family/fallback animation continues unchanged.
