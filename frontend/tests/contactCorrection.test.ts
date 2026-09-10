@@ -107,7 +107,7 @@ test('contact correction is bounded, deterministic, immutable, and constraint-va
   assert.equal(validateSkeletonPose(corrected.playerB).valid, true)
 })
 
-test('authored correction reduces the highest-value early grip drift', () => {
+test('legacy authored correction reduces the highest-value early grip drift', () => {
   const source = getPositionVisual('closed_guard_bottom')
   const destination = getPositionVisual('mount_top')
   assert.ok(source)
@@ -118,7 +118,8 @@ test('authored correction reduces the highest-value early grip drift', () => {
     startContacts: [...resolvePositionContacts(source), ...start.gripContacts],
     endContacts: [...resolvePositionContacts(destination), ...end.gripContacts],
   }
-  const definition = animationRecipeRegistry.closed_guard_bottom_hip_bump_to_mount_top
+  // Keep testing the legacy correction pipeline after hip bump migrates to technique data.
+  const definition = { ...animationRecipeRegistry.closed_guard_bottom_hip_bump_to_mount_top, transitionId: 'legacy-hip-bump' }
   const plain = resolveTransitionSkeletonKeyframes(definition, start.poses, end.poses)
   const corrected = resolveTransitionSkeletonKeyframes(
     definition,

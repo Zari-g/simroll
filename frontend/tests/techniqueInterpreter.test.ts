@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import dataset from '../../data/generated/simroll_bjj_mvp.normalized.json' with { type: 'json' }
 import { compileTechniqueAnimation, interpretTechniqueAnimation, normalizePhaseTiming } from '../src/grappling/techniqueInterpreter.ts'
 import { getTechniqueAnimation, techniqueGrips } from '../src/grappling/techniqueAnimationRegistry.ts'
 import { techniqueAnimations } from '../src/grappling/techniqueAnimations.ts'
@@ -9,9 +10,12 @@ import { resolveTechniqueFrameInputs, resolveTechniqueSkeletons } from '../src/g
 import { resolveTransitionPoses, interpolateGrapplerPose, easeInOutCubic, interpolateSkeletonPose } from '../src/grappling/interpolatePose.ts'
 import { resolveTransitionAnimation } from '../src/grappling/animationRecipes/resolver.ts'
 import { getPositionVisual } from '../src/grappling/positionVisuals.ts'
+import { resolveVisualPose } from '../src/grappling/resolveVisualPose.ts'
+import { getHistoricalTransition } from '../src/utils/rollPlayback.ts'
 import { grapplerPoseToSkeleton, resolveSkeletonPose, skeletonToGrapplerPose } from '../src/grappling/kinematics.ts'
 import { resolveGrapplerPairFrame } from '../src/grappling/resolveGrapplerPairFrame.ts'
 import { hasFiniteGeometry, jointConstraintsAreValid, maxBoneLengthDrift, maxSolvedGeometryDelta } from '../src/grappling/validationMetrics.ts'
+import { animationValidationTolerances as tolerances, measureGroundingErrors, measurePairSeparation, measureRelationalTargetErrors, measureRootDisplacementJump, measureEndEffectorJump } from '../src/grappling/validationMetrics.ts'
 
 const definition: TechniqueAnimationDefinition = {
   transitionId: 'test', phases: [
@@ -181,19 +185,19 @@ test('phase target anchors affect geometry and final-phase primitives execute wi
   assert.deepEqual(resolveTechniqueSkeletons(anchored, start, end, 1, empty).playerB, grapplerPoseToSkeleton(end.playerB))
 })
 
-test('all three definitions execute through production playback, preserve endpoints and remain deterministic', () => {
-  const sources = ['open_guard_bottom', 'half_guard_bottom', 'back_control_top']
-  const destinations = ['side_control_top', 'side_control_top', 'half_guard_bottom']
-  techniqueAnimations.forEach((definition, index) => {
+test('all registered families execute through production playback, preserve endpoints and remain deterministic', () => {
+  techniqueAnimations.forEach((definition) => {
     const technique = getTechniqueAnimation(definition.transitionId)!
     const recipe = resolveTransitionAnimation(definition.transitionId).recipe!
-    const start = poses(sources[index]), end = poses(destinations[index])
+    const transition = dataset.positional_transitions.find(entry => entry.id === definition.transitionId)!
+    const start = poses(transition.source_position), end = poses(transition.destination_position)
     const snapshot = structuredClone({ start, end, definition })
     for (const mode of ['gi', 'no_gi'] as const) {
       const contacts = { ...empty, mode, transitionId: definition.transitionId }
       assert.deepEqual(resolveTransitionPoses(recipe, start, end, 0, contacts), start)
       assert.deepEqual(resolveTransitionPoses(recipe, start, end, 1, contacts), end)
-      for (const p of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+      const sought = resolveTransitionPoses(recipe, start, end, 0.3, contacts)
+      for (const p of [0.9, 0.1, 0.7, 0.5, 0.3]) {
         const solved = resolveTechniqueSkeletons(technique, start, end, p, contacts)
         const actual = resolveTransitionPoses(recipe, start, end, p, contacts)
         assert.deepEqual(actual, { playerA: skeletonToGrapplerPose(solved.playerA), playerB: skeletonToGrapplerPose(solved.playerB) })
@@ -203,6 +207,7 @@ test('all three definitions execute through production playback, preserve endpoi
         assert.ok(maxBoneLengthDrift(solved, { playerA: grapplerPoseToSkeleton(start.playerA), playerB: grapplerPoseToSkeleton(start.playerB) }) < 1e-8)
         assert.deepEqual(resolveTechniqueSkeletons(technique, start, end, p, contacts), solved)
       }
+      assert.deepEqual(resolveTransitionPoses(recipe, start, end, 0.3, contacts), sought)
     }
     for (const range of technique.timing.slice(0, -1)) {
       const before = resolveTechniqueFrameInputs(technique, start, end, range.end - 1e-8, empty)
@@ -211,6 +216,101 @@ test('all three definitions execute through production playback, preserve endpoi
     }
     assert.deepEqual({ start, end, definition }, snapshot)
   })
+})
+
+for (const definition of techniqueAnimations) test(`15D solved animation metrics: ${definition.transitionId}`, () => {
+  const technique = getTechniqueAnimation(definition.transitionId)!
+  const transition = dataset.positional_transitions.find(entry => entry.id === definition.transitionId)!
+  const start = poses(transition.source_position), end = poses(transition.destination_position)
+  const reference = { playerA: grapplerPoseToSkeleton(start.playerA), playerB: grapplerPoseToSkeleton(start.playerB) }
+  for (const mode of ['gi', 'no_gi'] as const) {
+    const contacts = { ...empty, mode, transitionId: definition.transitionId }
+    // Include phase centers (full constraint influence), playback samples and both sides of every boundary.
+    const progress = [...new Set([
+      ...Array.from({ length: 101 }, (_, index) => index / 100),
+      ...technique.timing.flatMap(range => [(range.start + range.end) / 2, range.start, range.end]),
+    ])].sort((a, b) => a - b)
+    for (const p of progress) {
+      const inputs = resolveTechniqueFrameInputs(technique, start, end, p, contacts)
+      const solved = resolveTechniqueSkeletons(technique, start, end, p, contacts)
+      assert.deepEqual(solved, resolveGrapplerPairFrame(inputs))
+      assert.ok(hasFiniteGeometry(solved), `${mode} ${p}: finite`)
+      assert.ok(jointConstraintsAreValid(solved), `${mode} ${p}: joints`)
+      assert.ok(maxBoneLengthDrift(solved, reference) <= tolerances.boneLengthDrift, `${mode} ${p}: bones`)
+      assert.ok(measurePairSeparation(solved) <= tolerances.pairSeparation, `${mode} ${p}: separation`)
+      assert.ok(measureGroundingErrors(solved, inputs.grounding).every(({ error }) => error <= tolerances.groundingError), `${mode} ${p}: grounding`)
+      assert.ok(measureRelationalTargetErrors(solved, inputs.contactTargets).every(({ error }) => error <= tolerances.relationalTargetError), `${mode} ${p}: relationships`)
+    }
+    // Iteration 14 defines this tolerance for phase boundaries, not interior IK branch changes.
+    for (const p of [0, ...technique.timing.map(range => range.end)]) {
+      const solved = resolveTechniqueSkeletons(technique, start, end, p, contacts)
+      const before = resolveTechniqueSkeletons(technique, start, end, Math.max(0, p - 0.001), contacts)
+      const after = resolveTechniqueSkeletons(technique, start, end, Math.min(1, p + 0.001), contacts)
+      for (const adjacent of [before, after]) {
+        assert.ok(measureRootDisplacementJump(solved, adjacent) <= tolerances.phaseBoundaryDelta, `${mode} ${p}: root jump`)
+        assert.ok(measureEndEffectorJump(solved, adjacent) <= tolerances.phaseBoundaryDelta, `${mode} ${p}: effector jump`)
+      }
+    }
+  }
+})
+
+test('authored arm drag filters sleeve lifecycle and relationship while retaining wrist control in No-Gi', () => {
+  const program = getTechniqueAnimation('closed_guard_bottom_arm_drag_to_back_control_top')!
+  for (const p of [0.1, 0.4, 0.9, 0.1]) {
+    const gi = interpretTechniqueAnimation(program, p, context)
+    const noGi = interpretTechniqueAnimation(program, p, { ...context, mode: 'no_gi' })
+    assert.equal(noGi.controls.some(control => control.controlId === 'wrist_control'), p < 5 / 7)
+    assert.ok(!noGi.controls.some(control => control.controlId === 'sleeve_grip'))
+    assert.ok(!noGi.relationships.some(relation => relation.controlId === 'sleeve-connection'))
+    assert.equal(gi.controls.some(control => control.controlId === 'sleeve_grip'), p < 2 / 7)
+    if (p < 2 / 7) assert.ok(gi.relationships.some(relation => relation.controlId === 'sleeve-connection'))
+  }
+})
+
+test('standing guard opening keeps Player B actions and cross-player controls on B', () => {
+  const program = getTechniqueAnimation('closed_guard_bottom_opponent_stand_open_to_open_guard_bottom')!
+  const setup = interpretTechniqueAnimation(program, 0.1, context)
+  assert.deepEqual(setup.playerA, {})
+  assert.equal(setup.playerB.primitives?.[0].type, 'reach')
+  assert.equal(setup.controls[0].controller, 'playerB')
+  assert.equal(setup.relationships[0].contact.source.grapplerId, 'playerB')
+  assert.equal(setup.relationships[0].contact.target.grapplerId, 'playerA')
+  const execution = interpretTechniqueAnimation(program, 0.5, context)
+  assert.equal(execution.playerB.primitives?.[0].type, 'lift')
+  assert.equal(execution.playerA.primitives?.[0].type, 'legUnhook')
+})
+
+test('selected roll/history transitions resolve visual endpoints and route through the same technique runtime', () => {
+  for (const definition of techniqueAnimations) for (const mode of ['gi', 'no_gi'] as const) {
+    const transition = dataset.positional_transitions.find(entry => entry.id === definition.transitionId)!
+    const states = [transition.source_position, transition.destination_position].map(position_id => ({ position_id, mode, active_controls: [] }))
+    const selected = getHistoricalTransition(states, [transition.id], 0)!
+    const start = resolveVisualPose(getPositionVisual(selected.startState.position_id)!, []).poses
+    const end = resolveVisualPose(getPositionVisual(selected.endState.position_id)!, []).poses
+    const contacts = { ...empty, mode, transitionId: selected.transitionId }
+    const recipe = resolveTransitionAnimation(selected.transitionId, { mode }).recipe
+    const program = getTechniqueAnimation(selected.transitionId)!
+    for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
+      const actual = resolveTransitionPoses(recipe, start, end, progress, contacts)
+      if (progress === 0) assert.deepEqual(actual, start)
+      else if (progress === 1) assert.deepEqual(actual, end)
+      else {
+        const solved = resolveTechniqueSkeletons(program, start, end, progress, contacts)
+        assert.deepEqual(actual, { playerA: skeletonToGrapplerPose(solved.playerA), playerB: skeletonToGrapplerPose(solved.playerB) })
+      }
+    }
+  }
+})
+
+test('a canonical unmigrated guard recovery still executes its legacy recipe', () => {
+  const id = 'open_guard_bottom_recover_closed_guard'
+  assert.ok(dataset.positional_transitions.some(transition => transition.id === id))
+  assert.equal(getTechniqueAnimation(id), null)
+  const recipe = resolveTransitionAnimation(id).recipe!
+  assert.ok(recipe)
+  const start = poses('open_guard_bottom'), end = poses('closed_guard_bottom')
+  assert.deepEqual(resolveTransitionPoses(recipe, start, end, 0.4, { ...empty, transitionId: id }),
+    resolveTransitionPoses({ ...recipe, transitionId: 'legacy-only' }, start, end, 0.4, empty))
 })
 
 test('unmigrated recipes and plain interpolation retain the legacy fallback path', () => {

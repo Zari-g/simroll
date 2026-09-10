@@ -1,9 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 import { createAnimationCoverageReport } from '../src/grappling/animationRecipes/coverage.ts'
-import { constraintDrivenPositionIds, corePositionVisualIds } from '../src/grappling/positionVisuals.ts'
+import { constraintDrivenPositionIds, corePositionVisualIds, reusedPositionVisualIds } from '../src/grappling/positionVisuals.ts'
 import { createShowcaseValidationReport } from '../src/grappling/showcaseValidation.ts'
 import { animationValidationTolerances } from '../src/grappling/validationMetrics.ts'
+import { techniqueAnimations } from '../src/grappling/techniqueAnimations.ts'
 
 interface RuntimeDataset {
   readonly positions: readonly { readonly id: string; readonly terminal: boolean }[]
@@ -29,22 +30,23 @@ const report = createAnimationCoverageReport(dataset.positional_transitions.map(
 const livePositions = dataset.positions.filter(({ terminal }) => !terminal)
 const constraintDriven = new Set<string>(constraintDrivenPositionIds)
 const articulated = new Set<string>(corePositionVisualIds)
+const reused = new Set<string>(reusedPositionVisualIds)
 const manualPositionIds = livePositions
   .filter(({ id }) => articulated.has(id) && !constraintDriven.has(id)).map(({ id }) => id)
 const constraintPositionIds = livePositions
   .filter(({ id }) => constraintDriven.has(id)).map(({ id }) => id)
 const fallbackPositionIds = livePositions
-  .filter(({ id }) => !articulated.has(id)).map(({ id }) => id)
+  .filter(({ id }) => !articulated.has(id) && !reused.has(id)).map(({ id }) => id)
 const showcaseValidation = createShowcaseValidationReport()
 const pass = (value: boolean) => value ? 'pass' : 'fail'
 const qualityReport = {
   validationTolerances: animationValidationTolerances,
   positionVisualCoverage: {
     live: livePositions.length,
-    articulated: articulated.size,
+    articulated: articulated.size + reused.size,
     manuallyAuthored: manualPositionIds,
     constraintDriven: constraintPositionIds,
-    reusedOrOppositeOrientation: [] as string[],
+    reusedOrOppositeOrientation: [...reusedPositionVisualIds],
     placeholderOrFallback: fallbackPositionIds,
   },
   showcaseValidation,
@@ -61,6 +63,11 @@ const lines = [
   `- Family: ${report.family}`,
   `- Fallback: ${report.fallback}`,
   `- Constraint-enhanced: ${report.constraintEnhanced}`,
+  '',
+  '## Generic technique runtime coverage',
+  '',
+  `- Registered: ${techniqueAnimations.length}/${report.total}; remaining transitions retain legacy routing.`,
+  ...techniqueAnimations.map(definition => `- \`${definition.transitionId}\`: ${definition.metadata.tags.join(', ')}`),
   '',
   '## Constraint-enhanced transitions',
   '',
@@ -85,10 +92,10 @@ const lines = [
   '## Position visual coverage',
   '',
   `- Live semantic positions: ${livePositions.length}`,
-  `- Fully articulated visuals: ${articulated.size}`,
+  `- Fully articulated visuals: ${articulated.size + reused.size}`,
   `- Manually authored articulated: ${manualPositionIds.length} (${manualPositionIds.map((id) => `\`${id}\``).join(', ')})`,
   `- Constraint-driven articulated: ${constraintPositionIds.length} (${constraintPositionIds.map((id) => `\`${id}\``).join(', ')})`,
-  '- Reused/opposite-orientation representations: 0',
+  `- Reused/opposite-orientation representations: ${reused.size} (${[...reused].map(id => `\`${id}\``).join(', ')})`,
   `- Placeholder/fallback: ${fallbackPositionIds.length} (${fallbackPositionIds.map((id) => `\`${id}\``).join(', ')})`,
   '',
   '## Showcase validation',

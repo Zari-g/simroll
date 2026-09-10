@@ -8,6 +8,22 @@
 - Fallback: 37
 - Constraint-enhanced: 3
 
+## Generic technique runtime coverage
+
+- Registered: 12/65; remaining transitions retain legacy routing.
+- `open_guard_bottom_butterfly_sweep_to_side_control_top`: sweep, butterfly
+- `half_guard_bottom_old_school_sweep_to_side_control_top`: sweep, half-guard
+- `back_control_top_opponent_turn_in_to_half_guard_bottom`: escape, back-control
+- `closed_guard_bottom_hip_bump_to_mount_top`: sweep, closed-guard
+- `mount_bottom_elbow_knee_escape_to_half_guard`: escape, mount
+- `open_guard_top_knee_cut_to_side_control_top`: pass, knee-cut, pressure
+- `open_guard_top_toreando_to_side_control_top`: pass, open-guard, circling
+- `side_control_top_step_over_to_mount`: top-transition, mount
+- `closed_guard_bottom_arm_drag_to_back_control_top`: back-take, rotation, closed-guard
+- `half_guard_bottom_recover_closed_guard`: guard-recovery, half-guard
+- `mount_top_gift_wrap_to_back_control`: top-transition, back-take, rotation
+- `closed_guard_bottom_opponent_stand_open_to_open_guard_bottom`: guard-opening, standing-action, playerB-primary
+
 ## Constraint-enhanced transitions
 
 - `back_control_top_opponent_turn_in_to_half_guard_bottom` (back_control_top -> half_guard_bottom) - `escape.hip`
@@ -91,18 +107,18 @@
 ## Position visual coverage
 
 - Live semantic positions: 19
-- Fully articulated visuals: 6
+- Fully articulated visuals: 8
 - Manually authored articulated: 3 (`closed_guard_bottom`, `mount_top`, `side_control_top`)
 - Constraint-driven articulated: 3 (`back_control_top`, `half_guard_bottom`, `open_guard_bottom`)
-- Reused/opposite-orientation representations: 0
-- Placeholder/fallback: 13 (`back_control_bottom`, `closed_guard_top`, `front_headlock_bottom`, `front_headlock_top`, `half_guard_top`, `knee_on_belly_bottom`, `knee_on_belly_top`, `mount_bottom`, `open_guard_top`, `side_control_bottom`, `standing_neutral`, `turtle_bottom`, `turtle_top`)
+- Reused/opposite-orientation representations: 2 (`mount_bottom`, `open_guard_top`)
+- Placeholder/fallback: 11 (`back_control_bottom`, `closed_guard_top`, `front_headlock_bottom`, `front_headlock_top`, `half_guard_top`, `knee_on_belly_bottom`, `knee_on_belly_top`, `side_control_bottom`, `standing_neutral`, `turtle_bottom`, `turtle_top`)
 
 ## Showcase validation
 
 | Technique | Family | Relational controls | Max target error | Grounding | Bones | Continuity | Pair separation | Endpoints | Gi | No-Gi |
 | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |
-| Butterfly Sweep | explicit | `butterfly_hook` | 141.07 px | pass | pass | pass | pass | pass | pass | pass |
-| Half Guard Old-School Sweep | `sweep.rotation` | `ankle_control` | 242.73 px | pass | pass | pass | pass | pass | pass | pass |
+| Butterfly Sweep | explicit | `butterfly_hook` | 118.36 px | pass | pass | pass | pass | pass | pass | pass |
+| Half Guard Old-School Sweep | `sweep.rotation` | `ankle_control` | 146.05 px | pass | pass | pass | pass | pass | pass | pass |
 | Back-Control Turn-In Escape | `escape.hip` | none supported | n/a | pass | pass | pass | pass | pass | pass | pass |
 
 The machine-readable form of position and showcase quality data is in `docs/animation-quality.json`.

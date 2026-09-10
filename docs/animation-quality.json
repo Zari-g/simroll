@@ -9,7 +9,7 @@
   },
   "positionVisualCoverage": {
     "live": 19,
-    "articulated": 6,
+    "articulated": 8,
     "manuallyAuthored": [
       "closed_guard_bottom",
       "mount_top",
@@ -20,7 +20,10 @@
       "half_guard_bottom",
       "open_guard_bottom"
     ],
-    "reusedOrOppositeOrientation": [],
+    "reusedOrOppositeOrientation": [
+      "mount_bottom",
+      "open_guard_top"
+    ],
     "placeholderOrFallback": [
       "back_control_bottom",
       "closed_guard_top",
@@ -29,8 +32,6 @@
       "half_guard_top",
       "knee_on_belly_bottom",
       "knee_on_belly_top",
-      "mount_bottom",
-      "open_guard_top",
       "side_control_bottom",
       "standing_neutral",
       "turtle_bottom",
@@ -46,7 +47,7 @@
       "supportedRelationalControls": [
         "butterfly_hook"
       ],
-      "maxRelationalTargetError": 141.06992466910452,
+      "maxRelationalTargetError": 118.36309051263257,
       "groundingValid": true,
       "boneLengthsValid": true,
       "phaseContinuityValid": true,
@@ -65,7 +66,7 @@
       "supportedRelationalControls": [
         "ankle_control"
       ],
-      "maxRelationalTargetError": 242.72611105322036,
+      "maxRelationalTargetError": 146.05482363197012,
       "groundingValid": true,
       "boneLengthsValid": true,
       "phaseContinuityValid": true,
