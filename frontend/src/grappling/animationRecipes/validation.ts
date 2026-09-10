@@ -1,4 +1,5 @@
 import type { MotionPrimitive } from '../motionPrimitives.ts'
+import { validateMotionIntensity } from '../motionPrimitives.ts'
 import type { SkeletonPoseOverride } from '../types.ts'
 import type { AnimationRecipe } from './types.ts'
 import { getControlTargetDefinition } from '../controlTargets.ts'
@@ -50,6 +51,12 @@ export function validateMotionPrimitive(
 ) {
   if (!primitive || typeof primitive !== 'object' || typeof primitive.type !== 'string') {
     fail(recipe, `${path} must be a motion primitive`)
+  }
+
+  try {
+    validateMotionIntensity(primitive.intensity)
+  } catch {
+    fail(recipe, `${path}.intensity must be finite and within [0, 1]`)
   }
 
   switch (primitive.type) {

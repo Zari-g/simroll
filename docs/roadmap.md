@@ -1043,6 +1043,23 @@ See `docs/architecture.md` for phase, lifecycle and baseline semantics.
 - [x] Validate actual weighted boundaries and ease constraint binding at phase edges.
 - [x] Pass all 176 frontend tests, compile/type checks, lint and production build.
 
-15C can expand authoring incrementally. No additional primitives were required for
+No additional primitives were required for
 these three definitions. Full migration, editor UI and solver redesign remain out
 of scope. The build reports Vite's large-chunk advisory.
+
+## Iteration 15C - Reusable BJJ motion library normalization
+
+- [x] Audit all 35 existing IDs and publish an exhaustive typed canonical inventory.
+- [x] Preserve existing parameter units and references; add shared finite [0, 1]
+  intensity with exact zero/default behavior and document direction/side conventions.
+- [x] Consolidate follow, drag and lift through existing equivalent movement logic;
+  add no speculative primitives or full technique definitions.
+- [x] Detach all composition outputs, including empty actions, and retain authored
+  order, additive joint changes, fixed ownership and authoritative endpoints.
+- [x] Verify sweep, escape and pass compositions for either owner, deterministic
+  seeking, all three registered techniques and unchanged legacy fallback.
+- [x] Pass all 182 frontend tests, technique and primitive test type checks,
+  application type checks, lint, production build and `git diff --check`.
+
+15D can build on this documented vocabulary. The existing Vite large-chunk advisory
+remains; technique dataset expansion and solver changes are outside 15C.

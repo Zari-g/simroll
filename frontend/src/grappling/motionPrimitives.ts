@@ -57,12 +57,37 @@ export type RelativeMotionPrimitive =
   | { readonly type: 'dropWeight'; readonly amount: number; readonly lean?: number }
   | { readonly type: 'offBalance'; readonly direction: PlanarDirection; readonly amount: number; readonly turn?: number }
 
-export type MotionPrimitive =
+type MotionPrimitivePayload =
   | EstablishedMotionPrimitive
   | CoreMotionPrimitive
   | ArmMotionPrimitive
   | LegMotionPrimitive
   | RelativeMotionPrimitive
+
+/** Geometry parameters retain their legacy units; intensity scales the entire delta. */
+export type MotionPrimitive = MotionPrimitivePayload & {
+  /** Finite [0, 1], default 1. Zero is identity, including implicit posture defaults. */
+  readonly intensity?: number
+}
+
+/** Exhaustive canonical inventory; values document the legacy `amount` unit. */
+export const motionPrimitiveCatalog = Object.freeze({
+  hipShift: 'none', hipEscape: 'none', bridge: 'none', sitUp: 'degrees',
+  postHand: 'none', torsoTurn: 'none', pelvisRotation: 'degrees',
+  kneeDrive: 'none', legPummel: 'none', weightShift: 'none',
+  hipSwitch: 'degrees', hipDrive: 'none', baseAdjust: 'none', postRetract: 'degrees',
+  torsoLean: 'degrees', bodyRotation: 'degrees', reach: 'degrees', retractArm: 'degrees',
+  frame: 'degrees', armPummel: 'degrees', armDrag: 'degrees', kneeInsert: 'degrees',
+  kneeRetract: 'degrees', kneeSlide: 'none', legHook: 'degrees', legUnhook: 'degrees',
+  step: 'degrees', hookElevation: 'degrees', push: 'none', pull: 'none', drag: 'none',
+  lift: 'sceneUnits', follow: 'none', dropWeight: 'sceneUnits', offBalance: 'sceneUnits',
+} as const satisfies Record<MotionPrimitive['type'], 'none' | 'degrees' | 'sceneUnits'>)
+
+export function validateMotionIntensity(intensity: number | undefined): void {
+  if (intensity !== undefined && (!Number.isFinite(intensity) || intensity < 0 || intensity > 1)) {
+    throw new Error('intensity must be finite and within [0, 1]')
+  }
+}
 
 function cloneSkeleton(pose: GrapplerSkeletonPose): GrapplerSkeletonPose {
   return {
@@ -77,7 +102,7 @@ function withJointRotations(
   pose: GrapplerSkeletonPose,
   rotations: Readonly<Partial<Record<GrapplerChildJointName, number>>>,
 ): GrapplerSkeletonPose {
-  const joints = { ...pose.joints }
+  const joints = { ...cloneSkeleton(pose).joints }
   for (const [name, delta] of Object.entries(rotations)) {
     const jointName = name as GrapplerChildJointName
     const transform = pose.joints[jointName]
@@ -167,6 +192,32 @@ function legRotations(
 export function applyMotionPrimitive(
   pose: GrapplerSkeletonPose,
   primitive: MotionPrimitive,
+): GrapplerSkeletonPose {
+  validateMotionIntensity(primitive.intensity)
+  const intensity = primitive.intensity ?? 1
+  if (intensity === 0) return cloneSkeleton(pose)
+  const result = applyMotionPrimitivePayload(pose, primitive)
+  if (intensity === 1) return result
+  // Scale the complete action once, after defaults and coupled posture are resolved.
+  // Use raw angular deltas: shortest-angle interpolation would change authored turns.
+  const scale = (start: number, end: number) => start + (end - start) * intensity
+  return {
+    root: {
+      position: {
+        x: scale(pose.root.position.x, result.root.position.x),
+        y: scale(pose.root.position.y, result.root.position.y),
+      },
+      rotation: scale(pose.root.rotation, result.root.rotation),
+    },
+    joints: Object.fromEntries(Object.entries(result.joints).map(([name, joint]) => [name, {
+      ...joint, rotation: scale(pose.joints[name as GrapplerChildJointName].rotation, joint.rotation),
+    }])) as Record<GrapplerChildJointName, LocalJointTransform>,
+  }
+}
+
+function applyMotionPrimitivePayload(
+  pose: GrapplerSkeletonPose,
+  primitive: MotionPrimitivePayload,
 ): GrapplerSkeletonPose {
   switch (primitive.type) {
     case 'hipShift':
@@ -398,17 +449,17 @@ export function applyMotionPrimitive(
       )
     }
     case 'drag':
-      return withJointRotations(
-        shiftInDirection(pose, primitive.direction, primitive.distance),
-        { chest: primitive.turn ?? 0 },
-      )
+      return applyMotionPrimitivePayload(pose, {
+        type: 'weightShift', ...directionComponents(primitive.direction, primitive.distance), torso: primitive.turn,
+      })
     case 'lift':
-      return withJointRotations(shiftRoot(pose, 0, -primitive.amount), {
-        spine: -(primitive.extension ?? 0) * 0.6,
-        chest: -(primitive.extension ?? 0) * 0.4,
+      return applyMotionPrimitivePayload(pose, {
+        type: 'hipDrive', distance: 0, lift: primitive.amount, extension: primitive.extension,
       })
     case 'follow':
-      return shiftInDirection(pose, primitive.direction, primitive.distance)
+      return applyMotionPrimitivePayload(pose, {
+        type: 'hipShift', ...directionComponents(primitive.direction, primitive.distance),
+      })
     case 'dropWeight':
       return withJointRotations(shiftRoot(pose, 0, primitive.amount), {
         spine: primitive.lean ?? 0,
@@ -430,5 +481,8 @@ export function composeMotionPrimitives(
   pose: GrapplerSkeletonPose,
   primitives: readonly MotionPrimitive[],
 ): GrapplerSkeletonPose {
-  return primitives.reduce(applyMotionPrimitive, pose)
+  // Authored order is significant: translation uses the root orientation at that
+  // point. Joint deltas add; no action overwrites a previous action's rotation.
+  // A detached identity also prevents empty actions from aliasing a cached pose.
+  return primitives.reduce(applyMotionPrimitive, cloneSkeleton(pose))
 }

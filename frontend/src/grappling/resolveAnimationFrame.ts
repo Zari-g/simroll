@@ -122,7 +122,7 @@ export function composeAnimationSkeleton(
   choreography?: AnimationPlayerChoreography,
 ): GrapplerSkeletonPose {
   const moved = composeMotionPrimitives(
-    cloneSkeleton(skeleton),
+    skeleton,
     choreography?.primitives ?? [],
   )
   return applySkeletonOverride(moved, choreography?.override)

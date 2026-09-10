@@ -691,5 +691,83 @@ continues to come from the authoritative state handoff.
 Tests cover weighted boundaries, validation, easing, parameter/identity retention,
 control lifecycle and mode filtering, canonical anchors, solver routing, all three
 techniques and unchanged fallback. Showcase diagnostics use the new weighted
-boundaries and actual production constraint inputs. Primitive-library expansion
-remains deferred to 15C; these examples require no new primitives.
+boundaries and actual production constraint inputs. Primitive-library normalization
+is documented below in 15C; these examples require no new primitives.
+
+### Iteration 15C - Reusable motion vocabulary
+
+The audit retains the existing 35 camelCase IDs. No new movement, rename or
+deprecation is needed. `motionPrimitiveCatalog` is the exhaustive typed inventory
+and records the legacy `amount` unit. Canonical IDs by group:
+
+- Hip/base: `hipShift`, `hipEscape`, `bridge`, `pelvisRotation`, `weightShift`,
+  `hipSwitch`, `hipDrive`, `baseAdjust`.
+- Posture: `sitUp`, `torsoTurn`, `torsoLean`, `bodyRotation`.
+- Arms: `postHand`, `postRetract`, `reach`, `retractArm`, `frame`, `armPummel`, `armDrag`.
+- Legs: `kneeDrive`, `legPummel`, `kneeInsert`, `kneeRetract`, `kneeSlide`,
+  `legHook`, `legUnhook`, `step`, `hookElevation`.
+- Relative intent: `push`, `pull`, `drag`, `lift`, `follow`, `dropWeight`, `offBalance`.
+
+Audit decisions: `follow` delegates to directional `hipShift`, `drag` to
+directional `weightShift`, and `lift` to `hipDrive` with zero forward distance.
+These remain supported semantic entry points and apply intensity only once.
+Other close concepts have meaningful differences: bridge has different extension
+ratios from lift; sit-up counter-rotates the neck differently from torso lean;
+post retraction and arm retraction have different shoulder ratios. They are not
+interchangeable aliases. No primitive is specific to a named technique.
+
+Parameter conventions:
+
+- Every action accepts optional `intensity`: finite **[0, 1]**, default **1**.
+  It scales the complete root/joint delta after resolving defaults. Zero is an
+  exact identity, including bridge extension and hip-escape turn defaults.
+  Invalid values are rejected in recipe/technique validation and direct application.
+- Existing signed geometry values remain finite and retain their original units
+  for compatibility. `forward`, `lateral`, `distance`, `drive`, `lift` are scene
+  distances; `rotation`, `turn`, `angle`, `shoulder`, `elbow`, `hip`, `knee`,
+  `spine`, `chest`, `torso`, `bend`, `wrist`, `extension`, `lean` are degrees.
+  `torsoFollow` is a dimensionless multiplier. `torsoLean.lateral` is degrees,
+  unlike translation `lateral` fields.
+- Legacy `amount` is degrees except `lift`, `dropWeight`, `offBalance`, where it
+  is scene distance. `step` and `hookElevation` couple angular amount to a small
+  root displacement; `kneeSlide`, `push`, `pull`, `offBalance` similarly couple
+  distance to posture. These are stylized 2D actions, not forces or 3D elevation.
+  Do not reinterpret existing `amount: 16` as normalized or silently clamp it.
+- `side` selects anatomical left/right. Mirrored semantic limb actions use left
+  negative/right positive before their action-specific factors. Low-level
+  `postHand`, `kneeDrive`, `legPummel` accept explicit signed joint angles without
+  automatic mirroring. `direction` uses the current pelvis-root frame:
+  forward +x, backward -x, left -y, right +y before root rotation. Positive
+  rotations follow the existing screen-coordinate convention. Push direction
+  describes the intended push; the actor braces slightly in the opposite direction.
+  Arm-pummel direction is `inside`/`outside`; reach and step retain typed `path`.
+
+For example, `{ type: 'hipShift', lateral: -10, intensity: 0.7 }` shifts seven
+scene units left; `{ type: 'torsoTurn', chest: 20, intensity: 0.5 }` adds ten
+degrees of chest rotation. Tune geometry in physical units, then use intensity
+for bounded variation. No target, axis or mode parameter is added unnecessarily.
+
+Composition executes the authored array left to right, once per entry. Joint
+rotations add, including overlapping actions; translations use the root rotation
+at that point in the array. Rotation then shift therefore differs from shift then
+rotation. There is no sorting, last-action overwrite, or implicit deduplication:
+repeating an entry deliberately adds its delta twice. Authored skeleton overrides
+still run after primitives and take precedence; grounding, contacts and joint
+constraints remain in the existing solver. Authors should keep deltas modest and
+use relational controls to resolve competing contact intent.
+
+Each application returns detached root and joint objects, including zero-intensity
+and empty compositions. A primitive receives only its owner's skeleton, never a
+pair; A/B effects cross through relational targets and pair solving. Runtime
+phase baselines, seeking, final-phase envelopes and authoritative global endpoints
+are unchanged. Primitives are mode-agnostic; controls and grip filtering own Gi
+and No-Gi differences.
+
+For 15D, reuse kneeDrive's explicit hip/knee angles for leg extension, bodyRotation
+plus torsoTurn for turn-in, and reach/frame plus controls for underhooks and grips.
+Sweep, escape and pass compositions are exercised through the generic runtime for
+both owners. Add a primitive only when multiple techniques need a distinct local
+movement that these actions cannot express cleanly. Hook geometry does not acquire
+a hook control, posting geometry does not bind a ground anchor, and push/pull never
+move the opponent directly. No demonstrated primitive gap remains from this audit;
+new technique authoring should validate geometry rather than assume visual quality.

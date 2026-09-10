@@ -9,10 +9,11 @@ import {
 import {
   applyMotionPrimitive,
   composeMotionPrimitives,
+  motionPrimitiveCatalog,
   type MotionPrimitive,
 } from '../src/grappling/motionPrimitives.ts'
 import type { AnimationRecipe } from '../src/grappling/animationRecipes/types.ts'
-import { validateAnimationRecipe } from '../src/grappling/animationRecipes/validation.ts'
+import { validateAnimationRecipe, validateMotionPrimitive } from '../src/grappling/animationRecipes/validation.ts'
 import { articulatedPositionSkeletons, getPositionVisual } from '../src/grappling/positionVisuals.ts'
 import { validateSkeletonPose } from '../src/grappling/poseValidation.ts'
 import { animationRecipeRegistry } from '../src/grappling/animationRecipes/registry.ts'
@@ -59,6 +60,73 @@ const expandedPrimitives: readonly MotionPrimitive[] = [
 ]
 
 const primitives = [...establishedPrimitives, ...expandedPrimitives]
+
+test('canonical inventory is unique, exhaustive, and every payload validates', () => {
+  assert.equal(new Set(primitives.map(p => p.type)).size, primitives.length)
+  assert.deepEqual(Object.keys(motionPrimitiveCatalog).sort(), primitives.map(p => p.type).sort())
+  for (const primitive of primitives) validateMotionPrimitive({ transitionId: 'inventory' }, primitive, primitive.type)
+  assert.throws(() => validateMotionPrimitive({ transitionId: 'invalid' }, { type: 'unknown' } as unknown as MotionPrimitive, 'primitive'), /unsupported/)
+})
+
+test('intensity has one bounded meaning for every action, including coupled defaults', () => {
+  const source = articulatedPositionSkeletons.closed_guard_bottom.playerA
+  for (const primitive of primitives) {
+    const full = applyMotionPrimitive(source, primitive)
+    for (const intensity of [0, 0.5, 1]) {
+      const action = { ...primitive, intensity }
+      validateMotionPrimitive({ transitionId: 'intensity' }, action, 'primitive')
+      const result = applyMotionPrimitive(source, action)
+      if (intensity === 0) assert.deepEqual(result, source)
+      if (intensity === 1) assert.deepEqual(result, full)
+      const near = (actual: number, start: number, end: number) => assert.ok(Math.abs(actual - (start + (end - start) * intensity)) < 1e-10, primitive.type)
+      near(result.root.position.x, source.root.position.x, full.root.position.x)
+      near(result.root.position.y, source.root.position.y, full.root.position.y)
+      near(result.root.rotation, source.root.rotation, full.root.rotation)
+      for (const name of Object.keys(source.joints) as (keyof typeof source.joints)[]) near(result.joints[name].rotation, source.joints[name].rotation, full.joints[name].rotation)
+    }
+    for (const intensity of [-0.1, 1.1, NaN, Infinity]) {
+      assert.throws(() => validateMotionPrimitive({ transitionId: 'intensity' }, { ...primitive, intensity }, 'primitive'), /intensity/)
+      assert.throws(() => applyMotionPrimitive(source, { ...primitive, intensity }), /intensity/)
+    }
+  }
+})
+
+test('composition results detach every joint even for empty and zero-intensity actions', () => {
+  const source = articulatedPositionSkeletons.closed_guard_bottom.playerA
+  for (const actions of [[], ...primitives.map(p => [p]), [{ type: 'bridge', lift: 8, intensity: 0 }]] as readonly (readonly MotionPrimitive[])[]) {
+    const result = composeMotionPrimitives(source, actions)
+    assert.notEqual(result, source)
+    assert.notEqual(result.root.position, source.root.position)
+    for (const name of Object.keys(source.joints) as (keyof typeof source.joints)[]) assert.notEqual(result.joints[name], source.joints[name])
+  }
+})
+
+test('root-local directions and semantic compositions preserve their conventions', () => {
+  const source = articulatedPositionSkeletons.closed_guard_bottom.playerA
+  for (const rotation of [0, 90, -45]) for (const direction of ['forward', 'backward', 'left', 'right'] as const) {
+    const pose = { ...source, root: { ...source.root, rotation } }
+    const forward = direction === 'forward' ? 8 : direction === 'backward' ? -8 : 0
+    const lateral = direction === 'right' ? 8 : direction === 'left' ? -8 : 0
+    assert.deepEqual(applyMotionPrimitive(pose, { type: 'follow', direction, distance: 8, intensity: 0.5 }), applyMotionPrimitive(pose, { type: 'hipShift', forward, lateral, intensity: 0.5 }))
+    assert.deepEqual(applyMotionPrimitive(pose, { type: 'drag', direction, distance: 8, turn: 4 }), applyMotionPrimitive(pose, { type: 'weightShift', forward, lateral, torso: 4 }))
+  }
+  assert.deepEqual(applyMotionPrimitive(source, { type: 'lift', amount: 8, extension: 6, intensity: 0.5 }), applyMotionPrimitive(source, { type: 'hipDrive', distance: 0, lift: 8, extension: 6, intensity: 0.5 }))
+})
+
+test('authored order rotates subsequent translations and joint deltas add exactly once', () => {
+  const source = articulatedPositionSkeletons.closed_guard_bottom.playerA
+  const pose = { ...source, root: { position: { x: 0, y: 0 }, rotation: 0 } }
+  const turn: MotionPrimitive = { type: 'pelvisRotation', amount: 90 }
+  const shift: MotionPrimitive = { type: 'hipShift', forward: 10 }
+  const first = composeMotionPrimitives(pose, [turn, shift])
+  const reversed = composeMotionPrimitives(pose, [shift, turn])
+  assert.ok(Math.abs(first.root.position.x) < 1e-10)
+  assert.equal(first.root.position.y, 10)
+  assert.deepEqual(reversed.root.position, { x: 10, y: 0 })
+  const torso = composeMotionPrimitives(pose, [{ type: 'sitUp', amount: 20, intensity: 0.5 }, { type: 'torsoTurn', chest: 3 }])
+  assert.equal(torso.joints.chest.rotation, pose.joints.chest.rotation + 7)
+  assert.deepEqual(composeMotionPrimitives(pose, [turn, shift]), first)
+})
 
 function assertFiniteSkeleton(skeleton: ReturnType<typeof applyMotionPrimitive>) {
   assert.ok(Object.values(skeleton.root.position).every(Number.isFinite))
