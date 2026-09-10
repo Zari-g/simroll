@@ -771,3 +771,30 @@ movement that these actions cannot express cleanly. Hook geometry does not acqui
 a hook control, posting geometry does not bind a ground anchor, and push/pull never
 move the opponent directly. No demonstrated primitive gap remains from this audit;
 new technique authoring should validate geometry rather than assume visual quality.
+
+### Iteration 15D - Representative technique coverage
+
+The registry now contains 12 of 65 canonical transitions: butterfly and old-school
+sweeps, back turn-in, hip bump, mount elbow-knee escape, knee cut, toreando,
+side-control step-over, closed-guard arm drag, half-guard recovery, mount gift wrap,
+and Player B's standing guard opening. Together these cover sweeps, elevation,
+escapes, pressure and circling passes, rotation, top transitions and guard recovery.
+All use weighted declarative phases, the existing 35-primitive vocabulary,
+relational controls and grounding through the generic interpreter and pair solver.
+No interpreter, renderer, primitive or solver changes were required.
+
+The existing mount-bottom and open-guard-top graph nodes now reuse the authored
+opposite orientation poses with explicit A/B assignments. These two visual data
+entries allow normal playback and Auto Roll to resolve both endpoints; neither
+adds a canonical node nor changes player identities during a transition.
+The arm drag acquires a Gi-only sleeve grip and gated relationship alongside shared
+wrist control; No-Gi retains the shared mechanics. Back turn-in and standing guard
+opening exercise Player B ownership. Exact endpoints and legacy fallback remain.
+
+Standing recovery, guard pull, Granby and submission were deferred because their
+standing/turtle/terminal endpoints lack animated visual definitions. The simulator
+currently skips animation for missing visuals. This is a pose-coverage gap, not a
+demonstrated primitive/schema gap; do not introduce a submission-specific runtime.
+Iteration 16 retains 53 transitions to migrate plus endpoint pose authoring.
+Data-driven tests sample both modes and phase boundaries with Iteration 14 finite,
+bone, grounding, relation, separation and continuity metrics, without new tolerances.

@@ -2,6 +2,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { techniqueAnimations } from '../src/grappling/techniqueAnimations.ts'
+import { getTechniqueAnimation } from '../src/grappling/techniqueAnimationRegistry.ts'
+import { motionPrimitiveCatalog } from '../src/grappling/motionPrimitives.ts'
+import { getPositionVisual, reusedPositionVisualIds } from '../src/grappling/positionVisuals.ts'
 import { validateTechniqueAnimationDefinition } from '../src/grappling/techniqueAnimationValidation.ts'
 import type { TechniqueAnimationDefinition, TechniqueAnimationPhase, RelationalTargetDefinition, TechniqueParticipants } from '../src/grappling/techniqueAnimationTypes.ts'
 import type { ActiveControl, Grip } from '../src/types/api.ts'
@@ -24,7 +27,7 @@ function validatePhase(phase: object) {
 test('minimal and representative definitions validate without mutation; graph owns endpoints', () => {
   assert.equal(validateTechniqueAnimationDefinition(minimal, context), minimal)
   const before = JSON.stringify(techniqueAnimations)
-  assert.equal(techniqueAnimations.length, 3)
+  assert.equal(techniqueAnimations.length, 12)
   const definitions: readonly TechniqueAnimationDefinition[] = techniqueAnimations
   for (const definition of definitions) {
     assert.equal(validateTechniqueAnimationDefinition(definition, context), definition)
@@ -33,6 +36,54 @@ test('minimal and representative definitions validate without mutation; graph ow
     assert.equal(definition.phases.at(-1)?.targetPosition, transition.destination_position)
   }
   assert.equal(JSON.stringify(techniqueAnimations), before)
+})
+
+test('registry contains the intended distinct movement families and only canonical primitives', () => {
+  const expected = [
+    'open_guard_bottom_butterfly_sweep_to_side_control_top',
+    'half_guard_bottom_old_school_sweep_to_side_control_top',
+    'back_control_top_opponent_turn_in_to_half_guard_bottom',
+    'closed_guard_bottom_hip_bump_to_mount_top',
+    'mount_bottom_elbow_knee_escape_to_half_guard',
+    'open_guard_top_knee_cut_to_side_control_top',
+    'open_guard_top_toreando_to_side_control_top',
+    'side_control_top_step_over_to_mount',
+    'closed_guard_bottom_arm_drag_to_back_control_top',
+    'half_guard_bottom_recover_closed_guard',
+    'mount_top_gift_wrap_to_back_control',
+    'closed_guard_bottom_opponent_stand_open_to_open_guard_bottom',
+  ]
+  const ids = techniqueAnimations.map(definition => definition.transitionId)
+  assert.deepEqual([...ids].sort(), expected.sort())
+  assert.equal(new Set(ids).size, ids.length)
+  const definitions: readonly TechniqueAnimationDefinition[] = techniqueAnimations
+  for (const definition of definitions) {
+    assert.deepEqual(getTechniqueAnimation(definition.transitionId)?.definition, definition)
+    const transition = dataset.positional_transitions.find(entry => entry.id === definition.transitionId)!
+    assert.ok(transition)
+    const owner = transition.actor_player === 'player_b' ? 'playerB' : 'playerA'
+    assert.ok(definition.phases.filter(phase => phase[owner]?.primitives?.length).length >= 2)
+    assert.ok(definition.phases.length >= 3)
+    assert.ok(definition.phases.some(phase => phase.relationalTargets?.length))
+    assert.ok(definition.phases.some(phase => phase.grounding?.length))
+    for (const phase of definition.phases) for (const player of ['playerA', 'playerB'] as const) {
+      for (const primitive of phase[player]?.primitives ?? []) {
+        assert.ok(primitive.type in motionPrimitiveCatalog)
+        assert.ok((primitive.intensity ?? 1) >= 0 && (primitive.intensity ?? 1) <= 1)
+      }
+    }
+  }
+})
+
+test('opposite orientation visuals reuse anatomy with explicit canonical A/B assignments', () => {
+  assert.deepEqual(reusedPositionVisualIds, ['mount_bottom', 'open_guard_top'])
+  for (const [id, opposite] of [['mount_bottom', 'mount_top'], ['open_guard_top', 'open_guard_bottom']]) {
+    assert.ok(context.positionIds.has(id))
+    const visual = getPositionVisual(id)!, source = getPositionVisual(opposite)!
+    assert.equal(visual.positionId, id)
+    assert.deepEqual(visual.playerAPose, source.playerBPose)
+    assert.deepEqual(visual.playerBPose, source.playerAPose)
+  }
 })
 
 test('rejects missing phases, duplicate IDs, invalid and overflowing durations', () => {

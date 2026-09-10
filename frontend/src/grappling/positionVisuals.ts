@@ -619,9 +619,24 @@ export const corePositionVisualIds = [
   'back_control_top',
 ] as const
 
+export const reusedPositionVisualIds = ['mount_bottom', 'open_guard_top'] as const
+
 const positionVisuals: Readonly<
   Record<string, GrapplingPositionVisualDefinition>
 > = {
+  // Existing graph orientations reuse authored anatomy with explicit fixed identities.
+  mount_bottom: {
+    positionId: 'mount_bottom', label: 'Mount Bottom',
+    description: 'Player A defends underneath Player B in mount.',
+    playerAPose: mountBottomPose, playerBPose: mountTopPose,
+    playerARole: 'Defending', playerBRole: 'Mount', playerOrder: ['playerA', 'playerB'],
+  },
+  open_guard_top: {
+    positionId: 'open_guard_top', label: 'Open Guard Top',
+    description: 'Player A passes against Player B in open guard.',
+    playerAPose: openGuardTopPose, playerBPose: openGuardBottomPose,
+    playerARole: 'Passing', playerBRole: 'Guard', playerOrder: ['playerB', 'playerA'],
+  },
   closed_guard_bottom: {
     positionId: 'closed_guard_bottom',
     label: 'Closed Guard Bottom',

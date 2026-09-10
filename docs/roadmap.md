@@ -1063,3 +1063,26 @@ of scope. The build reports Vite's large-chunk advisory.
 
 15D can build on this documented vocabulary. The existing Vite large-chunk advisory
 remains; technique dataset expansion and solver changes are outside 15C.
+
+## Iteration 15D - Representative technique coverage expansion
+
+- [x] Register 12/65 transitions spanning sweeps, mount/back escapes, pressure and
+  circling passes, back takes, top transitions, guard recovery and B-driven opening.
+- [x] Reuse existing primitives, weighted phases, relationships, grounding and
+  generic runtime; preserve A/B ownership and mode-dependent grip filtering.
+- [x] Supply opposite orientation visual data for existing mount-bottom and
+  open-guard-top nodes using authored poses; leave the canonical graph unchanged.
+- [x] Extend registry, runtime, endpoint, seeking and Iteration 14 metric tests
+  across the representative set in Gi and No-Gi.
+- [x] Pass 200 frontend tests, technique/application type checks, lint, production
+  build and generated animation coverage checks. The existing large-chunk advisory remains.
+
+15E should visually review normal playback, Auto Roll and seeking for all 12,
+especially opposite orientations and guard opening. Standing recovery/entry,
+Granby and submissions await standing/turtle/terminal pose coverage. No new motion
+vocabulary gap was demonstrated. Iteration 16 retains 53 unmigrated transitions;
+legacy animation remains available.
+
+Dense exploratory continuity checks also exposed interior IK branch snaps in the
+original three programs. Existing phase-boundary continuity checks pass; 15E should
+assess these interior changes visually before any general solver adjustment.
