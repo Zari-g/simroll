@@ -4,6 +4,7 @@ import { compileTechniqueAnimation, interpretTechniqueAnimation, normalizePhaseT
 import { getTechniqueAnimation, techniqueGrips } from '../src/grappling/techniqueAnimationRegistry.ts'
 import { techniqueAnimations } from '../src/grappling/techniqueAnimations.ts'
 import type { TechniqueAnimationDefinition } from '../src/grappling/techniqueAnimationTypes.ts'
+import type { MotionPrimitive } from '../src/grappling/motionPrimitives.ts'
 import { resolveTechniqueFrameInputs, resolveTechniqueSkeletons } from '../src/grappling/techniqueRuntime.ts'
 import { resolveTransitionPoses, interpolateGrapplerPose, easeInOutCubic, interpolateSkeletonPose } from '../src/grappling/interpolatePose.ts'
 import { resolveTransitionAnimation } from '../src/grappling/animationRecipes/resolver.ts'
@@ -29,6 +30,53 @@ function poses(id: string) {
   return { playerA: visual.playerAPose, playerB: visual.playerBPose }
 }
 const empty = { startContacts: [], endContacts: [] }
+
+const normalizedCompositions = {
+  sweep: [
+    { type: 'sitUp', amount: 16, intensity: 0.7 },
+    { type: 'hipShift', lateral: 8, intensity: 0.7 },
+    { type: 'kneeDrive', side: 'left', hip: 0, knee: -12, intensity: 0.5 },
+    { type: 'torsoTurn', chest: 10, intensity: 0.5 },
+    { type: 'weightShift', forward: 5, intensity: 0.6 },
+  ],
+  escape: [
+    { type: 'frame', side: 'right', amount: 14, intensity: 0.7 },
+    { type: 'hipEscape', side: 'left', distance: 10, intensity: 0.6 },
+    { type: 'kneeInsert', side: 'left', amount: 12, intensity: 0.6 },
+    { type: 'bodyRotation', amount: -12, intensity: 0.5 },
+  ],
+  pass: [
+    { type: 'postHand', side: 'left', shoulder: 12, elbow: -6, intensity: 0.5 },
+    { type: 'kneeDrive', side: 'right', hip: -12, knee: 10, intensity: 0.7 },
+    { type: 'weightShift', forward: 6, intensity: 0.6 },
+    { type: 'torsoTurn', chest: 8, intensity: 0.5 },
+  ],
+} as const satisfies Record<string, readonly MotionPrimitive[]>
+
+test('sweep, escape and pass compositions isolate either owner and survive seeking and endpoints', () => {
+  const start = poses('open_guard_bottom'), end = poses('side_control_top')
+  const snapshot = structuredClone({ start, end })
+  const baseline = compileTechniqueAnimation({ transitionId: 'test', phases: [{ id: 'motion', duration: 1 }] }, validation)
+  for (const primitives of Object.values(normalizedCompositions)) for (const owner of ['playerA', 'playerB'] as const) {
+    const other = owner === 'playerA' ? 'playerB' : 'playerA'
+    const program = compileTechniqueAnimation({ transitionId: 'test', phases: [{ id: 'motion', duration: 1, [owner]: { primitives } }] }, validation)
+    const sample = (progress: number) => resolveTechniqueFrameInputs(program, start, end, progress, empty).skeletons
+    const middle = sample(0.5)
+    const neutral = resolveTechniqueFrameInputs(baseline, start, end, 0.5, empty).skeletons
+    assert.deepEqual(middle[other], neutral[other])
+    assert.notDeepEqual(middle[owner], neutral[owner])
+    for (const progress of [0.9, 0.1, 0.7, 0.5]) {
+      const solved = resolveTechniqueSkeletons(program, start, end, progress, empty)
+      assert.ok(hasFiniteGeometry(solved))
+      assert.ok(jointConstraintsAreValid(solved))
+      assert.ok(maxBoneLengthDrift(solved, middle) < 1e-8)
+    }
+    assert.deepEqual(sample(0.5), middle)
+    assert.deepEqual(resolveTechniqueSkeletons(program, start, end, 0, empty), { playerA: grapplerPoseToSkeleton(start.playerA), playerB: grapplerPoseToSkeleton(start.playerB) })
+    assert.deepEqual(resolveTechniqueSkeletons(program, start, end, 1, empty), { playerA: grapplerPoseToSkeleton(end.playerA), playerB: grapplerPoseToSkeleton(end.playerB) })
+  }
+  assert.deepEqual({ start, end }, snapshot)
+})
 
 test('weighted timing preserves order, endpoints, exact boundaries and local progress', () => {
   assert.deepEqual(compiled.timing, [{ start: 0, end: 0.25 }, { start: 0.25, end: 0.75 }, { start: 0.75, end: 1 }])
