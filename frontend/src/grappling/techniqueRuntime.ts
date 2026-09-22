@@ -58,7 +58,7 @@ export function resolveTechniqueFrameInputs(compiled: CompiledTechniqueAnimation
   })
   return {
     intent: { ...intent, grounding }, baseProgress: intent.globalProgress, skeletons: base, grounding,
-    contactTargets: intent.contactTargets,
+    contactTargets: intent.contactTargets, contactOptions: { continuousIK: true },
     progress: intent.globalProgress, sourceSkeletons: source, destinationSkeletons: destination,
   }
 }

@@ -47,7 +47,7 @@
       "supportedRelationalControls": [
         "butterfly_hook"
       ],
-      "maxRelationalTargetError": 118.36309051263257,
+      "maxRelationalTargetError": 108.9590939047592,
       "groundingValid": true,
       "boneLengthsValid": true,
       "phaseContinuityValid": true,

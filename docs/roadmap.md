@@ -1086,3 +1086,18 @@ legacy animation remains available.
 Dense exploratory continuity checks also exposed interior IK branch snaps in the
 original three programs. Existing phase-boundary continuity checks pass; 15E should
 assess these interior changes visually before any general solver adjustment.
+## Iteration 15E - Simulator integration and continuity closeout
+
+- [x] Trace manual, Auto Roll, and history/replay through the shared animation hook.
+- [x] Share authoritative endpoint preparation with executable integration tests.
+- [x] Fix local-angle seams and deterministic IK singularities without frame history.
+- [x] Correct source anchoring and release timing in affected technique data.
+- [x] Add 10,001-frame independent checks in both modes for all 12 techniques.
+- [x] Add mixed-routing replay/seeking and fixed A/B regression coverage.
+- [ ] Complete browser visual QA for all 12, including live Auto Roll and navigation.
+
+**Closeout pending visual sign-off; Iteration 15 is not yet fully complete.**
+Browser discovery and the in-app browser both reported unavailable. Automated
+geometry and integration checks do not replace user-facing verification. Coverage
+remains **12 data-driven / 53 legacy fallback**. Standing recovery, guard pull,
+Granby, and submission authoring remain deferred to Iteration 16.

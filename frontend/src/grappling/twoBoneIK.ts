@@ -1,4 +1,4 @@
-import { normalizeAngleDegrees } from './jointConstraints.ts'
+import { defaultHumanJointConstraints, normalizeAngleDegrees } from './jointConstraints.ts'
 import { resolveSkeletonPose } from './kinematics.ts'
 import { constrainSkeletonPose, validateSkeletonPose } from './poseValidation.ts'
 import {
@@ -48,6 +48,8 @@ export type TwoBoneIKResult =
       readonly reach: TwoBoneIKReach
       /** True when the shared joint profile changed either analytic angle. */
       readonly constrained: boolean
+      /** Canonical analytic angles before joint limits, for continuity weighting. */
+      readonly analyticRotations: Readonly<{ root: number; mid: number }>
     }
   | {
       readonly ok: false
@@ -162,24 +164,19 @@ export function solveTwoBoneIK({
   const upperWorldRotation = radiansToDegrees(
     targetAngle + bendSign * Math.acos(cosine),
   )
-  const elbowRadians = (upperWorldRotation * Math.PI) / 180
-  const elbow = {
-    x: root.x + Math.cos(elbowRadians) * upperLength,
-    y: root.y + Math.sin(elbowRadians) * upperLength,
-  }
-  const clampedTarget = {
-    x: root.x + (deltaX / requestedDistance) * solvedDistance,
-    y: root.y + (deltaY / requestedDistance) * solvedDistance,
-  }
-  const lowerWorldRotation = radiansToDegrees(
-    Math.atan2(clampedTarget.y - elbow.y, clampedTarget.x - elbow.x),
-  )
   const parent = resolved.joints[grapplerJointParents[chain.root]]
   const rootWorldRotation = upperWorldRotation - upperAxisOffset
   const rootRotation = normalizeAngleDegrees(rootWorldRotation - parent.rotation)
-  const midRotation = normalizeAngleDegrees(
-    lowerWorldRotation - rootWorldRotation - lowerAxisOffset,
-  )
+  // Preserve the selected branch at fully folded reach. Deriving this angle
+  // from atan2/subtraction can alternate between +180 and -180.
+  const flexion = radiansToDegrees(Math.acos(Math.max(-1, Math.min(1,
+    (solvedDistance ** 2 - upperLength ** 2 - lowerLength ** 2) /
+      (2 * upperLength * lowerLength),
+  ))))
+  const rawMidRotation = upperAxisOffset - lowerAxisOffset - bendSign * flexion
+  const midRotation = rawMidRotation >= -180 && rawMidRotation <= 180
+    ? rawMidRotation
+    : normalizeAngleDegrees(rawMidRotation)
   if (!Number.isFinite(rootRotation) || !Number.isFinite(midRotation)) {
     return failure(skeleton, 'degenerate-chain')
   }
@@ -192,7 +189,15 @@ export function solveTwoBoneIK({
     joints: {
       ...skeleton.joints,
       [chain.root]: { ...skeleton.joints[chain.root], rotation: rootRotation },
-      [chain.mid]: { ...skeleton.joints[chain.mid], rotation: midRotation },
+      [chain.mid]: {
+        ...skeleton.joints[chain.mid],
+        rotation: chain.mid === 'head'
+          ? midRotation
+          : Math.max(
+              defaultHumanJointConstraints[chain.mid].minRotation,
+              Math.min(defaultHumanJointConstraints[chain.mid].maxRotation, midRotation),
+            ),
+      },
     },
   }
   const constrained = constrainSkeletonPose(analytic)
@@ -201,6 +206,7 @@ export function solveTwoBoneIK({
     ok: true,
     skeleton: constrained,
     reach,
+    analyticRotations: { root: rootRotation, mid: midRotation },
     constrained:
       constrained.joints[chain.root].rotation !== rootRotation ||
       constrained.joints[chain.mid].rotation !== midRotation,

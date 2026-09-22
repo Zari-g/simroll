@@ -1,4 +1,9 @@
+import { resolvePositionContacts } from '../grappling/contacts.ts'
+import { displayStateFromResponse } from '../grappling/displayState.ts'
+import { getPositionVisual } from '../grappling/positionVisuals.ts'
+import { resolveVisualPose } from '../grappling/resolveVisualPose.ts'
 import type { GrapplingStateResponse } from '../types/api'
+import { activeControlIds, activeVisualControls } from './activeControls.ts'
 
 export interface HistoricalTransition {
   transitionIndex: number
@@ -27,5 +32,21 @@ export function getHistoricalTransition(
     transitionId,
     startState,
     endState,
+  }
+}
+
+/** Shared authoritative endpoint preparation for manual, Auto Roll and replay. */
+export function resolveStateVisual(state: GrapplingStateResponse) {
+  const visual = getPositionVisual(state.position_id)
+  if (!visual) return null
+  const resolved = resolveVisualPose(
+    visual,
+    activeControlIds(state.active_controls),
+  )
+  return {
+    displayState: displayStateFromResponse(state),
+    poses: resolved.poses,
+    contacts: [...resolvePositionContacts(visual), ...resolved.gripContacts],
+    controls: activeVisualControls(state.active_controls),
   }
 }

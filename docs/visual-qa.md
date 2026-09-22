@@ -53,3 +53,20 @@ stable, the overlay does not affect playback, and visible state matches history.
 
 Record the browser, viewport, mode, sequence length, and any reproducible issue.
 Automated geometry validation is not a substitute for this visual sign-off.
+## 15E verification handoff
+
+Automated dense continuity covers all 12 registered techniques in Gi and No-Gi
+at 0.0001 progress intervals, including exact endpoints. Run
+`npm.cmd run animation:continuity` to reproduce. Existing checks retain contact,
+grounding, finite geometry, bone length, and separation assertions.
+
+Browser visual QA was not performed because both browser discovery and the
+in-app browser reported unavailable. Numeric checks are not visual sign-off.
+Review source, early, middle, late, and destination frames for all 12 registered
+techniques, including the existing Mount Bottom and Open Guard Top orientations.
+Fixed Player A/B identities must remain unchanged.
+
+Pay special attention to Toreando and Arm Drag release/circle phases, Gift Wrap's
+Mount-anchored setup, Butterfly's folded hook reach, and fast constrained limb
+rotations. Run mixed Auto Rolls and exercise history selection, Previous, Next,
+Replay, Return to Live, and reduced motion before marking Iteration 15 complete.

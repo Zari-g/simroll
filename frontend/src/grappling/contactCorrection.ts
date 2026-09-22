@@ -1,6 +1,6 @@
 import { defaultGrapplerAnatomy } from './anatomy.ts'
 import { resolveContactPoint } from './contactGeometry.ts'
-import { normalizeAngleDegrees } from './jointConstraints.ts'
+import { defaultHumanJointConstraints, normalizeAngleDegrees } from './jointConstraints.ts'
 import { resolveSkeletonPose, skeletonToGrapplerPose } from './kinematics.ts'
 import { constrainSkeletonPose } from './poseValidation.ts'
 import type { GrapplerChildJointName, GrapplerSkeletonPose } from './skeleton.ts'
@@ -46,6 +46,8 @@ export interface ContactCorrectionTarget {
 }
 
 export interface ContactCorrectionOptions {
+  /** Deterministic singularity fading for independently sampled frames. */
+  readonly continuousIK?: boolean
   readonly maxContacts?: number
   readonly maxCorrection?: number
   /** Bound, in degrees, for a single relational joint-rotation adjustment. */
@@ -108,8 +110,11 @@ function boundedRotationToward(
   desired: number,
   influence: number,
   maxAngleCorrection: number,
+  continuous = false,
 ): number {
-  const error = normalizeAngleDegrees(desired - current)
+  const error = continuous
+    ? desired - current
+    : normalizeAngleDegrees(desired - current)
   if (!Number.isFinite(error)) return current
   const delta = Math.sign(error) * Math.min(maxAngleCorrection, Math.abs(error) * influence)
   return current + delta
@@ -121,46 +126,48 @@ function applyTwoBoneRelationalCorrection(
   target: PointPose,
   influence: number,
   maxAngleCorrection: number,
+  continuous = false,
 ): GrapplerSkeletonPose | null {
-  // Stay on the limb's authored side of the analytic triangle. This keeps
-  // bent poses continuous while the chain-level default remains available
-  // to callers starting from a straight limb.
-  const currentMidRotation = normalizeAngleDegrees(
-    skeleton.joints[chain.mid].rotation,
-  )
-  const bendDirection = currentMidRotation === 0
+  const current = continuous ? constrainSkeletonPose(skeleton) : skeleton
+  const bend = normalizeAngleDegrees(current.joints[chain.mid].rotation)
+  const bendDirection = bend === 0
     ? chain.bendDirection
-    : currentMidRotation > 0 ? 'negative' : 'positive'
-  const solved = solveTwoBoneIK({ skeleton, chain, target, bendDirection })
+    : bend > 0 ? 'negative' : 'positive'
+  const solved = solveTwoBoneIK({ skeleton: current, chain, target, bendDirection })
   if (!solved.ok) return null
-
-  return constrainSkeletonPose({
-    root: {
-      position: { ...skeleton.root.position },
-      rotation: skeleton.root.rotation,
-    },
-    joints: {
-      ...skeleton.joints,
-      [chain.root]: {
-        ...skeleton.joints[chain.root],
-        rotation: boundedRotationToward(
-          skeleton.joints[chain.root].rotation,
-          solved.skeleton.joints[chain.root].rotation,
-          influence,
-          maxAngleCorrection,
-        ),
-      },
-      [chain.mid]: {
-        ...skeleton.joints[chain.mid],
-        rotation: boundedRotationToward(
-          skeleton.joints[chain.mid].rotation,
-          solved.skeleton.joints[chain.mid].rotation,
-          influence,
-          maxAngleCorrection,
-        ),
-      },
-    },
-  })
+  let rootWeight = 1
+  if (continuous) {
+    // Bend selection and folded reach are singular. Fade only the unstable
+    // root correction at those boundaries, derived entirely from this frame.
+    const root = resolveSkeletonPose(current).joints[chain.root]
+    const upper = Math.hypot(current.joints[chain.mid].x, current.joints[chain.mid].y)
+    const lower = Math.hypot(current.joints[chain.end].x, current.joints[chain.end].y)
+    const reachWeight = Math.max(0, Math.min(1,
+      (Math.hypot(target.x - root.x, target.y - root.y) - Math.abs(upper - lower)) / 20,
+    ))
+    influence *= Math.min(1, Math.abs(bend) / 20)
+    rootWeight = reachWeight * reachWeight * Math.max(0, Math.min(1,
+      (180 - Math.abs(solved.analyticRotations.root)) / 20,
+    ))
+  }
+  const joints = { ...current.joints }
+  for (const joint of [chain.root, chain.mid]) {
+    const rotation = boundedRotationToward(
+      current.joints[joint].rotation,
+      solved.skeleton.joints[joint].rotation,
+      influence * (joint === chain.root ? rootWeight : 1),
+      maxAngleCorrection,
+      continuous,
+    )
+    const limit = joint === 'head' ? null : defaultHumanJointConstraints[joint]
+    joints[joint] = {
+      ...current.joints[joint],
+      rotation: continuous && limit
+        ? Math.max(limit.minRotation, Math.min(limit.maxRotation, rotation))
+        : rotation,
+    }
+  }
+  return constrainSkeletonPose({ root: current.root, joints })
 }
 
 function resolveRelationalJoint(
@@ -186,6 +193,7 @@ function applyRelationalCorrection(
   target: PointPose,
   influence: number,
   maxAngleCorrection: number,
+  continuous = false,
 ): GrapplerSkeletonPose | null {
   const pivot = resolveSkeletonPose(skeleton).joints[jointName]
   const pivotToAnchor = Math.hypot(anchor.x - pivot.x, anchor.y - pivot.y)
@@ -198,7 +206,9 @@ function applyRelationalCorrection(
   const angularError = normalizeAngleDegrees(desiredAngle - currentAngle)
   if (angularError === 0 || !Number.isFinite(angularError)) return null
 
-  const boundedDelta =
+  const boundedDelta = (continuous
+    ? Math.max(0, Math.min(1, (180 - Math.abs(angularError)) / 30))
+    : 1) *
     Math.sign(angularError) *
     Math.min(maxAngleCorrection, Math.abs(angularError) * influence)
 
@@ -216,7 +226,15 @@ function applyRelationalCorrection(
       ),
       [jointName]: {
         ...skeleton.joints[jointName],
-        rotation: skeleton.joints[jointName].rotation + boundedDelta,
+        rotation: !continuous || jointName === 'head'
+          ? skeleton.joints[jointName].rotation + boundedDelta
+          : Math.max(
+              defaultHumanJointConstraints[jointName].minRotation,
+              Math.min(
+                defaultHumanJointConstraints[jointName].maxRotation,
+                skeleton.joints[jointName].rotation + boundedDelta,
+              ),
+            ),
       },
     } as GrapplerSkeletonPose['joints'],
   })
@@ -323,13 +341,14 @@ export function correctSkeletonContacts(
       const adjusted = chain
         ? applyTwoBoneRelationalCorrection(
             result[source], chain, geometry.target, influence, maxAngleCorrection,
+            options.continuousIK,
           ) ?? applyRelationalCorrection(
             result[source], relationalJoint, geometry.source, geometry.target,
-            influence, maxAngleCorrection,
+            influence, maxAngleCorrection, options.continuousIK,
           )
         : applyRelationalCorrection(
             result[source], relationalJoint, geometry.source, geometry.target,
-            influence, maxAngleCorrection,
+            influence, maxAngleCorrection, options.continuousIK,
           )
       if (!adjusted) continue
       result[source] = adjusted

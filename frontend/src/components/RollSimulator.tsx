@@ -11,9 +11,6 @@ import {
   displayStateFromResponse,
   resolveGrapplingDisplayState,
 } from '../grappling/displayState'
-import { resolvePositionContacts } from '../grappling/contacts'
-import { getPositionVisual } from '../grappling/positionVisuals'
-import { resolveVisualPose } from '../grappling/resolveVisualPose'
 import { usePoseAnimation } from '../hooks/usePoseAnimation'
 import type {
   GrapplingMode,
@@ -29,12 +26,10 @@ import {
   filterGripIdsForMode,
   getInitialMode,
 } from '../utils/grapplingState'
-import { getHistoricalTransition } from '../utils/rollPlayback'
+import { getHistoricalTransition, resolveStateVisual } from '../utils/rollPlayback'
 import { formatSimulationResult } from '../utils/simulationResult'
 import {
-  activeControlIds,
   activeControlKey,
-  activeVisualControls,
   starterControls,
 } from '../utils/activeControls'
 import { AvailableMovesPanel } from './AvailableMovesPanel'
@@ -61,21 +56,6 @@ type AutoRollStepCount = (typeof AUTO_ROLL_STEP_OPTIONS)[number]
 
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === 'AbortError'
-}
-
-function resolveStateVisual(state: GrapplingStateResponse) {
-  const visual = getPositionVisual(state.position_id)
-  if (!visual) return null
-  const resolved = resolveVisualPose(
-    visual,
-    activeControlIds(state.active_controls),
-  )
-  return {
-    displayState: displayStateFromResponse(state),
-    poses: resolved.poses,
-    contacts: [...resolvePositionContacts(visual), ...resolved.gripContacts],
-    controls: activeVisualControls(state.active_controls),
-  }
 }
 
 function statesMatch(
