@@ -117,7 +117,7 @@
 
 | Technique | Family | Relational controls | Max target error | Grounding | Bones | Continuity | Pair separation | Endpoints | Gi | No-Gi |
 | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |
-| Butterfly Sweep | explicit | `butterfly_hook` | 118.36 px | pass | pass | pass | pass | pass | pass | pass |
+| Butterfly Sweep | explicit | `butterfly_hook` | 108.96 px | pass | pass | pass | pass | pass | pass | pass |
 | Half Guard Old-School Sweep | `sweep.rotation` | `ankle_control` | 146.05 px | pass | pass | pass | pass | pass | pass | pass |
 | Back-Control Turn-In Escape | `escape.hip` | none supported | n/a | pass | pass | pass | pass | pass | pass | pass |
 

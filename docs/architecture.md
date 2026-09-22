@@ -798,3 +798,39 @@ demonstrated primitive/schema gap; do not introduce a submission-specific runtim
 Iteration 16 retains 53 transitions to migrate plus endpoint pose authoring.
 Data-driven tests sample both modes and phase boundaries with Iteration 14 finite,
 bone, grounding, relation, separation and continuity metrics, without new tolerances.
+### Iteration 15E - Deterministic interior continuity
+
+Registered definitions remain the production path through `resolveTransitionPoses`
+and `resolveTechniqueFrameInputs`, followed by the existing pair solver. Manual
+steps, Auto Roll, and historical replay all call `usePoseAnimation.play`; their
+endpoint preparation now uses the shared `resolveStateVisual` in `rollPlayback`.
+History stores authoritative states and actions, never solved geometry. The
+existing reduced-motion bypass remains ahead of either technique or legacy
+rendering. Independent progress resolution is the runtime seeking contract.
+
+Dense sampling exposed four reusable problems: local constrained angles taking
+a circular shortcut across the forbidden +/-180 seam, analytic IK angle wrap,
+bend selection near a straight limb, and the folded-reach singularity. Limited
+local joints now interpolate normalized values through their admissible interval.
+The analytic middle-joint result uses signed triangle flexion, preserving the
+chosen bend branch at fully folded reach.
+
+Registered techniques enable deterministic singularity fading in the existing
+contact solver. It derives every weight from current source/destination/phase
+geometry and stores no previous-frame state. Root rotation retains circular
+interpolation, and exact endpoints preserve authoritative source and destination
+representations. No transition-ID branch, new solver system, or schema change was
+introduced.
+
+Butterfly keeps setup/elevation anchored to Open Guard before releasing into its
+destination. Toreando and Arm Drag establish their controls at the source anchor,
+perform the connected action, then release before circling. Gift Wrap establishes
+its wrist connection at Mount. Mount Escape's settling underhook is weaker so it
+does not fight pelvis grounding. Graph-level controls remain authoritative.
+
+`sampleDenseContinuity` reconstructs 10,001 independent frames and checks every
+joint, end effector, and root against the existing five-unit continuity budget.
+Coverage remains **12 data-driven / 53 legacy fallback**. Opposite graph
+orientations retain explicit Player A/B assignments rather than swapping identity.
+Browser visual sign-off remains pending because no browser surface was available;
+Iteration 15 is not marked fully complete on numerical results alone.

@@ -7,9 +7,9 @@ export const techniqueAnimations = [
     metadata: { description: 'Connect, elevate the hook, then settle on top.', tags: ['sweep', 'butterfly'] },
     phases: [
       {
-        id: 'connect', duration: 2,
-        playerA: { primitives: [{ type: 'sitUp', amount: 12 }, { type: 'legHook', side: 'left', amount: 18 }] },
-        playerB: { primitives: [{ type: 'baseAdjust', forward: 4 }] },
+        id: 'connect', duration: 2, targetPosition: 'open_guard_bottom',
+        playerA: { primitives: [{ type: 'sitUp', amount: 12 }, { type: 'hipShift', lateral: 4 }, { type: 'legHook', side: 'left', amount: 18 }] },
+        playerB: { primitives: [{ type: 'baseAdjust', forward: 4, lateral: 4 }] },
         controls: [
           { controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', action: 'preserve', side: 'right' },
           { controlId: 'butterfly_hook', controller: 'playerA', opponent: 'playerB', action: 'acquire', side: 'left' },
@@ -18,7 +18,7 @@ export const techniqueAnimations = [
         grounding: [{ grapplerId: 'playerB', joint: 'rightKnee', baseline: 'phaseStart' }],
       },
       {
-        id: 'elevate', duration: 3,
+        id: 'elevate', duration: 3, targetPosition: 'open_guard_bottom',
         playerA: { primitives: [{ type: 'hookElevation', side: 'left', amount: 24 }, { type: 'bodyRotation', amount: -20 }] },
         playerB: { primitives: [{ type: 'offBalance', direction: 'right', amount: 16 }] },
         relationalTargets: [{
@@ -147,7 +147,7 @@ export const techniqueAnimations = [
       {
         id: 'catch-half-guard', duration: 2, targetPosition: 'half_guard_bottom',
         playerA: { primitives: [{ type: 'legHook', side: 'left', amount: 14, intensity: 0.7 }] },
-        controls: [{ controlId: 'frame', controller: 'playerA', opponent: 'playerB', action: 'release', side: 'right' }, { controlId: 'underhook', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.25, side: 'left' }],
+        controls: [{ controlId: 'frame', controller: 'playerA', opponent: 'playerB', action: 'release', side: 'right' }, { controlId: 'underhook', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.2, side: 'left' }],
         grounding: [{ grapplerId: 'playerA', joint: 'pelvis', baseline: 'transitionBlend' }],
       },
     ],
@@ -187,18 +187,22 @@ export const techniqueAnimations = [
     metadata: { description: 'Redirect the ankles, circle outside the legs and close into side control.', tags: ['pass', 'open-guard', 'circling'] },
     phases: [
       {
-        id: 'connect-to-legs', duration: 2,
+        id: 'connect-to-legs', duration: 2, targetPosition: 'open_guard_top',
         playerA: { primitives: [{ type: 'torsoLean', amount: 12, intensity: 0.6 }, { type: 'reach', side: 'right', path: 'straight', amount: 18, intensity: 0.7 }] },
         playerB: { primitives: [{ type: 'kneeInsert', side: 'left', amount: 10, intensity: 0.5 }] },
         controls: [{ controlId: 'ankle_control', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.25, side: 'right' }],
         relationalTargets: [{ id: 'steer-ankle', controller: 'playerA', opponent: 'playerB', controlId: 'ankle_control', side: 'right', contacts: [{ id: 'hand-to-ankle', type: 'grip', source: { participant: 'controller', landmark: 'hand', side: 'controlSide' }, target: { participant: 'opponent', landmark: 'ankle', side: 'oppositeSide' }, relationalAnchor: 'hand-to-grip-target' }] }],
-        grounding: [{ grapplerId: 'playerA', joint: 'leftAnkle', baseline: 'transitionBlend' }],
+        grounding: [{ grapplerId: 'playerA', joint: 'leftAnkle', baseline: 'phaseStart' }],
       },
       {
-        id: 'redirect-and-circle', duration: 3,
+        id: 'redirect-legs', duration: 1, targetPosition: 'open_guard_top',
         playerA: { primitives: [{ type: 'step', side: 'left', path: 'around', amount: 24, intensity: 0.8 }, { type: 'hipShift', lateral: 12, intensity: 0.7 }, { type: 'torsoTurn', chest: -14, intensity: 0.6 }] },
         playerB: { primitives: [{ type: 'pelvisRotation', amount: 16, intensity: 0.7 }, { type: 'kneeRetract', side: 'left', amount: 12, intensity: 0.6 }] },
         controls: [{ controlId: 'ankle_control', controller: 'playerA', opponent: 'playerB', action: 'preserve', side: 'right' }],
+      },
+      {
+        id: 'circle-outside', duration: 2,
+        controls: [{ controlId: 'ankle_control', controller: 'playerA', opponent: 'playerB', action: 'release', side: 'right' }],
       },
       {
         id: 'close-distance', duration: 2, targetPosition: 'side_control_top',
@@ -238,17 +242,21 @@ export const techniqueAnimations = [
     metadata: { description: 'Control the wrist, drag across the center and circle behind into a seatbelt.', tags: ['back-take', 'rotation', 'closed-guard'] },
     phases: [
       {
-        id: 'connect-wrist', duration: 2,
+        id: 'connect-wrist', duration: 2, targetPosition: 'closed_guard_bottom',
         playerA: { primitives: [{ type: 'reach', side: 'right', path: 'across', amount: 16, intensity: 0.7 }] },
         controls: [{ controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.25, side: 'right' }, { controlId: 'sleeve_grip', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.25, side: 'left', modes: ['gi'] }],
         relationalTargets: [{ id: 'sleeve-connection', controller: 'playerA', opponent: 'playerB', controlId: 'sleeve_grip', side: 'left', contacts: [{ id: 'hand-to-sleeve', type: 'grip', source: { participant: 'controller', landmark: 'hand', side: 'controlSide' }, target: { participant: 'opponent', landmark: 'forearm', side: 'oppositeSide' }, relationalAnchor: 'hand-to-grip-target' }] }],
         grounding: [{ grapplerId: 'playerA', joint: 'pelvis', baseline: 'transitionBlend' }],
       },
       {
-        id: 'drag-and-circle', duration: 3,
+        id: 'drag-across', duration: 1, targetPosition: 'closed_guard_bottom',
         playerA: { primitives: [{ type: 'armDrag', side: 'right', amount: 22, turn: 12, intensity: 0.8 }, { type: 'hipShift', lateral: -10, intensity: 0.7 }, { type: 'bodyRotation', amount: -24, intensity: 0.8 }] },
         playerB: { primitives: [{ type: 'offBalance', direction: 'forward', amount: 8, intensity: 0.6 }] },
         controls: [{ controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', action: 'preserve', side: 'right' }, { controlId: 'sleeve_grip', controller: 'playerA', opponent: 'playerB', action: 'release', side: 'left', modes: ['gi'] }],
+      },
+      {
+        id: 'circle-behind', duration: 2,
+        controls: [{ controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', action: 'release', side: 'right' }],
       },
       {
         id: 'attach-behind', duration: 2, targetPosition: 'back_control_top',
@@ -288,7 +296,7 @@ export const techniqueAnimations = [
     metadata: { description: 'Pin the wrist across the torso, turn the shoulder line and follow behind with hooks.', tags: ['top-transition', 'back-take', 'rotation'] },
     phases: [
       {
-        id: 'wrap-wrist', duration: 2,
+        id: 'wrap-wrist', duration: 2, targetPosition: 'mount_top',
         playerA: { primitives: [{ type: 'reach', side: 'right', path: 'across', amount: 18, intensity: 0.7 }, { type: 'dropWeight', amount: 4, intensity: 0.6 }] },
         controls: [{ controlId: 'wrist_control', controller: 'playerA', opponent: 'playerB', action: 'acquire', strength: 0.25, side: 'right' }],
         relationalTargets: [{ id: 'gift-wrap', controller: 'playerA', opponent: 'playerB', controlId: 'wrist_control', side: 'right', contacts: [{ id: 'hand-to-wrist', type: 'grip', source: { participant: 'controller', landmark: 'hand', side: 'controlSide' }, target: { participant: 'opponent', landmark: 'wrist', side: 'oppositeSide' }, relationalAnchor: 'hand-to-grip-target' }] }],

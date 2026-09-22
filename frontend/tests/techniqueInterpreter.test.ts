@@ -259,7 +259,7 @@ test('authored arm drag filters sleeve lifecycle and relationship while retainin
   for (const p of [0.1, 0.4, 0.9, 0.1]) {
     const gi = interpretTechniqueAnimation(program, p, context)
     const noGi = interpretTechniqueAnimation(program, p, { ...context, mode: 'no_gi' })
-    assert.equal(noGi.controls.some(control => control.controlId === 'wrist_control'), p < 5 / 7)
+    assert.equal(noGi.controls.some(control => control.controlId === 'wrist_control'), p < 3 / 7)
     assert.ok(!noGi.controls.some(control => control.controlId === 'sleeve_grip'))
     assert.ok(!noGi.relationships.some(relation => relation.controlId === 'sleeve-connection'))
     assert.equal(gi.controls.some(control => control.controlId === 'sleeve_grip'), p < 2 / 7)

@@ -1,4 +1,5 @@
 import type { GrapplerChildJointName, GrapplerSkeletonPose, LocalJointTransform } from './skeleton.ts'
+import { normalizeAngleDegrees } from './jointConstraints.ts'
 
 export function lerpNumber(start: number, end: number, progress: number) {
   return start + (end - start) * progress
@@ -44,7 +45,17 @@ export function interpolateSkeletonPose(
           {
             x: lerpNumber(transform.x, target.x, progress),
             y: lerpNumber(transform.y, target.y, progress),
-            rotation: interpolateAngle(transform.rotation, target.rotation, progress),
+            rotation: progress <= 0
+              ? transform.rotation
+              : progress >= 1
+                ? target.rotation
+                : jointName === 'head'
+                  ? interpolateAngle(transform.rotation, target.rotation, progress)
+                  : lerpNumber(
+                      normalizeAngleDegrees(transform.rotation),
+                      normalizeAngleDegrees(target.rotation),
+                      progress,
+                    ),
           },
         ]
       }),
